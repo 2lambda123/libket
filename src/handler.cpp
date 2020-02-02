@@ -63,9 +63,9 @@ Handler::Qubit_alloc::Qubit_alloc(size_t qubit_index)
         circuit << "qubit |" << qubit_index << ">" << std::endl;
     }
 
-Handler::Handler(const std::string& out_path, const std::string& kbw_path, size_t seed) 
+Handler::Handler(const std::string& out_path, const std::string& kbw_path, size_t seed, bool no_execute) 
     : out_to_file{out_path == ""? false : true}, kbw_path{kbw_path},
-      quantum_counter{0}, classical_counter{0}, seed{seed}
+      quantum_counter{0}, classical_counter{0}, seed{seed}, no_execute{no_execute}
 {
     if (out_to_file) out_file.open(out_path);        
 }
@@ -88,7 +88,26 @@ Handler::Qubits Handler::alloc(size_t size) {
 }
 
 void Handler::add_gate(std::string gate, const Qubits& qubits) {
-    auto& circuit = merge(qubits);
+
+    std::vector<size_t> qubits_cctrl;
+    if (not cctrl.empty()) {
+        for (auto &i: cctrl) {
+            for (auto j: i.bits) {
+                qubits_cctrl.push_back(measure_map[j]);
+            }
+        }   
+    }
+
+    auto& circuit = merge(qubits_cctrl.empty() ? qubits : Qubits{{{qubits_cctrl}, qubits}});
+
+    if (not cctrl.empty()) {
+        circuit << "if ";
+        for (auto &i : cctrl) {
+            for (auto j: i.bits) {
+                circuit << j << " ";
+            }
+        }
+    }
 
     circuit << gate;
     for (auto& i : qubits) {
@@ -106,7 +125,7 @@ Handler::Bits Handler::measure(const Qubits& qubits) {
 
     size_t counter = classical_counter;
     for (auto i: qubits) {
-        bits.push_back(i);
+        bits.push_back(counter);
         measurement.push_back(std::make_shared<Result>(NONE));
         circuit << "bit " << counter << std::endl;
         circuit << counter << " = measure |" << i << ">" << std::endl; 
@@ -118,6 +137,42 @@ Handler::Bits Handler::measure(const Qubits& qubits) {
     classical_counter += qubits.size();
 
     return Bits{*this, bits, measurement};
+}
+
+void Handler::ctrl_begin() {
+    qctrl_b.push_back(true);
+    cctrl_b.push_back(true);
+}
+
+void Handler::add_ctrl(const Qubits& qubits) {
+    if (qctrl_b.back()) {
+        qctrl.push_back(qubits);
+        qctrl_b.back() = false;
+    } else {
+        auto q = qctrl.back();
+        qctrl.pop_back();
+        qctrl.push_back({{q, qubits}});
+    }
+}
+
+void Handler::add_ctrl(const Bits& bits) {
+    if (cctrl_b.back()) {
+        cctrl.push_back(bits);
+        cctrl_b.back() = false;
+    } else {
+        auto b = cctrl.back();
+        cctrl.pop_back();
+        cctrl.push_back({{b, bits}});
+    }
+}
+
+void Handler::ctrl_end() {
+    if (not qctrl_b.back())
+        qctrl.pop_back();
+    if (not cctrl_b.back())
+        cctrl.pop_back();
+    qctrl_b.pop_back();
+    cctrl_b.pop_back();
 }
 
 void Handler::__run(const Bits& bits) {
@@ -133,29 +188,35 @@ void Handler::__run(const Bits& bits) {
                  << ">>>>>>>>>>>>>>>>>" << std::endl;
     }
 
-    boost::asio::io_service ios;
-
-    std::future<std::string> outdata;
-
-    boost::process::async_pipe qasm(ios);
-    boost::process::child c(kbw_path+std::string(" -s ")+std::to_string(seed++),
-                            boost::process::std_out > outdata,
-                            boost::process::std_in < qasm, ios);
-
-    boost::asio::async_write(qasm, boost::process::buffer(circuit.str()),
-                             [&](boost::system::error_code, size_t) { qasm.close(); });
-
-    ios.run();
-
-    std::stringstream result{outdata.get()};
-
     auto &measuments = allocations[qubits[0].qubits[0]]->measurement_return;
 
-    while (result) {
-        size_t bit;
-        int mea;
-        result >> bit >> mea;
-        *(measuments[measure_map[bit]]) = (Result) mea;
+    if (no_execute) {
+        for (auto &i : measuments) {
+            *i.second = ZERO;
+        }
+    } else {
+        boost::asio::io_service ios;
+
+        std::future<std::string> outdata;
+
+        boost::process::async_pipe qasm(ios);
+        boost::process::child c(kbw_path+std::string(" -s ")+std::to_string(seed++),
+                                boost::process::std_out > outdata,
+                                boost::process::std_in < qasm, ios);
+
+        boost::asio::async_write(qasm, boost::process::buffer(circuit.str()),
+                                [&](boost::system::error_code, size_t) { qasm.close(); });
+
+        ios.run();
+
+        std::stringstream result{outdata.get()};
+
+        while (result) {
+            size_t bit;
+            int mea;
+            result >> bit >> mea;
+            *(measuments[measure_map[bit]]) = (Result) mea;
+        }
     }
 
     auto qubits_free = allocations[qubits[0].qubits[0]]->qubit_index;

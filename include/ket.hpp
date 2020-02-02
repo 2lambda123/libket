@@ -6,6 +6,8 @@
 #include <boost/unordered_set.hpp>
 #include <memory>
 #include <sstream>
+#include <variant>
+#include <iostream>
 
 namespace ket::base {
     class Handler {
@@ -62,12 +64,16 @@ namespace ket::base {
           friend class Handler;
       };
 
-      Handler(const std::string& out_path, const std::string& kbw_path, size_t seed);
+      Handler(const std::string& out_path, const std::string& kbw_path, size_t seed, bool no_execute);
       ~Handler();
       
       Qubits alloc(size_t size);
       void add_gate(std::string gate, const Qubits& qubits);
       Bits measure(const Qubits& qubits);
+      void ctrl_begin();
+      void add_ctrl(const Qubits& qubits);
+      void add_ctrl(const Bits& qubits);
+      void ctrl_end();
       void __run(const Bits& bits);
 
     private:
@@ -83,12 +89,17 @@ namespace ket::base {
       boost::unordered_map<size_t, std::shared_ptr<Qubit_alloc>> allocations;
       boost::unordered_map<size_t, size_t> measure_map;
       size_t seed;
+      bool no_execute;
+      std::vector<Qubits> qctrl;
+      std::vector<Bits> cctrl;
+      std::vector<bool> qctrl_b;
+      std::vector<bool> cctrl_b;
     };
 }
 
 namespace ket {
 
-    static std::unique_ptr<base::Handler> hdr;
+    extern std::unique_ptr<base::Handler> hdr;
 
     void init(int argc, char* argv[]);
 
@@ -107,7 +118,7 @@ namespace ket {
 
         friend void x(const Qubit& q);
         friend void y(const Qubit& q);
-        friend void x(const Qubit& q);
+        friend void z(const Qubit& q);
         friend void h(const Qubit& q);
         friend void s(const Qubit& q);
         friend void sd(const Qubit& q);
@@ -116,6 +127,7 @@ namespace ket {
         friend void cnot(const Qubit& ctrl, const Qubit& target);
         friend Qubit operator+(const Qubit& a, const Qubit& b);
         friend Bit measure(const Qubit& q);
+        friend class Qubit_or_Bit;
     };
 
     class Bit {
@@ -131,11 +143,45 @@ namespace ket {
         base::Handler::Bits bits;
 
         friend Bit measure(const Qubit& q);
+        friend class Qubit_or_Bit;
     };
+
+    class Qubit_or_Bit {
+     public:
+        Qubit_or_Bit(const Qubit& qubit);
+        Qubit_or_Bit(const Bit& bit);
+
+        bool quantum() const;
+        base::Handler::Qubits get_qubit() const;
+        base::Handler::Bits get_bit() const;
+
+     private:
+        std::variant<Qubit, Bit> bit;
+        bool _quantum;
+    };
+
+    void ctrl_begin(const std::vector<Qubit_or_Bit>& c);
+
+    void ctrl_end();
+
+    template <class T, class F, class... Args> 
+    T ctrl(const std::vector<Qubit_or_Bit>& c, F func, Args... args) {
+        ctrl_begin(c);
+        T result = func(args...);
+        ctrl_end();
+        return result;
+    }    
+
+    template <class F, class... Args> 
+    void ctrl(const std::vector<Qubit_or_Bit>& c, F func, Args... args) {
+        ctrl_begin(c);
+        func(args...);
+        ctrl_end();
+    }   
 
     void x(const Qubit& q);
     void y(const Qubit& q);
-    void x(const Qubit& q);
+    void z(const Qubit& q);
     void h(const Qubit& q);
     void s(const Qubit& q);
     void sd(const Qubit& q);

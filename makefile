@@ -4,7 +4,7 @@ SRC = $(wildcard src/*.cpp)
 OBJ = $(SRC:.cpp=.o)
 
 CXX = g++
-CXXFLAGS = -fPIC -shared
+CXXFLAGS = -fPIC -shared -std=c++17 -g
 CXXLINK = -lboost_program_options -lpthread
 
 all: $(DLL)
@@ -15,8 +15,8 @@ all: $(DLL)
 $(DLL): $(OBJ) 
 	$(CXX) $(CXXFLAGS) $(CXXLINK) -o $@ $^
 
-intasll: $(DLL)
-	cp $(DLL) /usr/lib/
+install: $(DLL)
+	cp $(DLL) ~/ld
 
 clean:
 	rm -f $(OBJ) $(DLL)
