@@ -99,7 +99,8 @@ namespace ket::base {
 
 namespace ket {
 
-    extern std::unique_ptr<base::Handler> hdr;
+    extern std::unique_ptr<base::Handler> handle;
+    #define ket_init std::unique_ptr<ket::base::Handler> ket::handle
 
     void init(int argc, char* argv[]);
 
@@ -137,12 +138,15 @@ namespace ket {
 
         int operator[] (size_t index);
 
+        size_t size() const;
+
      private:
         Bit(const base::Handler::Bits& bits);
         
         base::Handler::Bits bits;
 
         friend Bit measure(const Qubit& q);
+        friend Bit operator+(const Bit& a, const Bit& b);
         friend class Qubit_or_Bit;
     };
 
@@ -179,6 +183,16 @@ namespace ket {
         ctrl_end();
     }   
 
+    template <class T>
+    T to(Bit bit) {
+      T ret{};
+      auto size = bit.size();
+      for (size_t i = 0; i < size; i++) {
+        ret |= bit[i] << (size-i-1);
+      }
+      return ret;
+    }
+
     void x(const Qubit& q);
     void y(const Qubit& q);
     void z(const Qubit& q);
@@ -189,6 +203,7 @@ namespace ket {
     void td(const Qubit& q);
     void cnot(const Qubit& ctrl, const Qubit& target);
     Qubit operator+(const Qubit& a, const Qubit& b);
+    Bit operator+(const Bit& a, const Bit& b);
     Bit measure(const Qubit& q);
 
 }

@@ -16,7 +16,12 @@ $(DLL): $(OBJ)
 	$(CXX) $(CXXFLAGS) $(CXXLINK) -o $@ $^
 
 install: $(DLL)
-	cp $(DLL) ~/ld
+	cp $(DLL) /usr/lib/
+	cp include/ket.hpp /usr/include/ket
+
+uninstall:
+	rm /usr/lib/$(DLL)
+	rm /usr/include/ket
 
 clean:
 	rm -f $(OBJ) $(DLL)
