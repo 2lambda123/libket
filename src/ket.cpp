@@ -1,14 +1,15 @@
 #include "../include/ket.hpp"
 #include <iostream>
+#include <ctime>
 #include <boost/program_options.hpp>
 
 void ket::init(int argc, char* argv[]) {
     boost::program_options::options_description desc{"Options"};
     desc.add_options()
         ("help,h", "Show this information")
-        ("seed,s", boost::program_options::value<size_t>()->default_value(42), "Pseudo random number generator seed")
-        ("qasm,o", boost::program_options::value<std::string>()->default_value(""), "qasm output file")
-        ("kbw", boost::program_options::value<std::string>()->default_value("kbw"), "Path to the Ket Bitwise simulator")
+        ("seed,s", boost::program_options::value<size_t>(), "Pseudo random number generator seed")
+        ("out,o", boost::program_options::value<std::string>()->default_value(""), "qasm output file")
+        ("kbw,k", boost::program_options::value<std::string>()->default_value("kbw"), "Path to the Ket Bitwise simulator")
         ("no-execute", "Do not execute quantum code, measuments will return 0");
 
     boost::program_options::parsed_options parsed = boost::program_options::command_line_parser(argc, argv).options(desc).allow_unregistered().run();
@@ -20,8 +21,12 @@ void ket::init(int argc, char* argv[]) {
         exit(0);
     } 
 
-    size_t seed = vm["seed"].as<size_t>();
-    std::string out_path = vm["qasm"].as<std::string>();
+    size_t seed;
+    if (vm.count("seed")) 
+        seed = vm["seed"].as<size_t>();
+    else
+        seed =std::time(nullptr);
+    std::string out_path = vm["out"].as<std::string>();
     std::string kbw_path = vm["kbw"].as<std::string>();
     bool no_execute = vm.count("no-execute");
 

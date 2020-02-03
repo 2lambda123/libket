@@ -90,30 +90,28 @@ Handler::Qubits Handler::alloc(size_t size) {
 void Handler::add_gate(std::string gate, const Qubits& qubits) {
 
     std::vector<size_t> qubits_cctrl;
-    if (not cctrl.empty()) {
-        for (auto &i: cctrl) {
-            for (auto j: i.bits) {
-                qubits_cctrl.push_back(measure_map[j]);
-            }
-        }   
-    }
+    if (not cctrl.empty()) for (auto &i: cctrl) for (auto j: i.bits) 
+        qubits_cctrl.push_back(measure_map[j]);
+
+    if (not qctrl.empty()) for (auto &i: qctrl) for (auto j: i.qubits) 
+        qubits_cctrl.push_back(j);
 
     auto& circuit = merge(qubits_cctrl.empty() ? qubits : Qubits{{{qubits_cctrl}, qubits}});
 
     if (not cctrl.empty()) {
         circuit << "if ";
-        for (auto &i : cctrl) {
-            for (auto j: i.bits) {
-                circuit << j << " ";
-            }
-        }
+        for (auto &i : cctrl) for (auto j: i.bits) 
+            circuit << j << " ";
+    }
+
+    if (not qctrl.empty()) {
+        circuit << "ctrl ";
+        for (auto &i : qctrl) for (auto j: i.qubits) 
+            circuit << "|" << j << "> ";
     }
 
     circuit << gate;
-    for (auto& i : qubits) {
-        circuit << " |" << i << ">";
-    }
-
+    for (auto& i : qubits) circuit << " |" << i << ">";
     circuit << std::endl;
 }
 
@@ -185,7 +183,7 @@ void Handler::__run(const Bits& bits) {
 
     if (out_to_file) {
         out_file << circuit.str()
-                 << ">>>>>>>>>>>>>>>>>" << std::endl;
+                 << ">>>" << std::endl;
     }
 
     auto &measuments = allocations[qubits[0].qubits[0]]->measurement_return;
@@ -242,4 +240,3 @@ std::stringstream& Handler::merge(const Qubits& qubits) {
     }
     return qubit->circuit;
 }
-
