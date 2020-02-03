@@ -49,20 +49,6 @@ ket::base::Handler::Bits ket::Qubit_or_Bit::get_bit() const {
     return std::get<Bit>(bit).bits;
 }
 
-void ket::ctrl_begin(const std::vector<Qubit_or_Bit>& c) {
-    handle->ctrl_begin();
-    for (const auto &i: c) {
-        if (i.quantum()) {
-            handle->add_ctrl(i.get_qubit());
-        } else {
-            handle->add_ctrl(i.get_bit());
-        }
-    }
-}
-void ket::ctrl_end() {
-    handle->ctrl_end();
-}
-
 void ket::x(const Qubit& q) {
     for (size_t i = 0; i < q.size(); i++) {
         handle->add_gate("x", q(i).qubits);

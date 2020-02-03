@@ -7,57 +7,6 @@
 
 using namespace ket::base;
 
-Handler::Qubits::Qubits(const std::vector<Qubits>& bits) {
-    for (auto &i : bits)
-        qubits.insert(qubits.end(), i.qubits.begin(), i.qubits.end());
-}
-
-Handler::Qubits Handler::Qubits::operator[](size_t index) const {
-    return Qubits{std::vector<size_t>{qubits[index]}};
-}
-
-size_t Handler::Qubits::size() const {
-    return qubits.size();
-}
-
-const std::vector<size_t>::const_iterator Handler::Qubits::begin() const {
-    return qubits.begin();
-}
-
-const std::vector<size_t>::const_iterator Handler::Qubits::end() const {
-    return qubits.end();
-}
-
-Handler::Qubits::Qubits(const std::vector<size_t>& qubits) 
-    : qubits{qubits} {}
-
-Handler::Bits::Bits(const std::vector<Bits>& list)
-    : handler{list[0].handler} 
-{
-    for (auto &i : list) {
-        bits.insert(bits.end(), i.bits.begin(), i.bits.end());
-        measurement.insert(measurement.end(), i.measurement.begin(), i.measurement.end());
-    }
-}
-
-Handler::Bits Handler::Bits::operator[](size_t index) const {
-    return Bits{handler, {bits[index]}, {measurement[index]}};
-}
-
-size_t Handler::Bits::size() const {
-    return bits.size();
-}
-
-Handler::Result Handler::Bits::get(size_t index) {
-    if (*measurement[index] == NONE) {
-        handler.__run(*this);
-    }
-    return *measurement[index];
-}
-
-Handler::Bits::Bits(Handler& handler, const std::vector<size_t>& bits, const std::vector<std::shared_ptr<Result>>& measurement) 
-    : handler{handler}, bits{bits}, measurement{measurement} {}
-
 Handler::Qubit_alloc::Qubit_alloc(size_t qubit_index) 
     : qubit_index{{qubit_index}} {
         circuit << "qubit |" << qubit_index << ">" << std::endl;
@@ -108,6 +57,10 @@ void Handler::add_gate(std::string gate, const Qubits& qubits) {
         circuit << "ctrl ";
         for (auto &i : qctrl) for (auto j: i.qubits) 
             circuit << "|" << j << "> ";
+    }
+
+    if (adj_counter) {
+        circuit << "adj " << adj_counter << " ";
     }
 
     circuit << gate;
@@ -171,6 +124,14 @@ void Handler::ctrl_end() {
         cctrl.pop_back();
     qctrl_b.pop_back();
     cctrl_b.pop_back();
+}
+
+void Handler::adj_begin() {
+    adj_counter++;
+}
+
+void Handler::adj_end() {
+    adj_counter--;
 }
 
 void Handler::__run(const Bits& bits) {

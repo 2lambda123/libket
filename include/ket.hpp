@@ -7,7 +7,6 @@
 #include <memory>
 #include <sstream>
 #include <variant>
-#include <iostream>
 
 namespace ket::base {
     class Handler {
@@ -74,6 +73,8 @@ namespace ket::base {
       void add_ctrl(const Qubits& qubits);
       void add_ctrl(const Bits& qubits);
       void ctrl_end();
+      void adj_begin();
+      void adj_end();
       void __run(const Bits& bits);
 
     private:
@@ -94,6 +95,7 @@ namespace ket::base {
       std::vector<Bits> cctrl;
       std::vector<bool> qctrl_b;
       std::vector<bool> cctrl_b;
+      size_t adj_counter;
     };
 }
 
@@ -164,24 +166,41 @@ namespace ket {
         bool _quantum;
     };
 
-    void ctrl_begin(const std::vector<Qubit_or_Bit>& c);
-
-    void ctrl_end();
-
     template <class T, class F, class... Args> 
     T ctrl(const std::vector<Qubit_or_Bit>& c, F func, Args... args) {
-        ctrl_begin(c);
+        handle->ctrl_begin();
+        for (const auto &i: c) {
+            if (i.quantum()) {
+                handle->add_ctrl(i.get_qubit());
+            } else {
+                handle->add_ctrl(i.get_bit());
+            }
+        }
         T result = func(args...);
-        ctrl_end();
+        handle->ctrl_end();
         return result;
     }    
 
     template <class F, class... Args> 
     void ctrl(const std::vector<Qubit_or_Bit>& c, F func, Args... args) {
-        ctrl_begin(c);
+        handle->ctrl_begin();
+        for (const auto &i: c) {
+            if (i.quantum()) {
+                handle->add_ctrl(i.get_qubit());
+            } else {
+                handle->add_ctrl(i.get_bit());
+            }
+        }
         func(args...);
-        ctrl_end();
+        handle->ctrl_end();
     }   
+
+    template <class F, class... Args>
+    void adj(F func, Args...  args) {
+        handle->adj_begin();
+        func(args...);
+        handle->adj_end();
+    } 
 
     template <class T>
     T to(Bit bit) {
