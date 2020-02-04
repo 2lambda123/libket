@@ -8,6 +8,7 @@
 #include <sstream>
 #include <variant>
 #include <functional>
+#include <iostream>
 
 namespace ket::base {
     class Handler {
@@ -225,6 +226,7 @@ namespace ket {
     void cnot(const Qubit& ctrl, const Qubit& target);
     Qubit operator+(const Qubit& a, const Qubit& b);
     Bit operator+(const Bit& a, const Bit& b);
+    std::ostream& operator<<(std::ostream& os, Bit bit); 
     Bit measure(const Qubit& q);
 
 }
