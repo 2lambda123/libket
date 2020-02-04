@@ -7,6 +7,7 @@
 #include <memory>
 #include <sstream>
 #include <variant>
+#include <functional>
 
 namespace ket::base {
     class Handler {
@@ -68,6 +69,7 @@ namespace ket::base {
       
       Qubits alloc(size_t size);
       void add_gate(std::string gate, const Qubits& qubits);
+      void __add_gate(std::string gate, const Qubits& qubits, bool adj=false);
       Bits measure(const Qubits& qubits);
       void ctrl_begin();
       void add_ctrl(const Qubits& qubits);
@@ -95,7 +97,7 @@ namespace ket::base {
       std::vector<Bits> cctrl;
       std::vector<bool> qctrl_b;
       std::vector<bool> cctrl_b;
-      size_t adj_counter;
+      std::vector<std::vector<std::function<void()>>> adj_call;
     };
 }
 

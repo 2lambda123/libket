@@ -37,6 +37,15 @@ Handler::Qubits Handler::alloc(size_t size) {
 }
 
 void Handler::add_gate(std::string gate, const Qubits& qubits) {
+    if (adj_call.empty()) {
+        __add_gate(gate, qubits);
+    } else {
+        bool adj = adj_call.size()%2;
+        adj_call.back().push_back([this,gate,qubits,adj]{ this->__add_gate(gate, qubits, adj); });
+    } 
+}
+
+void Handler::__add_gate(std::string gate, const Qubits& qubits, bool adj) {
 
     std::vector<size_t> qubits_cctrl;
     if (not cctrl.empty()) for (auto &i: cctrl) for (auto j: i.bits) 
@@ -59,9 +68,7 @@ void Handler::add_gate(std::string gate, const Qubits& qubits) {
             circuit << "|" << j << "> ";
     }
 
-    if (adj_counter) {
-        circuit << "adj " << adj_counter << " ";
-    }
+    if (adj) circuit << "adj ";
 
     circuit << gate;
     for (auto& i : qubits) circuit << " |" << i << ">";
@@ -127,11 +134,22 @@ void Handler::ctrl_end() {
 }
 
 void Handler::adj_begin() {
-    adj_counter++;
+    adj_call.push_back({});
 }
 
 void Handler::adj_end() {
-    adj_counter--;
+    if (adj_call.size() == 1) {
+        for (auto i = adj_call.back().rbegin(); i != adj_call.back().rend(); ++i) 
+            (*i)();
+        adj_call.pop_back();
+    } else {
+        std::vector<std::function<void()>> inner = adj_call.back();
+        adj_call.pop_back();
+        adj_call.back().push_back([inner]{
+            for (auto i = inner.rbegin(); i != inner.rend(); ++i) 
+                (*i)();
+        });
+    }
 }
 
 void Handler::__run(const Bits& bits) {
