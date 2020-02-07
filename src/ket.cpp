@@ -113,3 +113,10 @@ ket::Bit ket::measure(const ket::Qubit& q) {
     return Bit{handle->measure(q.qubits)};
 }
 
+void ket::free(const ket::Qubit& q) {
+    handle->free(q.qubits);
+}
+
+void ket::freedirty(const ket::Qubit& q) {
+    handle->free_dirty(q.qubits);
+}

@@ -97,6 +97,22 @@ Handler::Bits Handler::measure(const Qubits& qubits) {
     return Bits{*this, bits, measurement};
 }
 
+void Handler::free(const Qubits& qubits) {
+    auto& circuit = merge(qubits);
+    for (auto i: qubits) {
+        circuit << "free |" << i << ">" << std::endl;
+        allocations.erase(i);    
+    }
+}
+
+void Handler::free_dirty(const Qubits& qubits) {
+    auto& circuit = merge(qubits);
+    for (auto i: qubits) {
+        circuit << "freedirty |" << i << ">" << std::endl;
+        allocations.erase(i);    
+    }
+}
+
 void Handler::ctrl_begin() {
     qctrl_b.push_back(true);
     cctrl_b.push_back(true);

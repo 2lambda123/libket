@@ -69,9 +69,12 @@ namespace ket::base {
       ~Handler();
       
       Qubits alloc(size_t size);
+      Qubits alloc_dirty(size_t size);
       void add_gate(std::string gate, const Qubits& qubits);
       void __add_gate(std::string gate, const Qubits& qubits, bool adj=false);
       Bits measure(const Qubits& qubits);
+      void free(const Qubits& qubits);
+      void free_dirty(const Qubits& qubits);
       void ctrl_begin();
       void add_ctrl(const Qubits& qubits);
       void add_ctrl(const Bits& qubits);
@@ -135,6 +138,8 @@ namespace ket {
         friend void cnot(const Qubit& ctrl, const Qubit& target);
         friend Qubit operator+(const Qubit& a, const Qubit& b);
         friend Bit measure(const Qubit& q);
+        friend void free(const Qubit& q);
+        friend void freedirty(const Qubit& q);
         friend class Qubit_or_Bit;
     };
 
@@ -230,5 +235,6 @@ namespace ket {
     Bit operator+(const Bit& a, const Bit& b);
     std::ostream& operator<<(std::ostream& os, Bit bit); 
     Bit measure(const Qubit& q);
-
+    void free(const Qubit& q);
+    void freedirty(const Qubit& q);
 }
