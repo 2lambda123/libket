@@ -12,9 +12,9 @@ Handler::Qubit_alloc::Qubit_alloc(size_t qubit_index)
         circuit << "qubit |" << qubit_index << ">" << std::endl;
     }
 
-Handler::Handler(const std::string& out_path, const std::string& kbw_path, size_t seed, bool no_execute) 
-    : out_to_file{out_path == ""? false : true}, kbw_path{kbw_path},
-      quantum_counter{0}, classical_counter{0}, seed{seed}, no_execute{no_execute}
+Handler::Handler(const std::string& out_path, const std::string& kbw_path, const std::string& kqc_path, size_t seed, bool no_execute, bool no_optimise) 
+    : out_to_file{out_path == ""? false : true}, kbw_path{kbw_path}, kqc_path{kqc_path},
+      quantum_counter{0}, classical_counter{0}, seed{seed}, no_execute{no_execute}, no_optimise{no_optimise}
 {
     if (out_to_file) out_file.open(out_path);        
 }
@@ -152,6 +152,25 @@ void Handler::adj_end() {
     }
 }
 
+std::string call(const std::string& command, const std::string& in) {
+    boost::asio::io_service ios;
+
+    std::future<std::string> outdata;
+
+    boost::process::async_pipe qasm(ios);
+    boost::process::child c(command+std::string{},
+                            boost::process::std_out > outdata,
+                            boost::process::std_in < qasm, ios);
+
+    boost::asio::async_write(qasm, boost::process::buffer(in),
+                            [&](boost::system::error_code, size_t) { qasm.close(); });
+
+    ios.run();
+
+    return outdata.get();
+    return in;
+}
+
 void Handler::__run(const Bits& bits) {
     std::vector<size_t> qubits_bits;
     for (auto i :bits.bits) 
@@ -160,9 +179,14 @@ void Handler::__run(const Bits& bits) {
     std::vector<Qubits> qubits{{Qubits{qubits_bits}}};
     auto &circuit = merge(qubits);
 
+    std::string qasm;
+    if (no_optimise) 
+        qasm = circuit.str();
+    else 
+        qasm = call(kqc_path, circuit.str());
+
     if (out_to_file) {
-        out_file << circuit.str()
-                 << ">>>" << std::endl;
+        out_file << qasm << ">>>" << std::endl;
     }
 
     auto &measuments = allocations[qubits[0].qubits[0]]->measurement_return;
@@ -172,21 +196,7 @@ void Handler::__run(const Bits& bits) {
             *i.second = ZERO;
         }
     } else {
-        boost::asio::io_service ios;
-
-        std::future<std::string> outdata;
-
-        boost::process::async_pipe qasm(ios);
-        boost::process::child c(kbw_path+std::string(" -s ")+std::to_string(seed++),
-                                boost::process::std_out > outdata,
-                                boost::process::std_in < qasm, ios);
-
-        boost::asio::async_write(qasm, boost::process::buffer(circuit.str()),
-                                [&](boost::system::error_code, size_t) { qasm.close(); });
-
-        ios.run();
-
-        std::stringstream result{outdata.get()};
+        std::stringstream result{call(kbw_path+std::string(" -s ")+std::to_string(seed++), qasm)};
 
         while (result) {
             size_t bit;
@@ -202,7 +212,6 @@ void Handler::__run(const Bits& bits) {
         allocations.erase(i);
     }
 }
-
 
 std::stringstream& Handler::merge(const Qubits& qubits) {
     std::shared_ptr<Qubit_alloc> qubit;

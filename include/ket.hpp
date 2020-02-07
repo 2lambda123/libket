@@ -65,7 +65,7 @@ namespace ket::base {
           friend class Handler;
       };
 
-      Handler(const std::string& out_path, const std::string& kbw_path, size_t seed, bool no_execute);
+      Handler(const std::string& out_path, const std::string& kbw_path, const std::string& kcq_path, size_t seed, bool no_execute, bool no_optimise);
       ~Handler();
       
       Qubits alloc(size_t size);
@@ -88,12 +88,14 @@ namespace ket::base {
       std::string out_path;
       std::ofstream out_file;
       std::string kbw_path;
+      std::string kqc_path;
       size_t quantum_counter;
       size_t classical_counter;
       boost::unordered_map<size_t, std::shared_ptr<Qubit_alloc>> allocations;
       boost::unordered_map<size_t, size_t> measure_map;
       size_t seed;
       bool no_execute;
+      bool no_optimise;
       std::vector<Qubits> qctrl;
       std::vector<Bits> cctrl;
       std::vector<bool> qctrl_b;

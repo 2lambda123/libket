@@ -9,8 +9,10 @@ void ket::init(int argc, char* argv[]) {
         ("help,h", "Show this information")
         ("seed,s", boost::program_options::value<size_t>(), "Pseudo random number generator seed")
         ("out,o", boost::program_options::value<std::string>()->default_value(""), "qasm output file")
-        ("kbw,k", boost::program_options::value<std::string>()->default_value("kbw"), "Path to the Ket Bitwise simulator")
-        ("no-execute", "Do not execute quantum code, measuments will return 0");
+        ("kbw,b", boost::program_options::value<std::string>()->default_value("kbw"), "Path to the Ket Bitwise simulator")
+        ("kqc,c", boost::program_options::value<std::string>()->default_value("kqc"), "Path to the Ket Quantum Compiler")
+        ("no-execute", "Do not execute the quantum code, measuments will return 0")
+        ("no-optimise", "Do not optimize the quantum code");
 
     boost::program_options::parsed_options parsed = boost::program_options::command_line_parser(argc, argv).options(desc).allow_unregistered().run();
     boost::program_options::variables_map vm;
@@ -28,9 +30,11 @@ void ket::init(int argc, char* argv[]) {
         seed =std::time(nullptr);
     std::string out_path = vm["out"].as<std::string>();
     std::string kbw_path = vm["kbw"].as<std::string>();
+    std::string kqc_path = vm["kqc"].as<std::string>();
     bool no_execute = vm.count("no-execute");
+    bool no_optimise = vm.count("no-optimise");
 
-    handle = std::make_unique<base::Handler>(out_path, kbw_path, seed, no_execute);
+    handle = std::make_unique<base::Handler>(out_path, kbw_path, kqc_path, seed, no_execute, no_optimise);
 }
 
 ket::Qubit_or_Bit::Qubit_or_Bit(const Qubit& qubit) : bit{qubit}, _quantum{true} {}
