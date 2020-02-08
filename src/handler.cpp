@@ -40,33 +40,34 @@ Handler::Qubits Handler::alloc(size_t size, bool dirty) {
 
 void Handler::add_gate(std::string gate, const Qubits& qubits, const std::vector<double>& args) {
     if (adj_call.empty()) {
-        __add_gate(gate, qubits, args);
+        __add_gate(gate, qubits, args, false, qctrl, cctrl);
     } else {
         bool adj = adj_call.size()%2;
-        adj_call.back().push_back([this,gate,qubits,args,adj]{ this->__add_gate(gate, qubits, args, adj); });
+        auto _qctrl = qctrl;
+        auto _cctrl = cctrl;
+        adj_call.back().push_back([this,gate,qubits,args,adj,_qctrl,_cctrl]{ this->__add_gate(gate, qubits, args, adj, _qctrl, _cctrl); });
     } 
 }
 
-void Handler::__add_gate(std::string gate, const Qubits& qubits, const std::vector<double>& args, bool adj) {
-
+void Handler::__add_gate(std::string gate, const Qubits& qubits, const std::vector<double>& args, bool adj, const std::vector<Qubits>& _qctrl, const std::vector<Bits>& _cctrl) {
     std::vector<size_t> qubits_cctrl;
-    if (not cctrl.empty()) for (auto &i: cctrl) for (auto j: i.bits) 
+    if (not _cctrl.empty()) for (auto &i: _cctrl) for (auto j: i.bits) 
         qubits_cctrl.push_back(measure_map[j]);
 
-    if (not qctrl.empty()) for (auto &i: qctrl) for (auto j: i.qubits) 
+    if (not _qctrl.empty()) for (auto &i: _qctrl) for (auto j: i.qubits) 
         qubits_cctrl.push_back(j);
 
     auto& circuit = merge(qubits_cctrl.empty() ? qubits : Qubits{{{qubits_cctrl}, qubits}});
 
-    if (not cctrl.empty()) {
+    if (not _cctrl.empty()) {
         circuit << "if ";
-        for (auto &i : cctrl) for (auto j: i.bits) 
+        for (auto &i : _cctrl) for (auto j: i.bits) 
             circuit << j << " ";
     }
 
-    if (not qctrl.empty()) {
+    if (not _qctrl.empty()) {
         circuit << "ctrl ";
-        for (auto &i : qctrl) for (auto j: i.qubits) 
+        for (auto &i : _qctrl) for (auto j: i.qubits) 
             circuit << "|" << j << "> ";
     }
 
@@ -246,10 +247,12 @@ std::stringstream& Handler::merge(const Qubits& qubits) {
             qubit = allocations[index];
         } else if (qubit->qubit_index.find(index) == qubit->qubit_index.end()){
             qubit->circuit << allocations[index]->circuit.str();
-            qubit->qubit_index.insert(index);
+            qubit->qubit_index.insert(allocations[index]->qubit_index.begin(), allocations[index]->qubit_index.end());
             qubit->measurement_return.insert(allocations[index]->measurement_return.begin(),
                                                 allocations[index]->measurement_return.end());
-            allocations[index] = qubit;
+            std::vector<size_t> move_index;
+            for (auto i : allocations[index]->qubit_index) move_index.push_back(i);
+            for (auto i : move_index) allocations[i] = qubit;
         }
     }
     return qubit->circuit;

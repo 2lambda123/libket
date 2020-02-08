@@ -70,7 +70,7 @@ namespace ket::base {
       
       Qubits alloc(size_t size, bool dirty=false);
       void add_gate(std::string gate, const Qubits& qubits, const std::vector<double>& args={});
-      void __add_gate(std::string gate, const Qubits& qubits, const std::vector<double>& args={}, bool adj=false);
+      void __add_gate(std::string gate, const Qubits& qubits, const std::vector<double>& args, bool adj, const std::vector<Qubits>& _qctrl, const std::vector<Bits>& _cctrl);
       Bits measure(const Qubits& qubits);
       void free(const Qubits& qubits);
       void free_dirty(const Qubits& qubits);
