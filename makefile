@@ -18,10 +18,12 @@ $(DLL): $(OBJ)
 install: $(DLL)
 	cp $(DLL) /usr/lib/
 	cp include/ket.hpp /usr/include/ket
+	cp include/libket.hpp /usr/include/libket
 
 uninstall:
-	rm /usr/lib/$(DLL)
-	rm /usr/include/ket
+	rm -f /usr/lib/$(DLL)
+	rm -f /usr/include/ket
+	rm -f /usr/include/libket -r
 
 clean:
 	rm -f $(OBJ) $(DLL)
