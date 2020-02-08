@@ -54,51 +54,43 @@ ket::base::Handler::Bits ket::Qubit_or_Bit::get_bit() const {
 }
 
 void ket::x(const Qubit& q) {
-    for (size_t i = 0; i < q.size(); i++) {
+    for (size_t i = 0; i < q.size(); i++) 
         handle->add_gate("x", q(i).qubits);
-    }
 }
 
 void ket::y(const Qubit& q) {
-    for (size_t i = 0; i < q.size(); i++) {
+    for (size_t i = 0; i < q.size(); i++) 
         handle->add_gate("y", q(i).qubits);
-    }
 }
 
 void ket::z(const Qubit& q) {
-    for (size_t i = 0; i < q.size(); i++) {
+    for (size_t i = 0; i < q.size(); i++) 
         handle->add_gate("z", q(i).qubits);
-    }
 }
 
 void ket::h(const Qubit& q) {
-    for (size_t i = 0; i < q.size(); i++) {
+    for (size_t i = 0; i < q.size(); i++) 
         handle->add_gate("h", q(i).qubits);
-    }
 }
 
 void ket::s(const Qubit& q) {
-    for (size_t i = 0; i < q.size(); i++) {
+    for (size_t i = 0; i < q.size(); i++) 
         handle->add_gate("s", q(i).qubits);
-    }
 }
 
 void ket::sd(const Qubit& q) {
-    for (size_t i = 0; i < q.size(); i++) {
+    for (size_t i = 0; i < q.size(); i++) 
         handle->add_gate("sd", q(i).qubits);
-    }
 }
 
 void ket::t(const Qubit& q) {
-    for (size_t i = 0; i < q.size(); i++) {
+    for (size_t i = 0; i < q.size(); i++) 
         handle->add_gate("t", q(i).qubits);
-    }
 }
 
 void ket::td(const Qubit& q) {
-    for (size_t i = 0; i < q.size(); i++) {
+    for (size_t i = 0; i < q.size(); i++) 
         handle->add_gate("td", q(i).qubits);
-    }
 }
 
 void ket::cnot(const Qubit& ctrl, const Qubit& target) {
@@ -109,8 +101,27 @@ void ket::cnot(const Qubit& ctrl, const Qubit& target) {
     }
 }
 
+void ket::u1(double lambda, const Qubit& q) {
+    for (size_t i = 0; i < q.size(); i++) 
+        handle->add_gate("u1", q(i).qubits, {lambda});
+}
+
+void ket::u2(double phi, double lambda, const Qubit& q) {
+    for (size_t i = 0; i < q.size(); i++) 
+        handle->add_gate("u2", q(i).qubits, {phi, lambda});
+}
+
+void ket::u3(double theta, double phi, double lambda, const Qubit& q) {
+    for (size_t i = 0; i < q.size(); i++) 
+        handle->add_gate("u3", q(i).qubits, {theta, phi, lambda});
+}
+
 ket::Bit ket::measure(const ket::Qubit& q) {
     return Bit{handle->measure(q.qubits)};
+}
+
+ket::Qubit ket::dirty(size_t size) {
+    return Qubit{handle->alloc(size, true)};
 }
 
 void ket::free(const ket::Qubit& q) {

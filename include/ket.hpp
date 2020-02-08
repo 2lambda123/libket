@@ -55,7 +55,7 @@ namespace ket::base {
     
       class Qubit_alloc {
         public:
-          Qubit_alloc(size_t qubit_index);
+          Qubit_alloc(size_t qubit_index, bool dirty=false);
 
         private:
           boost::unordered_set<size_t> qubit_index;
@@ -68,10 +68,9 @@ namespace ket::base {
       Handler(const std::string& out_path, const std::string& kbw_path, const std::string& kcq_path, size_t seed, bool no_execute, bool no_optimise);
       ~Handler();
       
-      Qubits alloc(size_t size);
-      Qubits alloc_dirty(size_t size);
-      void add_gate(std::string gate, const Qubits& qubits);
-      void __add_gate(std::string gate, const Qubits& qubits, bool adj=false);
+      Qubits alloc(size_t size, bool dirty=false);
+      void add_gate(std::string gate, const Qubits& qubits, const std::vector<double>& args={});
+      void __add_gate(std::string gate, const Qubits& qubits, const std::vector<double>& args={}, bool adj=false);
       Bits measure(const Qubits& qubits);
       void free(const Qubits& qubits);
       void free_dirty(const Qubits& qubits);
@@ -136,8 +135,12 @@ namespace ket {
         friend void t(const Qubit& q);
         friend void td(const Qubit& q);
         friend void cnot(const Qubit& ctrl, const Qubit& target);
+        friend void u1(double lambda, const Qubit& q);
+        friend void u2(double phi, double lambda, const Qubit& q);
+        friend void u3(double theta, double phi, double lambda, const Qubit& q);
         friend Qubit operator+(const Qubit& a, const Qubit& b);
         friend Bit measure(const Qubit& q);
+        friend Qubit dirty(size_t size);
         friend void free(const Qubit& q);
         friend void freedirty(const Qubit& q);
         friend class Qubit_or_Bit;
@@ -231,10 +234,14 @@ namespace ket {
     void t(const Qubit& q);
     void td(const Qubit& q);
     void cnot(const Qubit& ctrl, const Qubit& target);
+    void u1(double lambda, const Qubit& q);
+    void u2(double phi, double lambda, const Qubit& q);
+    void u3(double theta, double phi, double lambda, const Qubit& q);
     Qubit operator+(const Qubit& a, const Qubit& b);
     Bit operator+(const Bit& a, const Bit& b);
     std::ostream& operator<<(std::ostream& os, Bit bit); 
     Bit measure(const Qubit& q);
+    Qubit dirty(size_t size);
     void free(const Qubit& q);
     void freedirty(const Qubit& q);
 }

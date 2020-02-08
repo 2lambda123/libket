@@ -3,14 +3,16 @@
 #include <boost/process/async.hpp>
 #include <boost/asio.hpp>
 #include <iostream>
+#include <limits>
 #include <boost/program_options.hpp>
 
 using namespace ket::base;
 
-Handler::Qubit_alloc::Qubit_alloc(size_t qubit_index) 
-    : qubit_index{{qubit_index}} {
-        circuit << "qubit |" << qubit_index << ">" << std::endl;
-    }
+Handler::Qubit_alloc::Qubit_alloc(size_t qubit_index, bool dirty) 
+    : qubit_index{{qubit_index}}
+{
+    circuit << "qubit" << (dirty? " dirty " : " " ) <<  "|" << qubit_index << ">" << std::endl;
+}
 
 Handler::Handler(const std::string& out_path, const std::string& kbw_path, const std::string& kqc_path, size_t seed, bool no_execute, bool no_optimise) 
     : out_to_file{out_path == ""? false : true}, kbw_path{kbw_path}, kqc_path{kqc_path},
@@ -23,12 +25,12 @@ Handler::~Handler() {
     if (out_to_file) out_file.close();
 }
 
-Handler::Qubits Handler::alloc(size_t size) {
+Handler::Qubits Handler::alloc(size_t size, bool dirty) {
     std::vector<size_t> qubits;
 
     for (size_t i = quantum_counter; i < quantum_counter+size; i++) {
         qubits.push_back(i);
-        allocations[i] = std::make_shared<Qubit_alloc>(i);
+        allocations[i] = std::make_shared<Qubit_alloc>(i, dirty);
     }
     
     quantum_counter += size;
@@ -36,16 +38,16 @@ Handler::Qubits Handler::alloc(size_t size) {
     return Qubits{qubits};
 }
 
-void Handler::add_gate(std::string gate, const Qubits& qubits) {
+void Handler::add_gate(std::string gate, const Qubits& qubits, const std::vector<double>& args) {
     if (adj_call.empty()) {
-        __add_gate(gate, qubits);
+        __add_gate(gate, qubits, args);
     } else {
         bool adj = adj_call.size()%2;
-        adj_call.back().push_back([this,gate,qubits,adj]{ this->__add_gate(gate, qubits, adj); });
+        adj_call.back().push_back([this,gate,qubits,args,adj]{ this->__add_gate(gate, qubits, args, adj); });
     } 
 }
 
-void Handler::__add_gate(std::string gate, const Qubits& qubits, bool adj) {
+void Handler::__add_gate(std::string gate, const Qubits& qubits, const std::vector<double>& args, bool adj) {
 
     std::vector<size_t> qubits_cctrl;
     if (not cctrl.empty()) for (auto &i: cctrl) for (auto j: i.bits) 
@@ -71,6 +73,14 @@ void Handler::__add_gate(std::string gate, const Qubits& qubits, bool adj) {
     if (adj) circuit << "adj ";
 
     circuit << gate;
+
+    if (not args.empty()) {
+        circuit.precision(std::numeric_limits<double>::max_digits10);
+        circuit << "(";
+        for (auto i : args) circuit << std::fixed << i << " ";
+        circuit << ")";
+    }
+
     for (auto& i : qubits) circuit << " |" << i << ">";
     circuit << std::endl;
 }
@@ -108,7 +118,7 @@ void Handler::free(const Qubits& qubits) {
 void Handler::free_dirty(const Qubits& qubits) {
     auto& circuit = merge(qubits);
     for (auto i: qubits) {
-        circuit << "freedirty |" << i << ">" << std::endl;
+        circuit << "free dirty |" << i << ">" << std::endl;
         allocations.erase(i);    
     }
 }
