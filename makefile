@@ -4,7 +4,7 @@ SRC = $(wildcard src/*.cpp)
 OBJ = $(SRC:.cpp=.o)
 
 CXX = g++
-CXXFLAGS = -fPIC -shared -std=c++17 -g
+CXXFLAGS = -fPIC -shared -std=c++17 -g -Wall -Werror
 CXXLINK = -lboost_program_options -lpthread
 
 all: $(DLL)
