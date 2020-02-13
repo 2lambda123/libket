@@ -18,9 +18,21 @@ namespace ket {
                 m += 1;
             }
         }
+    }
 
+    void invert(const Qubit& q) {
         for (size_t i = 0; i < (q.size()/2); i++) 
             swap(q(i), q(q.size()-i-1));
+    }
+
+    template <class T>
+    T to(Bit bit) {
+      T ret{};
+      auto size = bit.size();
+      for (size_t i = 0; i < size; i++) {
+        ret |= bit[i] << (i);
+      }
+      return ret;
     }
 
 };
