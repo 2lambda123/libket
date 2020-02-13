@@ -131,3 +131,7 @@ void ket::free(const ket::Qubit& q) {
 void ket::freedirty(const ket::Qubit& q) {
     handle->free_dirty(q.qubits);
 }
+
+void ket::__apply_oracle(const std::string& gate, const Qubit& q) {
+    handle->add_oracle(gate, q.qubits);
+}

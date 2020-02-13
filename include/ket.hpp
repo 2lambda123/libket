@@ -69,8 +69,9 @@ namespace ket::base {
       ~Handler();
       
       Qubits alloc(size_t size, bool dirty=false);
-      void add_gate(std::string gate, const Qubits& qubits, const std::vector<double>& args={});
-      void __add_gate(std::string gate, const Qubits& qubits, const std::vector<double>& args, bool adj, const std::vector<Qubits>& _qctrl, const std::vector<Bits>& _cctrl);
+      void add_gate(const std::string& gate, const Qubits& qubits, const std::vector<double>& args={});
+      void __add_gate(const std::string& gate, const Qubits& qubits, const std::vector<double>& args, bool adj, const std::vector<Qubits>& _qctrl, const std::vector<Bits>& _cctrl);
+      void add_oracle(const std::string& gate, const Qubits& qubits);
       Bits measure(const Qubits& qubits);
       void free(const Qubits& qubits);
       void free_dirty(const Qubits& qubits);
@@ -143,6 +144,7 @@ namespace ket {
         friend Qubit dirty(size_t size);
         friend void free(const Qubit& q);
         friend void freedirty(const Qubit& q);
+        friend void __apply_oracle(const std::string& gate, const Qubit& q);
         friend class Qubit_or_Bit;
     };
 
@@ -215,16 +217,6 @@ namespace ket {
         handle->adj_end();
     } 
 
-    template <class T>
-    T to(Bit bit) {
-      T ret{};
-      auto size = bit.size();
-      for (size_t i = 0; i < size; i++) {
-        ret |= bit[i] << (size-i-1);
-      }
-      return ret;
-    }
-
     void x(const Qubit& q);
     void y(const Qubit& q);
     void z(const Qubit& q);
@@ -244,4 +236,23 @@ namespace ket {
     Qubit dirty(size_t size);
     void free(const Qubit& q);
     void freedirty(const Qubit& q);
+    void __apply_oracle(const std::string& gate, const Qubit& q);
+}
+
+namespace ket::oracle {
+    using gate_map = boost::unordered_map<size_t, boost::unordered_set<std::pair<std::complex<double>, size_t>>>;
+    class Gate {
+     public:
+        Gate(gate_map& gate, size_t size); 
+        boost::unordered_set<std::pair<std::complex<double>, size_t>>& operator[](size_t index);
+        size_t size() const;
+
+        void operator()(const ket::Qubit& q);
+
+     private:
+        gate_map gate;
+        size_t _size;
+    };
+
+    Gate lambda(std::function<size_t(size_t)> func, size_t size, size_t begin=0, size_t end=0);
 }

@@ -38,7 +38,7 @@ Handler::Qubits Handler::alloc(size_t size, bool dirty) {
     return Qubits{qubits};
 }
 
-void Handler::add_gate(std::string gate, const Qubits& qubits, const std::vector<double>& args) {
+void Handler::add_gate(const std::string& gate, const Qubits& qubits, const std::vector<double>& args) {
     if (adj_call.empty()) {
         __add_gate(gate, qubits, args, false, qctrl, cctrl);
     } else {
@@ -49,7 +49,11 @@ void Handler::add_gate(std::string gate, const Qubits& qubits, const std::vector
     } 
 }
 
-void Handler::__add_gate(std::string gate, const Qubits& qubits, const std::vector<double>& args, bool adj, const std::vector<Qubits>& _qctrl, const std::vector<Bits>& _cctrl) {
+void Handler::add_oracle(const std::string& gate, const Qubits& qubits) {
+    add_gate("\""+gate+"\"", qubits);
+}
+
+void Handler::__add_gate(const std::string& gate, const Qubits& qubits, const std::vector<double>& args, bool adj, const std::vector<Qubits>& _qctrl, const std::vector<Bits>& _cctrl) {
     std::vector<size_t> qubits_cctrl;
     if (not _cctrl.empty()) for (auto &i: _cctrl) for (auto j: i.bits) 
         qubits_cctrl.push_back(measure_map[j]);
