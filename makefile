@@ -5,7 +5,7 @@ OBJ = $(SRC:.cpp=.o)
 
 CXX = g++
 CXXFLAGS = -fPIC -shared -std=c++17 -g -Wall -Werror
-CXXLINK = -lboost_program_options -lpthread
+CXXLINK = -lboost_program_options -lpthread -lboost_serialization
 
 all: $(DLL)
 
