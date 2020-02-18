@@ -4,3 +4,4 @@ main.cpp
 .vscode/settings.json
 **.o
 libket.so
+libcket.so

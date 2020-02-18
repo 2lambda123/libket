@@ -107,12 +107,13 @@ namespace ket::base {
     };
 }
 
+extern "C" ket::base::Handler* ket_handle;
+#define ket_init ket::base::Handler* handle
+
 namespace ket {
 
-    extern std::unique_ptr<base::Handler> handle;
-    #define ket_init std::unique_ptr<ket::base::Handler> ket::handle
-
-    void init(int argc, char* argv[]);
+    void begin(int argc, char* argv[]);
+    void end();
 
     class Bit;
     class Qubit {
@@ -183,38 +184,38 @@ namespace ket {
 
     template <class T, class F, class... Args> 
     T ctrl(const std::vector<Qubit_or_Bit>& c, F func, Args... args) {
-        handle->ctrl_begin();
+        ket_handle->ctrl_begin();
         for (const auto &i: c) {
             if (i.quantum()) {
-                handle->add_ctrl(i.get_qubit());
+                ket_handle->add_ctrl(i.get_qubit());
             } else {
-                handle->add_ctrl(i.get_bit());
+                ket_handle->add_ctrl(i.get_bit());
             }
         }
         T result = func(args...);
-        handle->ctrl_end();
+        ket_handle->ctrl_end();
         return result;
     }    
 
     template <class F, class... Args> 
     void ctrl(const std::vector<Qubit_or_Bit>& c, F func, Args... args) {
-        handle->ctrl_begin();
+        ket_handle->ctrl_begin();
         for (const auto &i: c) {
             if (i.quantum()) {
-                handle->add_ctrl(i.get_qubit());
+                ket_handle->add_ctrl(i.get_qubit());
             } else {
-                handle->add_ctrl(i.get_bit());
+                ket_handle->add_ctrl(i.get_bit());
             }
         }
         func(args...);
-        handle->ctrl_end();
+        ket_handle->ctrl_end();
     }   
 
     template <class F, class... Args>
     void adj(F func, Args...  args) {
-        handle->adj_begin();
+        ket_handle->adj_begin();
         func(args...);
-        handle->adj_end();
+        ket_handle->adj_end();
     } 
 
     void x(const Qubit& q);

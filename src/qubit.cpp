@@ -1,6 +1,6 @@
 #include "../include/ket.hpp"
 
-ket::Qubit::Qubit(size_t size) : qubits{handle->alloc(size)} {}
+ket::Qubit::Qubit(size_t size) : qubits{ket_handle->alloc(size)} {}
 
 ket::Qubit::Qubit(const base::Handler::Qubits& qubits) : qubits{qubits} {}
 

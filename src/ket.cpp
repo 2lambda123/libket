@@ -3,7 +3,7 @@
 #include <ctime>
 #include <boost/program_options.hpp>
 
-void ket::init(int argc, char* argv[]) {
+void ket::begin(int argc, char* argv[]) {
     boost::program_options::options_description desc{"Options"};
     desc.add_options()
         ("help,h", "Show this information")
@@ -34,7 +34,11 @@ void ket::init(int argc, char* argv[]) {
     bool no_execute = vm.count("no-execute");
     bool no_optimise = vm.count("no-optimise");
 
-    handle = std::make_unique<base::Handler>(out_path, kbw_path, kqc_path, seed, no_execute, no_optimise);
+    ket_handle = new base::Handler(out_path, kbw_path, kqc_path, seed, no_execute, no_optimise);
+}
+
+void ket::end() {
+    delete ket_handle;
 }
 
 ket::Qubit_or_Bit::Qubit_or_Bit(const Qubit& qubit) : bit{qubit}, _quantum{true} {}
@@ -55,86 +59,86 @@ ket::base::Handler::Bits ket::Qubit_or_Bit::get_bit() const {
 
 void ket::x(const Qubit& q) {
     for (size_t i = 0; i < q.size(); i++) 
-        handle->add_gate("x", q(i).qubits);
+        ket_handle->add_gate("x", q(i).qubits);
 }
 
 void ket::y(const Qubit& q) {
     for (size_t i = 0; i < q.size(); i++) 
-        handle->add_gate("y", q(i).qubits);
+        ket_handle->add_gate("y", q(i).qubits);
 }
 
 void ket::z(const Qubit& q) {
     for (size_t i = 0; i < q.size(); i++) 
-        handle->add_gate("z", q(i).qubits);
+        ket_handle->add_gate("z", q(i).qubits);
 }
 
 void ket::h(const Qubit& q) {
     for (size_t i = 0; i < q.size(); i++) 
-        handle->add_gate("h", q(i).qubits);
+        ket_handle->add_gate("h", q(i).qubits);
 }
 
 void ket::s(const Qubit& q) {
     for (size_t i = 0; i < q.size(); i++) 
-        handle->add_gate("s", q(i).qubits);
+        ket_handle->add_gate("s", q(i).qubits);
 }
 
 void ket::sd(const Qubit& q) {
     for (size_t i = 0; i < q.size(); i++) 
-        handle->add_gate("sd", q(i).qubits);
+        ket_handle->add_gate("sd", q(i).qubits);
 }
 
 void ket::t(const Qubit& q) {
     for (size_t i = 0; i < q.size(); i++) 
-        handle->add_gate("t", q(i).qubits);
+        ket_handle->add_gate("t", q(i).qubits);
 }
 
 void ket::td(const Qubit& q) {
     for (size_t i = 0; i < q.size(); i++) 
-        handle->add_gate("td", q(i).qubits);
+        ket_handle->add_gate("td", q(i).qubits);
 }
 
 void ket::cnot(const Qubit& ctrl, const Qubit& target) {
     if (ctrl.size() == target.size()) {
         for (size_t i = 0; i < ctrl.size(); i++) {
-            handle->add_gate("cnot", {{ctrl(i).qubits , target(i).qubits}});
+            ket_handle->add_gate("cnot", {{ctrl(i).qubits , target(i).qubits}});
         }
     }
 }
 
 void ket::u1(double lambda, const Qubit& q) {
     for (size_t i = 0; i < q.size(); i++) 
-        handle->add_gate("u1", q(i).qubits, {lambda});
+        ket_handle->add_gate("u1", q(i).qubits, {lambda});
 }
 
 void ket::u2(double phi, double lambda, const Qubit& q) {
     for (size_t i = 0; i < q.size(); i++) 
-        handle->add_gate("u2", q(i).qubits, {phi, lambda});
+        ket_handle->add_gate("u2", q(i).qubits, {phi, lambda});
 }
 
 void ket::u3(double theta, double phi, double lambda, const Qubit& q) {
     for (size_t i = 0; i < q.size(); i++) 
-        handle->add_gate("u3", q(i).qubits, {theta, phi, lambda});
+        ket_handle->add_gate("u3", q(i).qubits, {theta, phi, lambda});
 }
 
 ket::Bit ket::measure(const ket::Qubit& q) {
     std::vector<base::Handler::Bits> bits;
     for (size_t i = 0; i < q.size(); i++)
-        bits.push_back(handle->measure(q(i).qubits));
+        bits.push_back(ket_handle->measure(q(i).qubits));
     return Bit{bits};
 }
 
 ket::Qubit ket::dirty(size_t size) {
-    return Qubit{handle->alloc(size, true)};
+    return Qubit{ket_handle->alloc(size, true)};
 }
 
 void ket::free(const ket::Qubit& q) {
-    handle->free(q.qubits);
+    ket_handle->free(q.qubits);
 }
 
 void ket::freedirty(const ket::Qubit& q) {
-    handle->free_dirty(q.qubits);
+    ket_handle->free_dirty(q.qubits);
 }
 
 void ket::__apply_oracle(const std::string& gate, const Qubit& q) {
-    handle->add_oracle(gate, q.qubits);
+    ket_handle->add_oracle(gate, q.qubits);
 }

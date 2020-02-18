@@ -15,10 +15,17 @@ all: $(DLL)
 $(DLL): $(OBJ) 
 	$(CXX) $(CXXFLAGS) $(CXXLINK) -o $@ $^
 
-install: $(DLL)
+clib: 
+	$(CXX) -shared -o libcket.so c/cket.cpp -lket -std=c++17
+
+install: $(DLL) 
 	cp $(DLL) /usr/lib/
 	cp include/ket.hpp /usr/include/ket
 	cp include/libket.hpp /usr/include/libket
+
+installc: clib
+	cp c/cket.h /usr/include/
+	cp libcket.so /usr/lib/
 
 uninstall:
 	rm -f /usr/lib/$(DLL)
