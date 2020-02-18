@@ -117,7 +117,10 @@ void ket::u3(double theta, double phi, double lambda, const Qubit& q) {
 }
 
 ket::Bit ket::measure(const ket::Qubit& q) {
-    return Bit{handle->measure(q.qubits)};
+    std::vector<base::Handler::Bits> bits;
+    for (size_t i = 0; i < q.size(); i++)
+        bits.push_back(handle->measure(q(i).qubits));
+    return Bit{bits};
 }
 
 ket::Qubit ket::dirty(size_t size) {

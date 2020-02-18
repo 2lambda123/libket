@@ -13,7 +13,7 @@ ket::Bit ket::Bit::operator() (size_t begin, size_t end) const {
 }
 
 int ket::Bit::operator[] (size_t index) {
-    return (int) bits.get(index);
+    return (int) bits[index].get(0);
 }
 
 size_t ket::Bit::size() const {
