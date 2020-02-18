@@ -22,5 +22,5 @@ size_t ket::Qubit::size() const {
 }
 
 ket::Qubit ket::operator+(const Qubit& a, const Qubit& b) {
-    return {{{b.qubits, a.qubits}}};
+    return {{{a.qubits, b.qubits}}};
 }

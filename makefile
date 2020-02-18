@@ -1,4 +1,5 @@
 DLL = libket.so 
+CDLL = libcket.so 
 
 SRC = $(wildcard src/*.cpp)
 OBJ = $(SRC:.cpp=.o)
@@ -15,22 +16,22 @@ all: $(DLL)
 $(DLL): $(OBJ) 
 	$(CXX) $(CXXFLAGS) $(CXXLINK) -o $@ $^
 
-clib: 
-	$(CXX) -shared -o libcket.so c/cket.cpp -lket -std=c++17
+$(CDLL): $(OBJ) c/cket.cpp
+	$(CXX) $(CXXFLAGS) $(CXXLINK) -D__LIBCKET -o $@ $(OBJ) c/cket.cpp 
 
-install: $(DLL) 
+install: $(DLL) $(CDLL)
 	cp $(DLL) /usr/lib/
+	cp $(CDLL) /usr/lib/
 	cp include/ket.hpp /usr/include/ket
 	cp include/libket.hpp /usr/include/libket
-
-installc: clib
 	cp c/cket.h /usr/include/
-	cp libcket.so /usr/lib/
 
 uninstall:
 	rm -f /usr/lib/$(DLL)
+	rm -f /usr/lib/$(CDLL)
 	rm -f /usr/include/ket
-	rm -f /usr/include/libket -r
+	rm -f /usr/include/libket 
+	rm -f /usr/include/cket.h
 
 clean:
-	rm -f $(OBJ) $(DLL)
+	rm -f $(OBJ) $(DLL) $(CDLL)

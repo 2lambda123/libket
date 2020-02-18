@@ -1,4 +1,9 @@
+#pragma once
+#ifdef __LIBCKET
+#include "ket.hpp"
+#else
 #include <ket>
+#endif
 
 namespace ket {
 
@@ -30,7 +35,7 @@ namespace ket {
       T ret{};
       auto size = bit.size();
       for (size_t i = 0; i < size; i++) {
-        ret |= bit[i] << (i);
+        ret |= bit[size-i-1] << (i);
       }
       return ret;
     }

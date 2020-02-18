@@ -108,7 +108,7 @@ namespace ket::base {
 }
 
 extern "C" ket::base::Handler* ket_handle;
-#define ket_init ket::base::Handler* handle
+#define ket_init ket::base::Handler* ket_handle
 
 namespace ket {
 

@@ -27,7 +27,7 @@ ket::Bit ket::operator+(const Bit& a, const Bit& b) {
 }
 
 std::ostream& ket::operator<<(std::ostream& os, Bit bit) {
-    for (auto i = bit.size(); i > 0; --i) 
-        os << bit[i-1];
+    for (size_t i = 0; i < bit.size(); i++) 
+        os << bit[i];
     return os;
 }
