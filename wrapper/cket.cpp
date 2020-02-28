@@ -1,6 +1,6 @@
 #include "cket.h"
-#include "../include/ket.hpp"
-#include "../include/libket.hpp"
+#include "../include/ket"
+#include "../include/ket_extra"
 
 
 void ket_begin(int argc, char* argv[]) {

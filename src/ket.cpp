@@ -1,4 +1,4 @@
-#include "../include/ket.hpp"
+#include "../include/ket"
 #include <iostream>
 #include <ctime>
 #include <boost/program_options.hpp>

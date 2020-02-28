@@ -1,4 +1,4 @@
-#include "../include/ket.hpp"
+#include "../include/ket"
 
 ket::Bit ket::Bit::operator() (size_t index) const {
     return Bit{bits[index]};
