@@ -1,7 +1,2 @@
-.vscode/launch.json
-a.out
-main.cpp
-.vscode/settings.json
-**.o
-libket.so
-libcket.so
+.vscode
+build
