@@ -1,14 +1,13 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.15)
 
 project(libket)
 
-add_compile_options(-std=c++17)
-add_compile_options(-Wall)
+add_compile_options(-Wall -Wextra -pedantic -Werror)
 
 if(NOT EXISTS "${CMAKE_BINARY_DIR}/conan.cmake")
-   message(STATUS "Downloading conan.cmake from https://github.com/conan-io/cmake-conan")
-   file(DOWNLOAD "https://github.com/conan-io/cmake-conan/raw/v0.15/conan.cmake"
-                 "${CMAKE_BINARY_DIR}/conan.cmake")
+    message(STATUS "Downloading conan.cmake from https://github.com/conan-io/cmake-conan")
+    file(DOWNLOAD "https://github.com/conan-io/cmake-conan/raw/v0.15/conan.cmake"
+                    "${CMAKE_BINARY_DIR}/conan.cmake")
 endif()
 
 include(${CMAKE_BINARY_DIR}/conan.cmake)
@@ -16,24 +15,26 @@ include(${CMAKE_BINARY_DIR}/conan.cmake)
 set(CMAKE_BUILD_TYPE Release)
 
 if (NOT TARGET CONAN_PKG::boost)
-        conan_cmake_run(REQUIRES boost/1.71.0
-                        BASIC_SETUP CMAKE_TARGETS
-                        BUILD missing)
+    conan_cmake_run(REQUIRES boost/1.71.0
+                    BASIC_SETUP CMAKE_TARGETS
+                    BUILD missing)
 endif()
 
 file(GLOB_RECURSE SOURCES src/*.cpp)
 file(GLOB_RECURSE CSOURCES wrapper/*.cpp)
 
 add_library(ket SHARED ${SOURCES})
-set_target_properties(ket PROPERTIES PUBLIC_HEADER "include/ket;include/ket_extra")
+set_target_properties(ket PROPERTIES 
+                      PUBLIC_HEADER "include/ket;include/ket_extra"
+                      CXX_STANDARD 17)
+target_link_libraries(ket CONAN_PKG::boost)
 
 add_library(cket SHARED ${SOURCES} ${CSOURCES})
-set_target_properties(cket PROPERTIES PUBLIC_HEADER "wrapper/cket.h")
-
-target_link_libraries(ket CONAN_PKG::boost)
+set_target_properties(cket PROPERTIES
+                      PUBLIC_HEADER "wrapper/cket.h"
+                      CXX_STANDARD 17)
 target_link_libraries(cket CONAN_PKG::boost)
 
 install(TARGETS ket cket 
         LIBRARY DESTINATION /usr/lib
-        PUBLIC_HEADER DESTINATION /usr/include
-)
+        PUBLIC_HEADER DESTINATION /usr/include)
