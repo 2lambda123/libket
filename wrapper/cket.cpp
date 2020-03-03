@@ -1,7 +1,5 @@
-#include "cket.h"
+#include "./cket.h"
 #include "../include/ket"
-#include "../include/ket_extra"
-
 
 void ket_begin(int argc, char* argv[]) {
     ket::begin(argc, argv);

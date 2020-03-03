@@ -1,4 +1,4 @@
-#include "../include/ket"
+#include "../include/ket_bits/qubit_gate.hpp"
 
 ket::Bit ket::Bit::operator() (size_t index) const {
     return Bit{bits[index]};

@@ -1,4 +1,5 @@
-#include "../include/ket"
+#include "../include/ket_bits/ket_init.hpp"
+#include "../include/ket_bits/qubit_gate.hpp"
 
 ket::Qubit::Qubit(size_t size) : qubits{ket_handle->alloc(size)} {}
 

@@ -11,8 +11,7 @@ if(NOT EXISTS "${CMAKE_BINARY_DIR}/conan.cmake")
 endif()
 
 include(${CMAKE_BINARY_DIR}/conan.cmake)
-
-set(CMAKE_BUILD_TYPE Release)
+conan_cmake_run(CONFIGURATION_TYPES "Release;Debug")
 
 if (NOT TARGET CONAN_PKG::boost)
     conan_cmake_run(REQUIRES boost/1.71.0
@@ -25,7 +24,7 @@ file(GLOB_RECURSE CSOURCES wrapper/*.cpp)
 
 add_library(ket SHARED ${SOURCES})
 set_target_properties(ket PROPERTIES 
-                      PUBLIC_HEADER "include/ket;include/ket_extra"
+                      PUBLIC_HEADER "include/ket"
                       CXX_STANDARD 17)
 target_link_libraries(ket CONAN_PKG::boost)
 
@@ -38,3 +37,5 @@ target_link_libraries(cket CONAN_PKG::boost)
 install(TARGETS ket cket 
         LIBRARY DESTINATION /usr/lib
         PUBLIC_HEADER DESTINATION /usr/include)
+
+install(DIRECTORY include/ket_bits DESTINATION /usr/include)
