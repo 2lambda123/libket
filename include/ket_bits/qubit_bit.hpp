@@ -2,8 +2,8 @@
 #include "handler.hpp"
 
 namespace ket{
- class Bit;
-    class Qubit {
+   class Bit;
+   class Qubit {
      public:
         Qubit(size_t size=1);
         Qubit operator() (size_t index) const;
@@ -36,7 +36,7 @@ namespace ket{
         friend class Qubit_or_Bit;
     };
 
-    class Bit {
+    class Bit{
      public:
         Bit operator() (size_t index) const;
         Bit operator() (size_t begin, size_t end) const;

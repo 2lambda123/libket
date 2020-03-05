@@ -1,5 +1,5 @@
 #pragma once
-#include "qubit_gate.hpp"
+#include "qubit_bit.hpp"
 #include "ctrl_adj.hpp"
 
 namespace ket {

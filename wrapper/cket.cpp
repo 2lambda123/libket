@@ -1,4 +1,4 @@
-#include "./cket.h"
+#include "cket.h"
 #include "../include/ket"
 
 void ket_begin(int argc, char* argv[]) {

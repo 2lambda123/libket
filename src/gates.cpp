@@ -1,5 +1,5 @@
 #include "../include/ket_bits/ket_init.hpp"
-#include "../include/ket_bits/qubit_gate.hpp"
+#include "../include/ket_bits/qubit_bit.hpp"
 
 void ket::x(const Qubit& q) {
     for (size_t i = 0; i < q.size(); i++) 

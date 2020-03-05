@@ -1,6 +1,6 @@
 #pragma once
 #include "ket_init.hpp"
-#include "qubit_gate.hpp"
+#include "qubit_bit.hpp"
 
 namespace ket {
   class Qubit_or_Bit {
