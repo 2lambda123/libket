@@ -39,14 +39,14 @@ namespace ket {
             return (T) (*this);
         }
 
-        operator Bit() {
+        operator Bit() const {
             if (_bit)
                 return *_bit;
             else 
                 throw std::runtime_error("This ket::Future does not hold a ket::Bit");
         }
 
-        Bit bit() {
+        Bit bit() const {
             return (Bit) (*this);
         }
 
@@ -65,7 +65,7 @@ namespace ket {
 
 #   define FUTURE_OP(op)                                                                  \
     template <class T>                                                                    \
-    Future<T> operator op(Future<T>& l, Future<T>& r) {                                   \
+    Future<T> operator op(const Future<T>& l, const Future<T>& r) {                       \
         return Future<T>{l, r, [](Future<T>& l, Future<T>& r){ return (T) l op (T) r; }}; \
     }
 

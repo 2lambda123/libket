@@ -69,8 +69,11 @@ void Handler::__add_gate(const std::string& gate, const Qubits& qubits, const st
 
     if (not _qctrl.empty()) {
         circuit << "ctrl ";
-        for (auto &i : _qctrl) for (auto j: i.qubits) 
+        for (auto &i : _qctrl) for (auto j: i.qubits)  {
+            if (allocations[j]->measurement_return.find(j) != allocations[j]->measurement_return.end())
+                throw std::runtime_error("Trying to apply a quantum operation on a measured qubit");
             circuit << "|" << j << "> ";
+        }
     }
 
     if (adj) circuit << "adj ";
@@ -84,7 +87,11 @@ void Handler::__add_gate(const std::string& gate, const Qubits& qubits, const st
         circuit << ")";
     }
 
-    for (auto& i : qubits) circuit << " |" << i << ">";
+    for (auto& i : qubits) {
+        if (allocations[i]->measurement_return.find(i) != allocations[i]->measurement_return.end())
+            throw std::runtime_error("Trying to apply a quantum operation on a measured qubit");
+        circuit << " |" << i << ">";
+    }
     circuit << std::endl;
 }
 
@@ -96,6 +103,9 @@ Handler::Bits Handler::measure(const Qubits& qubits) {
 
     size_t counter = classical_counter;
     for (auto i: qubits) {
+        if (allocations[i]->measurement_return.find(i) != allocations[i]->measurement_return.end())
+            throw std::runtime_error("Trying to measure a qubit twice");
+
         bits.push_back(counter);
         measurement.push_back(std::make_shared<Result>(NONE));
         circuit << "bit " << counter << std::endl;
@@ -113,6 +123,9 @@ Handler::Bits Handler::measure(const Qubits& qubits) {
 void Handler::free(const Qubits& qubits) {
     auto& circuit = merge(qubits);
     for (auto i: qubits) {
+        if (allocations[i]->measurement_return.find(i) != allocations[i]->measurement_return.end())
+            throw std::runtime_error("Trying to free a measured qubit");
+
         circuit << "free |" << i << ">" << std::endl;
         allocations.erase(i);    
     }
@@ -121,6 +134,9 @@ void Handler::free(const Qubits& qubits) {
 void Handler::free_dirty(const Qubits& qubits) {
     auto& circuit = merge(qubits);
     for (auto i: qubits) {
+        if (allocations[i]->measurement_return.find(i) != allocations[i]->measurement_return.end())
+            throw std::runtime_error("Trying to free a measured qubit");
+
         circuit << "free dirty |" << i << ">" << std::endl;
         allocations.erase(i);    
     }
@@ -197,7 +213,6 @@ std::string call(const std::string& command, const std::string& in) {
     ios.run();
 
     return outdata.get();
-    return in;
 }
 
 void Handler::__run(const Bits& bits) {
@@ -245,6 +260,9 @@ void Handler::__run(const Bits& bits) {
 std::stringstream& Handler::merge(const Qubits& qubits) {
     std::shared_ptr<Qubit_alloc> qubit;
     for (auto &index : qubits) {
+        if (allocations.find(index)  == allocations.end()) 
+            throw std::runtime_error("Trying to operate on a qubit that no longer exist");
+
         if (not qubit) {
             qubit = allocations[index];
         } else if (qubit->qubit_index.find(index) == qubit->qubit_index.end()){
