@@ -24,6 +24,9 @@ Handler::~Handler() {
 }
 
 Handler::Qubits Handler::alloc(size_t size, bool dirty) {
+    if (adj_or_ctrl()) 
+        throw std::runtime_error("Qubit allocation can not be used with adj or ctrl");
+
     std::vector<size_t> qubits;
 
     for (size_t i = quantum_counter; i < quantum_counter+size; i++) {
@@ -48,6 +51,9 @@ void Handler::add_gate(const std::string& gate, const Qubits& qubits, const std:
 }
 
 void Handler::add_oracle(const std::string& gate, const Qubits& qubits) {
+    if (not adj_call.empty()) 
+        throw std::runtime_error("Oracles can not be used with adj");
+
     add_gate("\""+gate+"\"", qubits);
 }
 
@@ -96,6 +102,9 @@ void Handler::__add_gate(const std::string& gate, const Qubits& qubits, const st
 }
 
 Handler::Bits Handler::measure(const Qubits& qubits) {
+    if (adj_or_ctrl()) 
+        throw std::runtime_error("Measure can not be used with adj or ctrl");
+
     auto& circuit = merge(qubits);
 
     std::vector<size_t> bits;
@@ -121,6 +130,9 @@ Handler::Bits Handler::measure(const Qubits& qubits) {
 }
 
 void Handler::free(const Qubits& qubits) {
+    if (adj_or_ctrl()) 
+        throw std::runtime_error("Free can not be used with adj or ctrl");
+
     auto& circuit = merge(qubits);
     for (auto i: qubits) {
         if (allocations[i]->measurement_return.find(i) != allocations[i]->measurement_return.end())
@@ -132,6 +144,9 @@ void Handler::free(const Qubits& qubits) {
 }
 
 void Handler::free_dirty(const Qubits& qubits) {
+    if (adj_or_ctrl()) 
+        throw std::runtime_error("Free can not be used with adj or ctrl");
+
     auto& circuit = merge(qubits);
     for (auto i: qubits) {
         if (allocations[i]->measurement_return.find(i) != allocations[i]->measurement_return.end())
@@ -276,4 +291,8 @@ std::stringstream& Handler::merge(const Qubits& qubits) {
         }
     }
     return qubit->circuit;
+}
+
+bool Handler::adj_or_ctrl() {
+    return not (adj_call.empty() and qctrl_b.empty() and cctrl_b.empty());
 }

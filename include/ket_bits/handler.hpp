@@ -80,6 +80,8 @@ namespace ket::base {
 
     private:
 
+      bool adj_or_ctrl();
+
       std::stringstream& merge(const Qubits& qubits);
 
       bool out_to_file;
