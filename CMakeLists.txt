@@ -23,18 +23,10 @@ file(GLOB_RECURSE CSOURCES wrapper/*.cpp)
 
 add_library(ket SHARED ${SOURCES})
 set_target_properties(ket PROPERTIES 
-                      PUBLIC_HEADER "include/ket"
                       CXX_STANDARD 17)
 target_link_libraries(ket CONAN_PKG::boost)
 
-add_library(cket SHARED ${SOURCES} ${CSOURCES})
-set_target_properties(cket PROPERTIES
-                      PUBLIC_HEADER "wrapper/cket.h"
+add_executable(test test/test.cpp)
+set_target_properties(test PROPERTIES 
                       CXX_STANDARD 17)
-target_link_libraries(cket CONAN_PKG::boost)
-
-install(TARGETS ket cket 
-        LIBRARY DESTINATION /usr/lib
-        PUBLIC_HEADER DESTINATION /usr/include)
-
-install(DIRECTORY include/ket_bits DESTINATION /usr/include)
+target_link_libraries(test ket)
