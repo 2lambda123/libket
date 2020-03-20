@@ -159,6 +159,7 @@ namespace ket::base {
         size_t qubit_count;
         size_t bit_count;
         size_t i64_count;
+        size_t label_count;
 
         std::string label;
 

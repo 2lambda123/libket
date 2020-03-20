@@ -6,7 +6,8 @@ using namespace ket::base;
 handler::handler() : 
     qubit_count{0},
     bit_count{0},
-    i64_count{0}
+    i64_count{0},
+    label_count{}
     {}
 
 std::shared_ptr<qubit> handler::alloc() {
@@ -15,8 +16,6 @@ std::shared_ptr<qubit> handler::alloc() {
 
     auto new_qubit = std::make_shared<qubit>(qubit_count);
     qubit_map[qubit_count] = new_qubit;
-
-    block_qubits.insert(qubit_count);
 
     block_call.push([new_qubit]() {
         auto alloc_gate = std::make_shared<gate>(gate::ALLOC, new_qubit->idx(), false, new_qubit->last_gate());
@@ -161,5 +160,20 @@ void handler::end_block(const std::string& label_true,
     for (auto i: qubits) 
         this->qubit_map[i]->add_gate(end_gate);
 
+}
+
+
+void handler::if_then(const std::shared_ptr<i64>& cond, std::function<void()> then) {
+    auto then_label = label+std::string{".if.then"}+std::to_string(label_count);
+    auto end_label = label+std::string{".if.end"}+std::to_string(label_count);
+
+    end_block(then_label, end_label, cond);
+    begin_block(then_label);
+    then();
+    end_block(end_label);
+    begin_block(end_label);
+
+    label_count++;
+    
 }
 
