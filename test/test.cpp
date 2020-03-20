@@ -3,19 +3,26 @@
 
 int main() {
     auto h = ket::base::handler{};
-    auto q = h.alloc();
-    auto q1 = h.alloc();
-    h.add_gate(ket::base::gate::H, q);
-    h.adj_begin();
-    h.adj_begin();
-    h.ctrl_begin({q});
-        h.add_gate(ket::base::gate::T, q1);
-        h.add_gate(ket::base::gate::S, q1);
-    h.ctrl_end();
-    h.adj_end();
-    h.adj_end();
-    auto c = h.measure(q);
+    h.begin_block("entry");
+        auto q = h.alloc();
+        auto q1 = h.alloc();
+        auto q2 = h.alloc();
+
+        h.add_gate(ket::base::gate::H, q);
+        h.add_gate(ket::base::gate::H, q2);
+
+        h.adj_begin();
+            h.ctrl_begin({q});
+                h.add_gate(ket::base::gate::T, q1);
+                h.add_gate(ket::base::gate::S, q1);
+            h.ctrl_end();
+        h.adj_end();
+
+        auto c = h.measure(q);
+        auto c1 = h.measure(q1);
+        auto i = h.new_i64({c, c1});
+    h.end_block("and");
     std::stringstream ss;
-    c->eval(ss);
+    i->eval(ss);
     std::cout << ss.str();
 }

@@ -24,7 +24,8 @@ namespace ket::base {
                    U1   = 64,   U2 = 128,  U3 = 256, 
                    MEASURE = 512,  ALLOC = 1024, 
                    JUMP    = 2048, BR    = 4096,
-                   FREE    = 8192, DIRTY = 16384};
+                   FREE    = 8192, DIRTY = 16384,
+                   LABEL};
 
         gate(TAG tag, 
              size_t qubit_idx, 
@@ -34,11 +35,11 @@ namespace ket::base {
              const std::vector<size_t>& ctrl_idx = {},
              const std::vector<std::shared_ptr<gate>>& ctrl_back = {});
         
-        gate(const std::vector<size_t>& ctrl_idx,
+        gate(TAG tag,
+             const std::vector<size_t>& ctrl_idx,
              const std::vector<std::shared_ptr<gate>>& ctrl_back,
-             const std::string& next_label,
-             const std::string& label_goto1,
-             const std::string& label_goto2 = "",
+             const std::string& label1,
+             const std::string& label2 = "",
              const std::shared_ptr<i64>& bri64 = nullptr);
 
         void eval(std::stringstream& circuit);
@@ -53,7 +54,7 @@ namespace ket::base {
         std::vector<size_t> ctrl_idx;
         std::vector<std::shared_ptr<gate>> ctrl_back;
 
-        std::string label_next, label_true, label_false;
+        std::string label, label_false;
 
         std::shared_ptr<i64> bri64;
 
@@ -147,16 +148,19 @@ namespace ket::base {
         void ctrl_begin(const std::vector<std::shared_ptr<qubit>>& ctrl);
         void ctrl_end();
 
-        void begin_block();
-        void end_block(const std::string& next_label,
-                       const std::string& label_goto1,
+        void begin_block(const std::string& next_label);
+        void end_block(const std::string& label_goto1,
                        const std::string& label_goto2 = "",
                        const std::shared_ptr<i64>& bri64 = nullptr);
+        
+        void if_then(const std::shared_ptr<i64>& cond, std::function<void()> then);
 
     private:
         size_t qubit_count;
         size_t bit_count;
         size_t i64_count;
+
+        std::string label;
 
         boost::unordered_map<size_t, std::shared_ptr<qubit>> qubit_map;
         boost::unordered_map<size_t, std::shared_ptr<result>> measurement_map;
@@ -165,8 +169,8 @@ namespace ket::base {
 
         std::vector<std::vector<size_t>> ctrl_qubit;
 
-        std::stack<std::queue<std::function<void()>>> block_call;
-        std::stack<boost::unordered_set<size_t>> block_qubits;
+        std::queue<std::function<void()>> block_call;
+        boost::unordered_set<size_t> block_qubits;
         
     };
 

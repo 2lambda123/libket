@@ -19,19 +19,18 @@ gate::gate(TAG tag,
     visit{false}
     {}
 
-gate::gate(const std::vector<size_t>& ctrl_idx,
+gate::gate(TAG tag, 
+           const std::vector<size_t>& ctrl_idx,
            const std::vector<std::shared_ptr<gate>>& ctrl_back,
-           const std::string& next_label,
-           const std::string& label_goto1,
-           const std::string& label_goto2,
+           const std::string& label1,
+           const std::string& label2,
            const std::shared_ptr<i64>& bri64) :
-    tag{bri64 != nullptr? BR : JUMP},
+    tag{tag},
     back{nullptr},
     ctrl_idx{ctrl_idx},
     ctrl_back{ctrl_back},
-    label_next{next_label},
-    label_true{label_goto1},
-    label_false{label_goto2},
+    label{label1},
+    label_false{label2},
     bri64{bri64} 
     {}
 
@@ -41,7 +40,7 @@ void gate::eval(std::stringstream& circuit) {
     if (visit) return;
     else visit = true;
 
-    for (auto& i : ctrl_back) i->eval(circuit);
+    for (auto& i : ctrl_back) if (i) i->eval(circuit);
     if (back) back->eval(circuit);
 
     if (tag <= U3 and not ctrl_back.empty()) {
@@ -84,14 +83,15 @@ void gate::eval(std::stringstream& circuit) {
         circuit << "ALLOC q" << qubit_idx << ";" << endl;
         break;
     case JUMP:
-        circuit << "JUMP " << label_true << ";" << endl
-                << label_next << ":" << endl;
+        circuit << "JUMP " << label << ";" << endl;
         break;
     case BR:
         bri64->eval(circuit);
-        circuit << "BR i" << bri64->idx() << ", " << label_true << ", " << label_false << ";" << endl
-                << label_next << ":" << endl;
+        circuit << "BR i" << bri64->idx() << ", " << label << ", " << label_false << ";" << endl;
         break;    
+    case LABEL:
+        circuit << label << ":" << endl;
+        break;
     default:
         break;
     }
@@ -99,7 +99,7 @@ void gate::eval(std::stringstream& circuit) {
 
 qubit::qubit(size_t qubit_idx) :
     qubit_idx{qubit_idx},
-    tail_gate{std::make_shared<gate>(gate::ALLOC, qubit_idx)}
+    tail_gate{nullptr}
     {}
 
 size_t qubit::idx() {
@@ -232,181 +232,4 @@ void i64::eval(std::stringstream& circuit) {
 
 size_t i64::idx() const {
     return i64_idx;
-}
-
-handler::handler() : 
-    qubit_count{0},
-    bit_count{0},
-    i64_count{0}
-    {}
-
-std::shared_ptr<qubit> handler::alloc() {
-    if (not (adj_call.empty() and ctrl_qubit.empty())) 
-        throw std::runtime_error("alloc cannot be used with adj or ctrl");
-
-    auto new_qubit = std::make_shared<qubit>(qubit_count);
-    qubit_map[qubit_count] = new_qubit;
-
-    if (not block_call.empty())
-        block_qubits.top().insert(qubit_count);
-
-    qubit_count++;
-    return new_qubit;
-}
-
-void handler::add_gate(gate::TAG gate_tag, const std::shared_ptr<qubit>& qbit, const std::vector<double>& args) {
-    std::vector<size_t> ctrl_q;
-    for (auto &i: ctrl_qubit) for (auto &j : i) 
-        ctrl_q.push_back(j);
-
-    bool adj = adj_call.size()%2;
-
-    auto add = [this, ctrl_q, adj, gate_tag, qbit, args]() {
-        std::vector<std::shared_ptr<gate>> ctrl_back;
-        for (auto &i: ctrl_q) 
-            ctrl_back.push_back(this->qubit_map[i]->last_gate());
-
-        auto new_gate = std::make_shared<gate>(gate_tag, 
-                                               qbit->idx(), 
-                                               adj,
-                                               qbit->last_gate(), 
-                                               args,
-                                               ctrl_q, 
-                                               ctrl_back);
-        qbit->add_gate(new_gate);
-        for (auto &i: ctrl_q) 
-            this->qubit_map[i]->add_gate(new_gate);
-    };
-
-    auto add_adj = [this, add]() {
-        if (not this->adj_call.empty()) {
-            this->adj_call.top().push(add);
-        } else {
-            add();
-        } 
-    };
-
-    if (not block_call.empty()) {
-        block_qubits.top().insert(ctrl_q.begin(), ctrl_q.end());
-        block_qubits.top().insert(qbit->idx());
-        block_call.top().push(add_adj);
-    } else {
-        add_adj();
-    }
-}
-
-std::shared_ptr<bit> handler::measure(const std::shared_ptr<qubit>& qbit) {
-    if (not (adj_call.empty() and ctrl_qubit.empty())) 
-        throw std::runtime_error("measure cannot be used with adj or ctrl");
-
-    auto m_gate = std::make_shared<gate>(gate::MEASURE,
-                                         qbit->idx(), 
-                                         false, 
-                                         qbit->last_gate());
-    
-    auto m_result = std::make_shared<result>(result::NONE);
-    measurement_map[bit_count] = m_result;
-
-    auto new_bit = std::make_shared<bit>(bit_count, m_gate, m_result);
-
-    if (not block_call.empty()) {
-        block_qubits.top().insert(qbit->idx());
-        block_call.top().push([m_gate, qbit]() {
-            new (m_gate.get()) gate{gate::MEASURE,
-                                    qbit->idx(), 
-                                    false, 
-                                    qbit->last_gate()};
-        });
-    }
-
-    bit_count++;
-    return new_bit;
-}
-
-std::shared_ptr<i64> handler::new_i64(const std::vector<std::shared_ptr<bit>>& bits) {
-    return std::make_shared<i64>(bits, i64_count++);
-}
-
-std::shared_ptr<i64> handler::i64_op(const std::string& op, const std::vector<std::shared_ptr<i64>>& args, bool infix) {
-    return std::make_shared<i64>(op, args, i64_count++, infix);
-}
-
-void handler::adj_begin() {
-    adj_call.push({});
-}
-
-void handler::adj_end() {
-    auto inner = adj_call.top();
-    adj_call.pop();
-    
-    auto call_and_adj = [this, inner]() mutable {
-        if (not this->adj_call.empty()) {
-            while (not inner.empty()) {
-                this->adj_call.top().push(inner.top());
-                inner.pop();
-            }
-        } else {
-            while (not inner.empty()) {
-                inner.top()();
-                inner.pop();
-            }
-        }
-    };
-
-    if (not block_call.empty()) {
-        block_call.top().push(call_and_adj);
-    } else {
-        call_and_adj();
-    }
-}
-
-
-void handler::ctrl_begin(const std::vector<std::shared_ptr<qubit>>& ctrl) {
-    std::vector<size_t> ctrl_q;
-    for (auto &i: ctrl) ctrl_q.push_back(i->idx());
-    ctrl_qubit.push_back(ctrl_q);
-}
-
-void handler::ctrl_end() {
-    ctrl_qubit.pop_back();
-}
-
-void handler::begin_block() {
-    block_call.push({});
-    block_qubits.push({});
-} 
-void handler::end_block(const std::string& label_next,
-                        const std::string& label_true,
-                        const std::string& label_false,
-                        const std::shared_ptr<i64>& bri64) {
-    std::vector<size_t> qubits;
-    for (auto &i: block_qubits.top()) 
-        qubits.push_back(i);
-    block_qubits.pop();
-    
-    auto calls = block_call.top();
-    block_call.pop();
-
-
-    auto end = [this, qubits, calls, label_next, label_true, label_false, bri64]() mutable {
-        std::vector<std::shared_ptr<gate>> qubits_back;
-        for (auto i: qubits) 
-            qubits_back.push_back(this->qubit_map[i]->last_gate());
-
-        auto new_gate = std::make_shared<gate>(qubits, qubits_back, label_next, label_true, label_false, bri64);
-
-        for (auto i: qubits) 
-            this->qubit_map[i]->add_gate(new_gate);
-        
-        while (not calls.empty()) {
-            calls.front()();
-            calls.pop();
-        }
-    };
-
-    if (not block_call.empty()) {
-        block_call.top().push(end);
-    } else {
-        end();
-    }
 }

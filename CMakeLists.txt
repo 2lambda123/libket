@@ -26,7 +26,8 @@ set_target_properties(ket PROPERTIES
                       CXX_STANDARD 17)
 target_link_libraries(ket CONAN_PKG::boost)
 
-add_executable(test test/test.cpp)
+add_executable(test EXCLUDE_FROM_ALL
+               test/test.cpp)
 set_target_properties(test PROPERTIES 
                       CXX_STANDARD 17)
 target_link_libraries(test ket)
