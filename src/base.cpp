@@ -44,54 +44,54 @@ void gate::eval(std::stringstream& circuit) {
     if (back) back->eval(circuit);
 
     if (tag <= U3 and not ctrl_back.empty()) {
-        circuit << "CTRL ";
+        circuit << "\tCTRL\t";
         for (auto i : ctrl_idx) circuit << "q" << i << " ";
     } 
 
     switch (tag) {
     case X:
-        circuit << "X q" << qubit_idx << endl;
+        circuit << "\tX\tq" << qubit_idx << endl;
         break;
     case Y:
-        circuit << "Y q" << qubit_idx << endl;
+        circuit << "\tY\tq" << qubit_idx << endl;
         break;
     case Z:
-        circuit << "Z q" << qubit_idx << endl;
+        circuit << "\tZ\tq" << qubit_idx << endl;
         break;
     case H:
-        circuit << "H q" << qubit_idx << endl;
+        circuit << "\tH\tq" << qubit_idx << endl;
         break;
     case S:
-        circuit << (adj_dirty? "SD" : "S") << " q" << qubit_idx << endl;
+        circuit << (adj_dirty? "\tSD" : "\tS") << "\tq" << qubit_idx << endl;
         break;
     case T:
-        circuit << (adj_dirty? "TD" : "T") << " q" << qubit_idx << endl;
+        circuit << (adj_dirty? "\tTD" : "\tT") << "\tq" << qubit_idx << endl;
         break;
     case U1:
     // TODO adj
-        circuit << "U1(" << args[0] << ") q" << qubit_idx << endl;
+        circuit << "\tU1(" << args[0] << ")\tq" << qubit_idx << endl;
         break;
     case U2:
-        circuit << "U2(" << args[0] << " " << args[1] << ") q" << qubit_idx << endl;
+        circuit << "\tU2(" << args[0] << " " << args[1] << ")\tq" << qubit_idx << endl;
         break;
     case U3:
-        circuit << "U3(" << args[0] << " " << args[1] << " " << args[2] << ") q" << qubit_idx << endl;
+        circuit << "\tU3(" << args[0] << " " << args[1] << " " << args[2] << ")\t\tq" << qubit_idx << endl;
         break;
     case MEASURE: 
-        circuit << "MEASURE q" << qubit_idx;
+        circuit << "\tMEASURE\tq" << qubit_idx;
         break;
     case ALLOC:
-        circuit << "ALLOC " << (adj_dirty? "DIRTY " : " ")  << "q" << qubit_idx << endl;
+        circuit << "\tALLOC " << (adj_dirty? "DIRTY " : "")  << "\tq" << qubit_idx << endl;
         break;
     case FREE:
-        circuit << "FREE " << (adj_dirty? "DIRTY " : " ")  << "q" << qubit_idx << endl;
+        circuit << "\tFREE " << (adj_dirty? "DIRTY " : "")  << "\tq" << qubit_idx << endl;
         break;
     case JUMP:
-        circuit << "JUMP @" << label << endl;
+        circuit << "\tJUMP\t@" << label << endl;
         break;
     case BR:
         bri64->eval(circuit);
-        circuit << "BR i" << bri64->idx() << " @" << label << " @" << label_false << endl;
+        circuit << "\tBR\ti" << bri64->idx() << "\t@" << label << "\t@" << label_false << endl;
         break;    
     case LABEL:
         circuit << "LABEL @" << label << endl;
@@ -141,7 +141,7 @@ void bit::eval(std::stringstream& circuit) {
     if (visit) return;
     else visit = true;
     measurement_gate->eval(circuit);
-    circuit << " c" << bit_idx << std::endl;
+    circuit << "\tc" << bit_idx << std::endl;
 }
 
 i64::i64(const std::vector<std::shared_ptr<bit>>& bits,
@@ -209,24 +209,24 @@ void i64::eval(std::stringstream& circuit) {
     switch (tag) {
     case BIT:
         for (auto &i : bits) i->eval(circuit);
-        circuit << "INT " << "i" << i64_idx << " = " << (se? "SE " : "ZE ");
+        circuit << "\tINT\ti" << i64_idx << "\t" << (se? "SE" : "ZE") << "\t";
         for (auto &i: bits) circuit << "c" << i->idx() << " ";
         circuit << endl;
         break;
     case TMP:
         for (auto &i: args) i->eval(circuit);
         if (infix) {
-            circuit << "INT i" << i64_idx << " = i" 
+            circuit << "\tINT\ti" << i64_idx << "\ti" 
                     << args[0]->idx() << op << "i" 
                     << args[1]->idx() << endl;
         } else {
-            circuit << "INT i" << i64_idx << " = @" << op << "(";
+            circuit << "\tINT i" << i64_idx << "\t@" << op << "(";
             for (auto &i: args) circuit << "i" << i->idx() << " ";
             circuit << ")" << ";" << endl;
         } 
         break;
     case VALUE:
-        circuit << "INT i" << i64_idx << " = " << value << endl;
+        circuit << "\tINT i" << i64_idx << "\t" << value << endl;
         visit = false;
         break;
     default:

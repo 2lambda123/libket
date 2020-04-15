@@ -4,7 +4,7 @@
 int main() {
     auto h = ket::base::handler{};
     h.begin_block("entry");
-        auto a = h.alloc();
+        auto a = h.alloc(true);
         auto aux = h.alloc();
         auto b = h.alloc();
 
