@@ -4,24 +4,36 @@
 int main() {
     auto h = ket::base::handler{};
     h.begin_block("entry");
-        auto qq1 = h.alloc();
-        auto qq3 = h.alloc();
+        auto a = h.alloc();
+        auto aux = h.alloc();
+        auto b = h.alloc();
+
+        // Bell
+        h.add_gate(ket::base::gate::H, aux);
+        h.ctrl_begin({aux});        
+            h.add_gate(ket::base::gate::X, b);
+        h.ctrl_end();
+
+        h.ctrl_begin({a});
+            h.add_gate(ket::base::gate::X, aux);
+        h.ctrl_end();
         
+        h.add_gate(ket::base::gate::H, a);
 
+        auto c1 = h.measure(a);
+        auto c2 = h.measure(aux);
 
-        auto cc1 = h.measure(qq1);
-        auto cc3 = h.measure(qq3);
+        auto i1 = h.new_i64({c1});
+        auto i2 = h.new_i64({c2});
 
-        h.add_gate(ket::base::gate::X, qq1);
+        h.if_then(i2, [&]{ h.add_gate(ket::base::gate::X, b); });
+        h.if_then(i1, [&]{ h.add_gate(ket::base::gate::Z, b); });
 
-        auto ii1 = h.new_i64({cc1}); 
-        auto ii2 = h.new_i64({cc3}); 
-
-        auto ii3 = h.i64_op("+", {ii1, ii2});
+        auto c3 = h.measure(b);
     h.end_block("end");
-
+    
     std::stringstream ss;
-    ii3->eval(ss);
+    c3->eval(ss);
         
     std::cout << ss.str();
 }
