@@ -6,6 +6,7 @@ int main() {
     h.begin_block("entry");
         auto qq1 = h.alloc();
         auto qq3 = h.alloc();
+        
 
 
         auto cc1 = h.measure(qq1);

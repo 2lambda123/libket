@@ -168,7 +168,7 @@ namespace ket::base {
         boost::unordered_map<size_t, std::shared_ptr<qubit>> qubit_map;
         boost::unordered_map<size_t, std::shared_ptr<result>> measurement_map;
 
-        boost::unordered_set<size_t> qubit_free;
+        boost::unordered_set<size_t> to_be_free;
 
         std::stack<std::stack<std::function<void()>>> adj_call;
 

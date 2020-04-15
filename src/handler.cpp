@@ -36,7 +36,7 @@ void handler::add_gate(gate::TAG gate_tag, const std::shared_ptr<qubit>& qbit, c
     bool adj = adj_call.size()%2;
 
     auto add = [this, ctrl_q, adj, gate_tag, qbit, args]() {
-        if (this->qubit_free.find(qbit->idx()) != this->qubit_free.end())
+        if (this->qubit_map.find(qbit->idx()) == this->qubit_map.end() or this->to_be_free.find(qbit->idx()) != this->to_be_free.end())
             throw std::runtime_error("operating with a freed qubit");
 
         std::vector<std::shared_ptr<gate>> ctrl_back;
@@ -80,15 +80,15 @@ std::shared_ptr<bit> handler::measure(const std::shared_ptr<qubit>& qbit) {
 
     block_qubits.insert(qbit->idx());
     block_call.push([this, m_gate, qbit]() {
-        if (this->qubit_free.find(qbit->idx()) != this->qubit_free.end())
+        if (this->qubit_map.find(qbit->idx()) == this->qubit_map.end() or this->to_be_free.find(qbit->idx()) != this->to_be_free.end())
             throw std::runtime_error("measuring a freed qubit");
             
-        this->qubit_free.insert(qbit->idx());
-        
         new (m_gate.get()) gate{gate::MEASURE,
                                 qbit->idx(), 
                                 false, 
                                 qbit->last_gate()};
+                                
+        this->to_be_free.insert(qbit->idx());
     });
 
     bit_count++;
@@ -100,10 +100,8 @@ void handler::free(const std::shared_ptr<qubit>& qbit, bool dirty) {
         throw std::runtime_error("measure cannot be used with adj or ctrl");
     
     auto fgate = [this, qbit, dirty]() {
-        if (this->qubit_free.find(qbit->idx()) != this->qubit_free.end())
+        if (this->qubit_map.find(qbit->idx()) == this->qubit_map.end() or this->to_be_free.find(qbit->idx()) != this->to_be_free.end())
             throw std::runtime_error("qubit double free");
-        
-        this->qubit_free.insert(qbit->idx());
         
         auto free_gate = std::make_shared<gate>(gate::FREE,
                                                 qbit->idx(),
@@ -111,6 +109,7 @@ void handler::free(const std::shared_ptr<qubit>& qbit, bool dirty) {
                                                 qbit->last_gate());
 
         qbit->add_gate(free_gate);
+        this->to_be_free.insert(qbit->idx());
     };
 
     block_qubits.insert(qbit->idx());
@@ -190,7 +189,12 @@ void handler::end_block(const std::string& label_true,
     auto end_gate = std::make_shared<gate>(bri64? gate::TAG::BR : gate::TAG::JUMP, qubits, qubits_back,label_true, label_false, bri64);
 
     for (auto i: qubits) 
-        this->qubit_map[i]->add_gate(end_gate);
+        qubit_map[i]->add_gate(end_gate);
+
+    for (auto i : to_be_free) 
+        qubit_map.erase(i);
+
+    to_be_free.clear();
 
 }
 
