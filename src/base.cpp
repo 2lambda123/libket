@@ -12,7 +12,7 @@ gate::gate(TAG tag,
     tag{tag}, 
     qubit_idx{qubit_idx},
     back{back},
-    adj{adj},
+    adj_dirty{adj},
     args{args},
     ctrl_idx{ctrl_idx},
     ctrl_back{ctrl_back},
@@ -50,47 +50,51 @@ void gate::eval(std::stringstream& circuit) {
 
     switch (tag) {
     case X:
-        circuit << "X q" << qubit_idx << ";" << endl;
+        circuit << "X q" << qubit_idx << endl;
         break;
     case Y:
-        circuit << "Y q" << qubit_idx << ";" << endl;
+        circuit << "Y q" << qubit_idx << endl;
         break;
     case Z:
-        circuit << "Z q" << qubit_idx << ";" << endl;
+        circuit << "Z q" << qubit_idx << endl;
         break;
     case H:
-        circuit << "H q" << qubit_idx << ";" << endl;
+        circuit << "H q" << qubit_idx << endl;
         break;
     case S:
-        circuit << (adj? "SD" : "S") << " q" << qubit_idx << ";" << endl;
+        circuit << (adj_dirty? "SD" : "S") << " q" << qubit_idx << endl;
         break;
     case T:
-        circuit << (adj? "TD" : "T") << " q" << qubit_idx << ";" << endl;
+        circuit << (adj_dirty? "TD" : "T") << " q" << qubit_idx << endl;
         break;
     case U1:
-        circuit << "U1(" << args[0] << ") q" << qubit_idx << ";" << endl;
+    // TODO adj
+        circuit << "U1(" << args[0] << ") q" << qubit_idx << endl;
         break;
     case U2:
-        circuit << "U2(" << args[0] << ", " << args[1] << ") q" << qubit_idx << ";" << endl;
+        circuit << "U2(" << args[0] << " " << args[1] << ") q" << qubit_idx << endl;
         break;
     case U3:
-        circuit << "U3(" << args[0] << ", " << args[1] << ", " << args[2] << ") q" << qubit_idx << ";" << endl;
+        circuit << "U3(" << args[0] << " " << args[1] << " " << args[2] << ") q" << qubit_idx << endl;
         break;
     case MEASURE: 
-        circuit << "MEASURE q" << qubit_idx << "->";
+        circuit << "MEASURE q" << qubit_idx;
         break;
     case ALLOC:
-        circuit << "ALLOC q" << qubit_idx << ";" << endl;
+        circuit << "ALLOC " << (adj_dirty? "DIRTY " : " ")  << "q" << qubit_idx << endl;
+        break;
+    case FREE:
+        circuit << "FREE " << (adj_dirty? "DIRTY " : " ")  << "q" << qubit_idx << endl;
         break;
     case JUMP:
-        circuit << "JUMP " << label << ";" << endl;
+        circuit << "JUMP @" << label << endl;
         break;
     case BR:
         bri64->eval(circuit);
-        circuit << "BR i" << bri64->idx() << ", " << label << ", " << label_false << ";" << endl;
+        circuit << "BR i" << bri64->idx() << " @" << label << " @" << label_false << endl;
         break;    
     case LABEL:
-        circuit << label << ":" << endl;
+        circuit << "LABEL @" << label << endl;
         break;
     default:
         break;
@@ -137,7 +141,7 @@ void bit::eval(std::stringstream& circuit) {
     if (visit) return;
     else visit = true;
     measurement_gate->eval(circuit);
-    circuit << " c" << bit_idx << ";" << std::endl;
+    circuit << " c" << bit_idx << std::endl;
 }
 
 i64::i64(const std::vector<std::shared_ptr<bit>>& bits,
@@ -205,24 +209,24 @@ void i64::eval(std::stringstream& circuit) {
     switch (tag) {
     case BIT:
         for (auto &i : bits) i->eval(circuit);
-        circuit << "[";
-        for (auto &i: bits) circuit << i->idx() << ", ";
-        circuit << "] -> " << (se? "SE" : "ZE") <<" i" << i64_idx << ";" << endl;
+        circuit << "INT " << "i" << i64_idx << " = " << (se? "SE " : "ZE ");
+        for (auto &i: bits) circuit << "c" << i->idx() << " ";
+        circuit << endl;
         break;
     case TMP:
         for (auto &i: args) i->eval(circuit);
         if (infix) {
-            circuit << "i" << i64_idx << " = i" 
+            circuit << "INT i" << i64_idx << " = i" 
                     << args[0]->idx() << op << "i" 
-                    << args[1] << ";" << endl;
+                    << args[1]->idx() << endl;
         } else {
-            circuit << "i" << i64_idx << " = @" << op << "(";
-            for (auto &i: args) circuit << "i" << i << ", ";
+            circuit << "INT i" << i64_idx << " = @" << op << "(";
+            for (auto &i: args) circuit << "i" << i->idx() << " ";
             circuit << ")" << ";" << endl;
         } 
         break;
     case VALUE:
-        circuit << "i" << i64_idx << " = " << value << ";" << endl;
+        circuit << "INT i" << i64_idx << " = " << value << endl;
         visit = false;
         break;
     default:

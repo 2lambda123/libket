@@ -10,15 +10,17 @@ handler::handler() :
     label_count{}
     {}
 
-std::shared_ptr<qubit> handler::alloc() {
+std::shared_ptr<qubit> handler::alloc(bool dirty) {
     if (not (adj_call.empty() and ctrl_qubit.empty())) 
         throw std::runtime_error("alloc cannot be used with adj or ctrl");
 
     auto new_qubit = std::make_shared<qubit>(qubit_count);
     qubit_map[qubit_count] = new_qubit;
 
-    block_call.push([new_qubit]() {
-        auto alloc_gate = std::make_shared<gate>(gate::ALLOC, new_qubit->idx(), false, new_qubit->last_gate());
+    block_qubits.insert(qubit_count);
+
+    block_call.push([new_qubit, dirty]() {
+        auto alloc_gate = std::make_shared<gate>(gate::ALLOC, new_qubit->idx(), dirty, new_qubit->last_gate());
         new_qubit->add_gate(alloc_gate);
     });
 
@@ -34,6 +36,9 @@ void handler::add_gate(gate::TAG gate_tag, const std::shared_ptr<qubit>& qbit, c
     bool adj = adj_call.size()%2;
 
     auto add = [this, ctrl_q, adj, gate_tag, qbit, args]() {
+        if (this->qubit_free.find(qbit->idx()) != this->qubit_free.end())
+            throw std::runtime_error("operating with a freed qubit");
+
         std::vector<std::shared_ptr<gate>> ctrl_back;
         for (auto &i: ctrl_q) 
             ctrl_back.push_back(this->qubit_map[i]->last_gate());
@@ -74,7 +79,12 @@ std::shared_ptr<bit> handler::measure(const std::shared_ptr<qubit>& qbit) {
     auto new_bit = std::make_shared<bit>(bit_count, m_gate, m_result);
 
     block_qubits.insert(qbit->idx());
-    block_call.push([m_gate, qbit]() {
+    block_call.push([this, m_gate, qbit]() {
+        if (this->qubit_free.find(qbit->idx()) != this->qubit_free.end())
+            throw std::runtime_error("measuring a freed qubit");
+            
+        this->qubit_free.insert(qbit->idx());
+        
         new (m_gate.get()) gate{gate::MEASURE,
                                 qbit->idx(), 
                                 false, 
@@ -83,6 +93,28 @@ std::shared_ptr<bit> handler::measure(const std::shared_ptr<qubit>& qbit) {
 
     bit_count++;
     return new_bit;
+}
+
+void handler::free(const std::shared_ptr<qubit>& qbit, bool dirty) {
+    if (not (adj_call.empty() and ctrl_qubit.empty())) 
+        throw std::runtime_error("measure cannot be used with adj or ctrl");
+    
+    auto fgate = [this, qbit, dirty]() {
+        if (this->qubit_free.find(qbit->idx()) != this->qubit_free.end())
+            throw std::runtime_error("qubit double free");
+        
+        this->qubit_free.insert(qbit->idx());
+        
+        auto free_gate = std::make_shared<gate>(gate::FREE,
+                                                qbit->idx(),
+                                                dirty,
+                                                qbit->last_gate());
+
+        qbit->add_gate(free_gate);
+    };
+
+    block_qubits.insert(qbit->idx());
+    block_call.push(fgate);
 }
 
 std::shared_ptr<i64> handler::new_i64(const std::vector<std::shared_ptr<bit>>& bits) {

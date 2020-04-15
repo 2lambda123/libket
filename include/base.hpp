@@ -19,17 +19,18 @@ namespace ket::base {
 
     class gate {
     public:
-        enum TAG { X    = 1,    Y  = 2,    Z  = 4,
-                   H    = 8,    S  = 16,   T  = 32,
-                   U1   = 64,   U2 = 128,  U3 = 256, 
-                   MEASURE = 512,  ALLOC = 1024, 
-                   JUMP    = 2048, BR    = 4096,
-                   FREE    = 8192, DIRTY = 16384,
-                   LABEL};
+        enum TAG {X,  Y,  Z,
+                  H,  S,  T,
+                  U1, U2, U3, 
+                  MEASURE,  
+                  ALLOC, 
+                  FREE,
+                  JUMP, BR,
+                  LABEL};
 
         gate(TAG tag, 
              size_t qubit_idx, 
-             bool adj = false,
+             bool adj_dirty = false,
              const std::shared_ptr<gate>& back = nullptr,
              const std::vector<double>& args = {}, 
              const std::vector<size_t>& ctrl_idx = {},
@@ -48,7 +49,7 @@ namespace ket::base {
         TAG tag;
         size_t qubit_idx;
         std::shared_ptr<gate> back;
-        bool adj;
+        bool adj_dirty;
         std::vector<double> args;
 
         std::vector<size_t> ctrl_idx;
@@ -136,9 +137,10 @@ namespace ket::base {
     class handler {
     public:
         handler();    
-        std::shared_ptr<qubit> alloc();
+        std::shared_ptr<qubit> alloc(bool dirty = false);
         void add_gate(gate::TAG gate_tag, const std::shared_ptr<qubit>& qbit, const std::vector<double>& args = {});
         std::shared_ptr<bit> measure(const std::shared_ptr<qubit>& qbit);
+        void free(const std::shared_ptr<qubit>& qbit, bool dirty = false);
         std::shared_ptr<i64> new_i64(const std::vector<std::shared_ptr<bit>>& bits);
         std::shared_ptr<i64> i64_op(const std::string& op, const std::vector<std::shared_ptr<i64>>& args, bool infix=true);
 
@@ -165,6 +167,8 @@ namespace ket::base {
 
         boost::unordered_map<size_t, std::shared_ptr<qubit>> qubit_map;
         boost::unordered_map<size_t, std::shared_ptr<result>> measurement_map;
+
+        boost::unordered_set<size_t> qubit_free;
 
         std::stack<std::stack<std::function<void()>>> adj_call;
 
