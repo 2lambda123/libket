@@ -213,12 +213,12 @@ void handler::if_then(const std::shared_ptr<i64>& cond, std::function<void()> th
         end_block(then_label, end_label, cond);
     }
     
-    begin_block(then_label);
+    begin_block(then_label, backup);
     then();
     end_block(end_label);
 
     if (otherwise) {
-        begin_block(else_label);
+        begin_block(else_label, backup);
         otherwise();
         end_block(end_label);
     }

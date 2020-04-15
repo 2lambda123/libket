@@ -24,7 +24,9 @@ ket_main(
     IF (m2) THEN (
         ket::z(b);
     ) ELSE (
-        ket::s(b);
+        IF (m2) THEN (
+            ket::s(b);
+        ) END;
     )
 
     auto c = ket::measure(b);
