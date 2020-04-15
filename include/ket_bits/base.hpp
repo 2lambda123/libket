@@ -158,8 +158,9 @@ namespace ket::base {
         
         boost::unordered_set<size_t> block_qubits_backup();
          
-        void if_then(const std::shared_ptr<i64>& cond, std::function<void()> then);
-        void if_then_else(const std::shared_ptr<i64>& cond, std::function<void()> then, std::function<void()> otherwise);
+        void if_then(const std::shared_ptr<i64>& cond, std::function<void()> then, std::function<void()> otherwise= nullptr);
+
+        size_t get_label_count();
 
     private:
         size_t qubit_count;

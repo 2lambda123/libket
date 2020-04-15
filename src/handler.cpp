@@ -1,5 +1,5 @@
 
-#include "../include/base.hpp"
+#include "../include/ket_bits/base.hpp"
 
 using namespace ket::base;
 
@@ -201,40 +201,33 @@ boost::unordered_set<size_t> handler::block_qubits_backup() {
 }
 
 
-void handler::if_then(const std::shared_ptr<i64>& cond, std::function<void()> then) {
+void handler::if_then(const std::shared_ptr<i64>& cond, std::function<void()> then, std::function<void()> otherwise) {
     auto then_label = label+std::string{".if.then"}+std::to_string(label_count);
+    auto else_label = label+std::string{".if.else"}+std::to_string(label_count);
     auto end_label = label+std::string{".if.end"}+std::to_string(label_count);
 
     auto backup = block_qubits_backup();
-    end_block(then_label, end_label, cond);
+    if (otherwise) {
+        end_block(then_label, else_label, cond);
+    } else {
+        end_block(then_label, end_label, cond);
+    }
     
     begin_block(then_label);
     then();
     end_block(end_label);
+
+    if (otherwise) {
+        begin_block(else_label);
+        otherwise();
+        end_block(end_label);
+    }
     
     begin_block(end_label, backup);
 
     label_count++;
-    
 }
 
-void handler::if_then_else(const std::shared_ptr<i64>& cond, std::function<void()> then, std::function<void()> otherwise) {
-    auto then_label = label+std::string{".if.then"}+std::to_string(label_count);
-    auto else_label = label+std::string{".if.else"}+std::to_string(label_count);
-    auto end_label = label+std::string{".if.end"}+std::to_string(label_count);
-    
-    auto backup = block_qubits_backup();
-    end_block(then_label, else_label, cond);
-
-    begin_block(then_label);
-    then();
-    end_block(end_label);
-
-    begin_block(else_label);
-    otherwise();
-    end_block(end_label);
-    
-    begin_block(end_label, backup);
-
+size_t handler::get_label_count() {
+    return label_count++;
 }
-

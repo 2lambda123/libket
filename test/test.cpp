@@ -1,32 +1,33 @@
-#include "../include/base.hpp"
+#include "../include/ket"
 #include <iostream>
 
+ket_main(
 
-int main() {
-    auto h = ket::base::handler{};
+    ket::quant a{1};
+    ket::quant aux{1};
+    ket::quant b{1};
 
-    h.begin_block("start");
-        auto q0 = h.alloc();
-        auto q1 = h.alloc();
+    ket::h(aux);
+    ket::ctrl(aux, ket::x, b);
+    
+    ket::ctrl(a, ket::x, aux);
 
-        h.add_gate(ket::base::gate::H, q0);
-        h.add_gate(ket::base::gate::H, q1);
+    ket::h(a);
 
-        auto c0 = h.measure(q0);
+    auto m1 = ket::measure(a);
+    auto m2 = ket::measure(aux);
 
-        auto i0 = h.new_i64({c0});
+    IF (m1) THEN (
+        ket::x(b);
+    ) END;
 
-        h.if_then_else(i0, 
-                    [&]{ h.add_gate(ket::base::gate::S, q1); },
-                    [&]{ h.add_gate(ket::base::gate::T, q1); });
+    IF (m2) THEN (
+        ket::z(b);
+    ) ELSE (
+        ket::s(b);
+    )
 
-        auto c1 = h.measure(q1);
-    h.end_block("end");
+    auto c = ket::measure(b);
 
-    std::stringstream ss;
-
-    c1->eval(ss);
-
-    std::cout << ss.str();
-
-}
+    std::cout << c.get();
+)

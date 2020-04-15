@@ -1,5 +1,9 @@
-#include "../include/base.hpp"
+#include "../include/ket"
 #include <iostream>
+
+ket_main(
+    
+)
 
 int main() {
     auto h = ket::base::handler{};
