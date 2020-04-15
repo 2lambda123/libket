@@ -1,39 +1,32 @@
 #include "../include/base.hpp"
 #include <iostream>
 
+
 int main() {
     auto h = ket::base::handler{};
-    h.begin_block("entry");
-        auto a = h.alloc(true);
-        auto aux = h.alloc();
-        auto b = h.alloc();
 
-        // Bell
-        h.add_gate(ket::base::gate::H, aux);
-        h.ctrl_begin({aux});        
-            h.add_gate(ket::base::gate::X, b);
-        h.ctrl_end();
+    h.begin_block("start");
+        auto q0 = h.alloc();
+        auto q1 = h.alloc();
 
-        h.ctrl_begin({a});
-            h.add_gate(ket::base::gate::X, aux);
-        h.ctrl_end();
-        
-        h.add_gate(ket::base::gate::H, a);
+        h.add_gate(ket::base::gate::H, q0);
+        h.add_gate(ket::base::gate::H, q1);
 
-        auto c1 = h.measure(a);
-        auto c2 = h.measure(aux);
+        auto c0 = h.measure(q0);
 
-        auto i1 = h.new_i64({c1});
-        auto i2 = h.new_i64({c2});
+        auto i0 = h.new_i64({c0});
 
-        h.if_then(i2, [&]{ h.add_gate(ket::base::gate::X, b); });
-        h.if_then(i1, [&]{ h.add_gate(ket::base::gate::Z, b); });
+        h.if_then_else(i0, 
+                    [&]{ h.add_gate(ket::base::gate::S, q1); },
+                    [&]{ h.add_gate(ket::base::gate::T, q1); });
 
-        auto c3 = h.measure(b);
+        auto c1 = h.measure(q1);
     h.end_block("end");
-    
+
     std::stringstream ss;
-    c3->eval(ss);
-        
+
+    c1->eval(ss);
+
     std::cout << ss.str();
+
 }
