@@ -11,6 +11,9 @@ namespace ket {
     void h(const quant& q);
     void s(const quant& q);
     void t(const quant& q);
+    void u1(double lambda, const quant& q);
+    void u2(double phi, double lambda, const quant& q);
+    void u3(double theta, double phi, double lambda, const quant& q);
 
     template <class F, class... Args>
     void ctrl(const quant& q, F gate, Args... args) {
