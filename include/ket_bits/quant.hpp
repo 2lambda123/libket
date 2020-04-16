@@ -3,7 +3,7 @@
 
 namespace ket {
 
-    class iterator;
+    class qubit_iterator;
 
     class quant {
     public:
@@ -15,28 +15,28 @@ namespace ket {
 
         size_t len() const;
 
-        iterator begin();
-        iterator end();
+        qubit_iterator begin();
+        qubit_iterator end();
 
     private:
         quant(const std::vector<std::shared_ptr<base::qubit>> &qubits);
 
         std::vector<std::shared_ptr<base::qubit>> qubits;
 
-        friend class iterator;
+        friend class qubit_iterator;
     };
 
-    class iterator {
+    class qubit_iterator {
     public:
         quant operator*();
 
-        const iterator& operator++();
+        const qubit_iterator& operator++();
 
-        bool operator!=(const iterator& other) const;
+        bool operator!=(const qubit_iterator& other) const;
         
     private:
-        iterator(const std::vector<std::shared_ptr<base::qubit>> &qubits);
-        iterator();
+        qubit_iterator(const std::vector<std::shared_ptr<base::qubit>> &qubits);
+        qubit_iterator();
 
         const std::vector<std::shared_ptr<base::qubit>> *qubits;
         size_t index;

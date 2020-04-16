@@ -24,33 +24,33 @@ size_t quant::len() const {
     return qubits.size();
 }
 
-iterator quant::begin() {
-    return iterator{qubits};
+qubit_iterator quant::begin() {
+    return qubit_iterator{qubits};
 }
 
-iterator quant::end() {
-    return iterator{};
+qubit_iterator quant::end() {
+    return qubit_iterator{};
 }
 
-iterator::iterator(const std::vector<std::shared_ptr<base::qubit>> &qubits) :
+qubit_iterator::qubit_iterator(const std::vector<std::shared_ptr<base::qubit>> &qubits) :
     qubits{&qubits},
     index{0}
     {}
     
-iterator::iterator() : 
+qubit_iterator::qubit_iterator() : 
     qubits{nullptr},
     index{SIZE_MAX}
     {}
 
-quant iterator::operator*() {
+quant qubit_iterator::operator*() {
     return quant{{qubits[index]}};
 }
 
-const iterator& iterator::operator++() {
+const qubit_iterator& qubit_iterator::operator++() {
     index++;
     return *this;
 }
 
-bool iterator::operator!=(const iterator& other) const {
+bool qubit_iterator::operator!=(const qubit_iterator& other) const {
     return index != other.index or qubits != other.qubits;
 }
