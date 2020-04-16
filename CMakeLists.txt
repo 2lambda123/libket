@@ -19,12 +19,19 @@ if (NOT TARGET CONAN_PKG::boost)
 endif()
 
 file(GLOB_RECURSE SOURCES src/*.cpp)
-file(GLOB_RECURSE CSOURCES wrapper/*.cpp)
 
 add_library(ket SHARED ${SOURCES})
 set_target_properties(ket PROPERTIES 
+                      PUBLIC_HEADER "include/ket"
                       CXX_STANDARD 17)
+
 target_link_libraries(ket CONAN_PKG::boost)
+
+install(TARGETS ket 
+        LIBRARY DESTINATION /usr/lib
+        PUBLIC_HEADER DESTINATION /usr/include)
+        
+install(DIRECTORY include/ket_bits DESTINATION /usr/include)
 
 add_executable(test EXCLUDE_FROM_ALL
                test/test.cpp)

@@ -2,7 +2,6 @@
 #include <iostream>
 
 ket_main(
-
     ket::quant a{1};
     ket::quant aux{1};
     ket::quant b{1};
@@ -23,11 +22,7 @@ ket_main(
 
     IF (m2) THEN (
         ket::z(b);
-    ) ELSE (
-        IF (m2) THEN (
-            ket::s(b);
-        ) END;
-    )
+    ) END; 
 
     auto c = ket::measure(b);
 
