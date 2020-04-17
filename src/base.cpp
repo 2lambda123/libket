@@ -1,4 +1,5 @@
 #include "../include/ket_bits/base.hpp"
+#include <limits>
 
 using namespace ket::base;
 
@@ -48,6 +49,8 @@ void gate::eval(std::stringstream& circuit) {
         for (auto i : ctrl_idx) circuit << "q" << i << " ";
     } 
 
+    circuit.precision(std::numeric_limits<double>::max_digits10);
+    double theta, phi, lambda;
     switch (tag) {
     case X:
         circuit << "\tX\tq" << qubit_idx << endl;
@@ -68,14 +71,29 @@ void gate::eval(std::stringstream& circuit) {
         circuit << (adj_dirty? "\tTD" : "\tT") << "\tq" << qubit_idx << endl;
         break;
     case U1:
-    // TODO adj
         circuit << "\tU1(" << args[0] << ")\tq" << qubit_idx << endl;
         break;
     case U2:
-        circuit << "\tU2(" << args[0] << " " << args[1] << ")\tq" << qubit_idx << endl;
+        if (adj_dirty) {
+            phi = -args[1]-M_PI;
+            lambda = -args[0]+M_PI;
+        } else {
+            phi = args[0];
+            lambda = args[1];
+        }
+        circuit << "\tU2(" << phi << " " << lambda << ")\tq" << qubit_idx << endl;
         break;
     case U3:
-        circuit << "\tU3(" << args[0] << " " << args[1] << " " << args[2] << ")\t\tq" << qubit_idx << endl;
+        if (adj_dirty) {
+            theta = -args[0];
+            phi = -args[2];
+            lambda = -args[1];
+        } else {
+            theta = args[0];
+            phi = args[1];
+            lambda = args[2];
+        }
+        circuit << "\tU3(" << theta << " " << phi << " " << lambda << ")\t\tq" << qubit_idx << endl;
         break;
     case MEASURE: 
         circuit << "\tMEASURE\tq" << qubit_idx;
