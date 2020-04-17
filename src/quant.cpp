@@ -29,7 +29,7 @@ qubit_iterator quant::begin() {
 }
 
 qubit_iterator quant::end() {
-    return qubit_iterator{};
+    return qubit_iterator{qubits.size()};
 }
 
 qubit_iterator::qubit_iterator(const std::vector<std::shared_ptr<base::qubit>> &qubits) :
@@ -37,13 +37,13 @@ qubit_iterator::qubit_iterator(const std::vector<std::shared_ptr<base::qubit>> &
     index{0}
     {}
     
-qubit_iterator::qubit_iterator() : 
+qubit_iterator::qubit_iterator(size_t size) : 
     qubits{nullptr},
-    index{SIZE_MAX}
+    index{size}
     {}
 
 quant qubit_iterator::operator*() {
-    return quant{{qubits[index]}};
+    return quant{{qubits->at(index)}};
 }
 
 const qubit_iterator& qubit_iterator::operator++() {
@@ -52,5 +52,5 @@ const qubit_iterator& qubit_iterator::operator++() {
 }
 
 bool qubit_iterator::operator!=(const qubit_iterator& other) const {
-    return index != other.index or qubits != other.qubits;
+    return index != other.index;
 }

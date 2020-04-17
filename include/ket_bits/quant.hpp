@@ -36,7 +36,7 @@ namespace ket {
         
     private:
         qubit_iterator(const std::vector<std::shared_ptr<base::qubit>> &qubits);
-        qubit_iterator();
+        qubit_iterator(size_t size);
 
         const std::vector<std::shared_ptr<base::qubit>> *qubits;
         size_t index;
