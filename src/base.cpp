@@ -139,17 +139,11 @@ std::shared_ptr<gate> qubit::last_gate() {
 
 
 bit::bit(size_t bit_idx,
-         std::shared_ptr<gate> measurement_gate,
-         std::shared_ptr<result> measurement) :
+         std::shared_ptr<gate> measurement_gate) :
     bit_idx{bit_idx},
     measurement_gate{measurement_gate},
-    measurement{measurement},
     visit{false}
     {}
-
-result bit::get() const {
-    return *measurement;
-}
 
 size_t bit::idx() const {
     return bit_idx;
@@ -169,7 +163,6 @@ i64::i64(const std::vector<std::shared_ptr<bit>>& bits,
     bits{bits},
     se{se},
     i64_idx{i64_idx},
-    value_available{false},
     visit{false}
     {}
 
@@ -182,40 +175,17 @@ i64::i64(const std::string& op,
     op{op},
     args{args},
     infix{infix},
-    value_available{false},
     visit{false}
     {}
 
 i64::i64(std::int64_t value) :
     tag{VALUE},
     value{value},
-    value_available{true},
     visit{false}
     {}
 
-bool i64::has_value() {
-    if (value_available) return true;
-    else if (tag & TMP) return false;
-
-    for (auto &i : bits) 
-        if (i->get() == result::NONE) 
-            return false;
-    
-    value = 0;
-
-    for (size_t i = 0; i < bits.size(); i++) 
-        value |= (int) bits[i]->get() << i;
-    
-    if (se) for (size_t i = bits.size(); i < 64; i++) 
-        value |= (int) bits.back()->get() << i;
-
-    value_available = true;
-    return true;
-}
-
-std::int64_t i64::get() {
-    has_value();
-    if (value_available) return value;
+std::int64_t i64::get_value() {
+    if (tag == VALUE) return value;
     else return -1;
 } 
 
@@ -228,7 +198,7 @@ void i64::eval(std::stringstream& circuit) {
     case BIT:
         for (auto &i : bits) i->eval(circuit);
         circuit << "\tINT\ti" << i64_idx << "\t" << (se? "SE" : "ZE") << "\t";
-        for (auto &i: bits) circuit << "c" << i->idx() << " ";
+        for (auto i = bits.rbegin(); i != bits.rend(); ++i) circuit << "c" << (*i)->idx() << " ";
         circuit << endl;
         break;
     case TMP:
@@ -250,6 +220,11 @@ void i64::eval(std::stringstream& circuit) {
     default:
         break;
     }
+}
+
+void i64::set_value(std::int64_t value) {
+    this->value = value;
+    tag = VALUE;
 }
 
 size_t i64::idx() const {

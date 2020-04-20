@@ -15,7 +15,7 @@ std::shared_ptr<qubit> handler::alloc(bool dirty) {
         throw std::runtime_error("alloc cannot be used with adj or ctrl");
 
     auto new_qubit = std::make_shared<qubit>(qubit_count);
-    qubit_map[qubit_count] = new_qubit;
+    qubit_map[qubit_count] = new_qubit.get();
 
     block_qubits.insert(qubit_count);
 
@@ -93,10 +93,7 @@ std::shared_ptr<bit> handler::measure(const std::shared_ptr<qubit>& qbit) {
                                          false, 
                                          qbit->last_gate());
     
-    auto m_result = std::make_shared<result>(result::NONE);
-    measurement_map[bit_count] = m_result;
-
-    auto new_bit = std::make_shared<bit>(bit_count, m_gate, m_result);
+    auto new_bit = std::make_shared<bit>(bit_count, m_gate);
 
     block_qubits.insert(qbit->idx());
     block_call.push([this, m_gate, qbit]() {

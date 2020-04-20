@@ -9,7 +9,7 @@ future ket::measure(const quant& q, bool wait) {
     std::vector<std::shared_ptr<base::bit>> bits;
     for (auto &i : q.get_base_qubits()) 
         bits.push_back(ket_hdl.measure(i));
-    return future{bits};
+    return future{ket_hdl.new_i64(bits)};
 }
 
 void ket::wait(const quant& q) {

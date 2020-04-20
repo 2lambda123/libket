@@ -3,10 +3,6 @@
 
 using namespace ket;
 
-future::future(const std::vector<std::shared_ptr<base::bit>>& bits) :
-    bits{ket_hdl.new_i64(bits)}
-    {}
-    
 future::future(const std::shared_ptr<base::i64>& bits) : 
     bits{bits} 
     {}

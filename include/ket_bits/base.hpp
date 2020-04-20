@@ -82,11 +82,8 @@ namespace ket::base {
     class bit {
     public:
         bit(size_t bit_idx,
-            std::shared_ptr<gate> measurement_gate,
-            std::shared_ptr<result> measurement);
+            std::shared_ptr<gate> measurement_gate);
         
-        result get() const;
-
         size_t idx() const;
 
         void eval(std::stringstream& circuit);
@@ -95,8 +92,6 @@ namespace ket::base {
 
         size_t bit_idx;
         std::shared_ptr<gate> measurement_gate;
-
-        std::shared_ptr<result> measurement;
 
         bool visit;
     };
@@ -112,8 +107,8 @@ namespace ket::base {
             bool infix = true);
         i64(std::int64_t value);
 
-        bool has_value();
-        std::int64_t get();
+        std::int64_t get_value();
+        void set_value(std::int64_t value);
 
         void eval(std::stringstream& circuit);
 
@@ -131,7 +126,7 @@ namespace ket::base {
         bool infix;
 
         std::int64_t value;
-        bool value_available;
+
         bool visit;
     };
 
@@ -172,8 +167,8 @@ namespace ket::base {
 
         std::string label;
 
-        boost::unordered_map<size_t, std::shared_ptr<qubit>> qubit_map;
-        boost::unordered_map<size_t, std::shared_ptr<result>> measurement_map;
+        boost::unordered_map<size_t, qubit*> qubit_map;
+        boost::unordered_map<size_t, i64*> measurement_map;
 
         std::stack<std::stack<std::function<void()>>> adj_call;
 
@@ -186,3 +181,5 @@ namespace ket::base {
     };
 
 }
+
+namespace ket { using process = base::handler; }
