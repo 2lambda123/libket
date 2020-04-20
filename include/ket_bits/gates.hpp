@@ -18,24 +18,24 @@ namespace ket {
 
     template <class F, class... Args>
     void ctrl(const quant& q, F gate, Args... args) {
-        ket_hdl.ctrl_begin(q.get_base_qubits());
+        ket_hdl->ctrl_begin(q.get_base_qubits());
         gate(args...);
-        ket_hdl.ctrl_end();
+        ket_hdl->ctrl_end();
     }
     
     template <class F, class... Args>
     void adj(F gate, Args... args) {
-        ket_hdl.adj_begin();
+        ket_hdl->adj_begin();
         gate(args...);
-        ket_hdl.adj_end();
+        ket_hdl->adj_end();
     }
     
     template <class F, class... Args>
     void ctrl_adj(const quant& q, F gate, Args... args) {
-        ket_hdl.ctrl_begin(q.get_base_qubits());
-        ket_hdl.adj_begin();
+        ket_hdl->ctrl_begin(q.get_base_qubits());
+        ket_hdl->adj_begin();
         gate(args...);
-        ket_hdl.adj_end();
-        ket_hdl.ctrl_end();
+        ket_hdl->adj_end();
+        ket_hdl->ctrl_end();
     }
 }

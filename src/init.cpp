@@ -3,9 +3,10 @@
 using namespace ket;
 
 void ket::begin() {
-    ket_hdl.begin_block("entry");
+    ket_hdl = new ket::process;
+    ket_hdl->begin_block("entry");
 }
 
 void ket::end() {
-    ket_hdl.end_block("end");
+    delete ket_hdl;
 }

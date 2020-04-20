@@ -32,7 +32,8 @@ gate::gate(TAG tag,
     ctrl_back{ctrl_back},
     label{label1},
     label_false{label2},
-    bri64{bri64} 
+    bri64{bri64},
+    visit{false}
     {}
 
 void gate::eval(std::stringstream& circuit) {
