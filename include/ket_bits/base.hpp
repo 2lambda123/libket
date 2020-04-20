@@ -26,7 +26,8 @@ namespace ket::base {
                   ALLOC, 
                   FREE,
                   JUMP, BR,
-                  LABEL};
+                  LABEL,
+                  WAIT};
 
         gate(TAG tag, 
              size_t qubit_idx, 
@@ -39,7 +40,7 @@ namespace ket::base {
         gate(TAG tag,
              const std::vector<size_t>& ctrl_idx,
              const std::vector<std::shared_ptr<gate>>& ctrl_back,
-             const std::string& label1,
+             const std::string& label1 = "",
              const std::string& label2 = "",
              const std::shared_ptr<i64>& bri64 = nullptr);
 
@@ -139,6 +140,7 @@ namespace ket::base {
         handler();    
         std::shared_ptr<qubit> alloc(bool dirty = false);
         void add_gate(gate::TAG gate_tag, const std::shared_ptr<qubit>& qbit, const std::vector<double>& args = {});
+        void wait(const std::vector<std::shared_ptr<qubit>>& qbits);
         std::shared_ptr<bit> measure(const std::shared_ptr<qubit>& qbit);
         void free(const std::shared_ptr<qubit>& qbit, bool dirty = false);
         std::shared_ptr<i64> new_i64(const std::vector<std::shared_ptr<bit>>& bits);

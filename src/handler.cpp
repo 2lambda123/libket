@@ -64,6 +64,26 @@ void handler::add_gate(gate::TAG gate_tag, const std::shared_ptr<qubit>& qbit, c
     } 
 }
 
+void handler::wait(const std::vector<std::shared_ptr<qubit>>& qbits) {
+    std::vector<size_t> qbits_idx;
+    for (auto &i : qbits) 
+        qbits_idx.push_back(i->idx());
+        
+    block_call.push([this, qbits_idx]{
+        std::vector<std::shared_ptr<gate>> qbits_back;
+        for (auto &i: qbits_idx) 
+            qbits_back.push_back(this->qubit_map[i]->last_gate());
+
+        auto wait_gate = std::make_shared<gate>(gate::WAIT,
+                                                qbits_idx,
+                                                qbits_back);
+        for (auto &i : qbits_idx) 
+            this->qubit_map[i]->add_gate(wait_gate);
+    });
+    
+    block_qubits.insert(qbits_idx.begin(), qbits_idx.end());
+}
+
 std::shared_ptr<bit> handler::measure(const std::shared_ptr<qubit>& qbit) {
     if (not (adj_call.empty() and ctrl_qubit.empty())) 
         throw std::runtime_error("measure cannot be used with adj or ctrl");

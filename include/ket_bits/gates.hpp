@@ -4,7 +4,8 @@
 #include "future.hpp"
 
 namespace ket {
-    future measure(const quant& q);
+    future measure(const quant& q, bool wait = false);
+    void wait(const quant& q);
     void x(const quant& q);
     void y(const quant& q);
     void z(const quant& q);

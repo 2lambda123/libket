@@ -3,11 +3,17 @@
 
 using namespace ket;
 
-future ket::measure(const quant& q) {
+future ket::measure(const quant& q, bool wait) {
+    if (wait) ket_hdl.wait(q.get_base_qubits());
+
     std::vector<std::shared_ptr<base::bit>> bits;
     for (auto &i : q.get_base_qubits()) 
         bits.push_back(ket_hdl.measure(i));
     return future{bits};
+}
+
+void ket::wait(const quant& q) {
+    ket_hdl.wait(q.get_base_qubits());
 }
 
 void ket::x(const quant& q) {
