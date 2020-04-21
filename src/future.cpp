@@ -40,15 +40,22 @@ std::int64_t future::get() {
         std::stringstream ss;
         bits->eval(ss);
         ket_hdl->begin_block(next_label);
+        
+        if (ket_out) {
+            std::ofstream out{ket_kqasm_path, std::ofstream::app};
+            out << ss.str();
+            out.close();
+        }
 
-        std::cout << ss.str() << "\n\n";
+        if (not ket_no_execute) {
+            std::stringstream result{call("kbw", ss.str())};
 
-        std::stringstream result{call("kbw", ss.str())};
-
-        size_t i64_idx;
-        std::int64_t val;
-        while (result >> i64_idx >> val) {
-            ket_hdl->set_value(i64_idx, val);
+            size_t i64_idx;
+            std::int64_t val;
+            while (result >> i64_idx >> val) ket_hdl->set_value(i64_idx, val);
+            
+        } else {
+            bits->set_value(0);
         }
     }
 
