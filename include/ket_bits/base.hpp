@@ -21,7 +21,8 @@ namespace ket::base {
     public:
         enum TAG {X,  Y,  Z,
                   H,  S,  T,
-                  U1, U2, U3, 
+                  U1, U2, U3,
+                  DUMP, 
                   MEASURE,  
                   ALLOC, 
                   FREE,
@@ -107,6 +108,7 @@ namespace ket::base {
             bool infix = true);
         i64(std::int64_t value);
 
+        bool has_value();
         std::int64_t get_value();
         void set_value(std::int64_t value);
 
@@ -158,6 +160,8 @@ namespace ket::base {
         void if_then(const std::shared_ptr<i64>& cond, std::function<void()> then, std::function<void()> otherwise= nullptr);
 
         size_t get_label_count();
+
+        void set_value(size_t idx, std::int64_t value);
 
     private:
         size_t qubit_count;

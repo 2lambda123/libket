@@ -51,12 +51,17 @@ void ket::u1(double lambda, const quant& q) {
         ket_hdl->add_gate(base::gate::U1, i, {lambda});
 }
 
-void u2(double phi, double lambda, const quant& q) {
+void ket::u2(double phi, double lambda, const quant& q) {
     for (auto &i : q.get_base_qubits()) 
         ket_hdl->add_gate(base::gate::U2, i, {phi, lambda});
 }
 
-void u3(double theta, double phi, double lambda, const quant& q) {
+void ket::u3(double theta, double phi, double lambda, const quant& q) {
     for (auto &i : q.get_base_qubits()) 
         ket_hdl->add_gate(base::gate::U3, i, {theta, phi, lambda});
+}
+
+void ket::dump(const quant& q) {
+    for (auto &i : q.get_base_qubits()) 
+        ket_hdl->add_gate(base::gate::DUMP, i);
 }

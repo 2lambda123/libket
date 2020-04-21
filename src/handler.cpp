@@ -134,11 +134,15 @@ void handler::free(const std::shared_ptr<qubit>& qbit, bool dirty) {
 }
 
 std::shared_ptr<i64> handler::new_i64(const std::vector<std::shared_ptr<bit>>& bits) {
-    return std::make_shared<i64>(bits, i64_count++);
+    auto i64_ptr = std::make_shared<i64>(bits, i64_count);
+    measurement_map[i64_count] = i64_ptr.get();
+    return i64_ptr;
 }
 
 std::shared_ptr<i64> handler::i64_op(const std::string& op, const std::vector<std::shared_ptr<i64>>& args, bool infix) {
-    return std::make_shared<i64>(op, args, i64_count++, infix);
+    auto i64_ptr = std::make_shared<i64>(op, args, i64_count++, infix);
+    measurement_map[i64_count] = i64_ptr.get();
+    return i64_ptr;
 }
 
 void handler::adj_begin() {
@@ -243,6 +247,11 @@ void handler::if_then(const std::shared_ptr<i64>& cond, std::function<void()> th
     begin_block(end_label, backup);
 
     label_count++;
+}
+
+void handler::set_value(size_t idx, std::int64_t value) {
+    measurement_map[idx]->set_value(value);
+
 }
 
 size_t handler::get_label_count() {

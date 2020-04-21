@@ -115,6 +115,9 @@ void gate::eval(std::stringstream& circuit) {
     case LABEL:
         circuit << "LABEL @" << label << endl;
         break;
+    case DUMP:
+        circuit << "\tDUMP\tq" << qubit_idx << endl; 
+        break;
     default:
         break;
     }
@@ -221,6 +224,10 @@ void i64::eval(std::stringstream& circuit) {
     default:
         break;
     }
+}
+
+bool i64::has_value() {
+    return tag == VALUE;
 }
 
 void i64::set_value(std::int64_t value) {

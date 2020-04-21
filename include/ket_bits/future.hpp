@@ -8,7 +8,7 @@ namespace ket {
 
         const std::shared_ptr<base::i64>& get_base_i64() const;
 
-        std::string get();
+        std::int64_t get();
 
     private:
         std::shared_ptr<base::i64> bits;
