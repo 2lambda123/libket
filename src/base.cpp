@@ -208,7 +208,7 @@ void i64::eval(std::stringstream& circuit) {
     case BIT:
         for (auto &i : bits) i->eval(circuit);
         circuit << "\tINT\ti" << i64_idx << "\t" << (se? "SE" : "ZE") << "\t";
-        for (auto i = bits.rbegin(); i != bits.rend(); ++i) circuit << "c" << (*i)->idx() << " ";
+        for (auto i : bits) circuit << "c" << i->idx() << " ";
         circuit << endl;
         break;
     case TMP:

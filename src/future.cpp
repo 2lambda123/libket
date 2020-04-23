@@ -43,7 +43,9 @@ std::int64_t future::get() {
         
         if (ket_out) {
             std::ofstream out{ket_kqasm_path, std::ofstream::app};
-            out << ss.str();
+            out << ss.str() 
+                << "- - - - - - - - - - - - - - - - - - - - - - - - - - - - -" 
+                << std::endl;
             out.close();
         }
 
