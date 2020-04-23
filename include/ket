@@ -3,3 +3,4 @@
 #include "ket_bits/quant.hpp"
 #include "ket_bits/future.hpp"
 #include "ket_bits/gates.hpp"
+#include "ket_bits/gates_ex.hpp"

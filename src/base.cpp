@@ -118,6 +118,12 @@ void gate::eval(std::stringstream& circuit) {
     case DUMP:
         circuit << "\tDUMP\tq" << qubit_idx << endl; 
         break;
+    case PLUGIN:
+        circuit << "\tPLUGIN\t" << label << "\t";
+        for (auto i : ctrl_idx) circuit << i << " ";
+        if (label_false != "") circuit << "\t\"" << label_false << "\"";
+        circuit << endl;
+        break;
     default:
         break;
     }

@@ -22,6 +22,7 @@ namespace ket::base {
         enum TAG {X,  Y,  Z,
                   H,  S,  T,
                   U1, U2, U3,
+                  PLUGIN,
                   DUMP, 
                   MEASURE,  
                   ALLOC, 
@@ -136,14 +137,29 @@ namespace ket::base {
     public:
         handler();    
         std::shared_ptr<qubit> alloc(bool dirty = false);
-        void add_gate(gate::TAG gate_tag, const std::shared_ptr<qubit>& qbit, const std::vector<double>& args = {});
+
+        void add_gate(gate::TAG gate_tag, 
+                      const std::shared_ptr<qubit>& qbit, 
+                      const std::vector<double>& args = {});
+
+        void add_plugin_gate(const std::string &gate_name, 
+                             const std::vector<std::shared_ptr<qubit>>& qbit,
+                             const std::string& args = "");
+
         void wait(const std::vector<std::shared_ptr<qubit>>& qbits);
+
         std::shared_ptr<bit> measure(const std::shared_ptr<qubit>& qbit);
+
         void free(const std::shared_ptr<qubit>& qbit, bool dirty = false);
+
         std::shared_ptr<i64> new_i64(const std::vector<std::shared_ptr<bit>>& bits);
-        std::shared_ptr<i64> i64_op(const std::string& op, const std::vector<std::shared_ptr<i64>>& args, bool infix=true);
+
+        std::shared_ptr<i64> i64_op(const std::string& op, 
+                                    const std::vector<std::shared_ptr<i64>>& args, 
+                                    bool infix=true);
 
         void adj_begin();
+        
         void adj_end();
 
         void ctrl_begin(const std::vector<std::shared_ptr<qubit>>& ctrl);
@@ -151,6 +167,7 @@ namespace ket::base {
 
         void begin_block(const std::string& next_label,
                          const boost::unordered_set<size_t>& block_qubits = {});
+
         void end_block(const std::string& label_goto1,
                        const std::string& label_goto2 = "",
                        const std::shared_ptr<i64>& bri64 = nullptr);

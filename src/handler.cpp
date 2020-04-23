@@ -28,7 +28,10 @@ std::shared_ptr<qubit> handler::alloc(bool dirty) {
     return new_qubit;
 }
 
-void handler::add_gate(gate::TAG gate_tag, const std::shared_ptr<qubit>& qbit, const std::vector<double>& args) {
+void handler::add_gate(gate::TAG gate_tag, 
+                       const std::shared_ptr<qubit>& qbit,
+                       const std::vector<double>& args) 
+{
     std::vector<size_t> ctrl_q;
     for (auto &i: ctrl_qubit) for (auto &j : i) 
         ctrl_q.push_back(j);
@@ -62,6 +65,34 @@ void handler::add_gate(gate::TAG gate_tag, const std::shared_ptr<qubit>& qbit, c
     } else {
         block_call.push(add);
     } 
+}
+
+void handler::add_plugin_gate(const std::string &gate_name, 
+                              const std::vector<std::shared_ptr<qubit>>& qbits,
+                              const std::string& args) 
+{
+    if (not (adj_call.empty() and ctrl_qubit.empty())) 
+        throw std::runtime_error("special gate "+gate_name+" cannot be used with adj or ctrl");
+
+    std::vector<size_t> qbits_idx;
+    for (auto &i : qbits) qbits_idx.push_back(i->idx());
+
+    block_call.push([this, qbits_idx, gate_name, args] {
+        std::vector<std::shared_ptr<gate>> qbits_back;
+        for (auto &i: qbits_idx) 
+            qbits_back.push_back(this->qubit_map[i]->last_gate());
+        
+        auto new_gate = std::make_shared<gate>(gate::PLUGIN, 
+                                               qbits_idx, 
+                                               qbits_back, 
+                                               gate_name, 
+                                               args);
+     
+        for (auto &i: qbits_idx) 
+            this->qubit_map[i]->add_gate(new_gate);
+    });
+
+    block_qubits.insert(qbits_idx.begin(), qbits_idx.end());
 }
 
 void handler::wait(const std::vector<std::shared_ptr<qubit>>& qbits) {
@@ -139,7 +170,10 @@ std::shared_ptr<i64> handler::new_i64(const std::vector<std::shared_ptr<bit>>& b
     return i64_ptr;
 }
 
-std::shared_ptr<i64> handler::i64_op(const std::string& op, const std::vector<std::shared_ptr<i64>>& args, bool infix) {
+std::shared_ptr<i64> handler::i64_op(const std::string& op,
+                                     const std::vector<std::shared_ptr<i64>>& args, 
+                                     bool infix) 
+ {
     auto i64_ptr = std::make_shared<i64>(op, args, i64_count++, infix);
     measurement_map[i64_count] = i64_ptr.get();
     return i64_ptr;

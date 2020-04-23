@@ -16,6 +16,12 @@ quant quant::operator()(size_t idx) const {
     return quant{{qubits[idx]}};
 }
 
+quant quant::operator|(const quant& other) const {
+    auto qubits_ptr = qubits;
+    qubits_ptr.insert(qubits_ptr.end(), other.qubits.begin(), other.qubits.end());
+    return quant{qubits_ptr};
+}
+
 const std::vector<std::shared_ptr<base::qubit>>& quant::get_base_qubits() const {
     return qubits;
 }
