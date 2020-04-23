@@ -120,7 +120,7 @@ void gate::eval(std::stringstream& circuit) {
         break;
     case PLUGIN:
         circuit << "\tPLUGIN\t" << label << "\t";
-        for (auto i : ctrl_idx) circuit << i << " ";
+        for (auto i : ctrl_idx) circuit << "q" << i << " ";
         if (label_false != "") circuit << "\t\"" << label_false << "\"";
         circuit << endl;
         break;
