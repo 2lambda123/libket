@@ -7,7 +7,8 @@ extern "C" int ket_no_execute;
 extern "C" size_t ket_seed;
 extern "C" char* ket_kqasm_path;
 extern "C" int ket_out;              
-#define ket_init ket::process* ket_hdl = nullptr; char* ket_kbw_path = nullptr; int ket_no_execute; size_t ket_seed; char* ket_kqasm_path = nullptr; int ket_out            
+extern "C" char* ket_plugin_path;
+#define ket_init ket::process* ket_hdl = nullptr; char* ket_kbw_path = nullptr; int ket_no_execute; size_t ket_seed; char* ket_kqasm_path = nullptr; int ket_out; char* ket_plugin_path = nullptr
 
 
 #define IF(cond) ket_hdl->if_then(cond.get_base_i64(),

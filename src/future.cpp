@@ -51,7 +51,7 @@ std::int64_t future::get() {
 
         if (not ket_no_execute) {
             std::stringstream kbw;
-            kbw << ket_kbw_path << " -s" << ket_seed++;
+            kbw << ket_kbw_path << " -s " << ket_seed++ << " -p " << ket_plugin_path;
             std::stringstream result{call(kbw.str(), ss.str())};
 
             size_t i64_idx;
