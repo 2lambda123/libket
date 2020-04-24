@@ -13,6 +13,8 @@ namespace ket {
 
         quant operator|(const quant& other) const;
 
+        quant invert() const;
+
         const std::vector<std::shared_ptr<base::qubit>>& get_base_qubits() const;
 
         size_t len() const;

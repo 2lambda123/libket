@@ -22,6 +22,12 @@ quant quant::operator|(const quant& other) const {
     return quant{qubits_ptr};
 }
 
+quant quant::invert() const {
+    std::vector<std::shared_ptr<base::qubit>> invert_qubits;
+    invert_qubits.insert(invert_qubits.end(), qubits.rbegin(), qubits.rend());
+    return quant{invert_qubits};
+}
+
 const std::vector<std::shared_ptr<base::qubit>>& quant::get_base_qubits() const {
     return qubits;
 }
