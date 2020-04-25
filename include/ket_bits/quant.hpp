@@ -1,7 +1,7 @@
 #pragma once
 #include "base.hpp"
 
-namespace ket {
+namespace ket::base {
 
     class qubit_iterator;
 
@@ -15,7 +15,7 @@ namespace ket {
 
         quant invert() const;
 
-        const std::vector<std::shared_ptr<base::qubit>>& get_base_qubits() const;
+        const std::vector<std::shared_ptr<qubit>>& get_base_qubits() const;
 
         size_t len() const;
 
@@ -23,9 +23,9 @@ namespace ket {
         qubit_iterator end();
 
     private:
-        quant(const std::vector<std::shared_ptr<base::qubit>> &qubits);
+        quant(const std::vector<std::shared_ptr<qubit>> &qubits);
 
-        std::vector<std::shared_ptr<base::qubit>> qubits;
+        std::vector<std::shared_ptr<qubit>> qubits;
 
         friend class qubit_iterator;
     };
@@ -39,10 +39,10 @@ namespace ket {
         bool operator!=(const qubit_iterator& other) const;
         
     private:
-        qubit_iterator(const std::vector<std::shared_ptr<base::qubit>> &qubits);
+        qubit_iterator(const std::vector<std::shared_ptr<qubit>> &qubits);
         qubit_iterator(size_t size);
 
-        const std::vector<std::shared_ptr<base::qubit>> *qubits;
+        const std::vector<std::shared_ptr<qubit>> *qubits;
         size_t index;
         friend class quant;
     };

@@ -4,6 +4,7 @@
 #include "future.hpp"
 
 namespace ket {
+    using namespace base;
     future measure(const quant& q, bool wait = false);
     void wait(const quant& q);
     void x(const quant& q);

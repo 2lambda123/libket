@@ -5,13 +5,13 @@
 #include <boost/asio.hpp>
 #include <iostream>
 
-using namespace ket;
+using namespace ket::base;
 
-future::future(const std::shared_ptr<base::i64>& bits) : 
+future::future(const std::shared_ptr<i64>& bits) : 
     bits{bits} 
     {}
 
-const std::shared_ptr<base::i64>& future::get_base_i64() const {
+const std::shared_ptr<i64>& future::get_base_i64() const {
     return bits;
 }
 

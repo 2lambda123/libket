@@ -1,14 +1,14 @@
 #include "../include/ket_bits/macros.hpp"
 #include "../include/ket_bits/quant.hpp"
 
-using namespace ket;
+using namespace ket::base;
 
 quant::quant(size_t size, bool dirty) {
     for (size_t i = 0; i < size; i++) 
         qubits.push_back(ket_hdl->alloc(dirty));
 }
 
-quant::quant(const std::vector<std::shared_ptr<base::qubit>>& qubits) :
+quant::quant(const std::vector<std::shared_ptr<qubit>>& qubits) :
     qubits{qubits}
     {}
 
@@ -23,12 +23,12 @@ quant quant::operator|(const quant& other) const {
 }
 
 quant quant::invert() const {
-    std::vector<std::shared_ptr<base::qubit>> invert_qubits;
+    std::vector<std::shared_ptr<qubit>> invert_qubits;
     invert_qubits.insert(invert_qubits.end(), qubits.rbegin(), qubits.rend());
     return quant{invert_qubits};
 }
 
-const std::vector<std::shared_ptr<base::qubit>>& quant::get_base_qubits() const {
+const std::vector<std::shared_ptr<qubit>>& quant::get_base_qubits() const {
     return qubits;
 }
 
@@ -44,7 +44,7 @@ qubit_iterator quant::end() {
     return qubit_iterator{qubits.size()};
 }
 
-qubit_iterator::qubit_iterator(const std::vector<std::shared_ptr<base::qubit>> &qubits) :
+qubit_iterator::qubit_iterator(const std::vector<std::shared_ptr<qubit>> &qubits) :
     qubits{&qubits},
     index{0}
     {}

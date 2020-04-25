@@ -1,5 +1,7 @@
 #include "../include/ket_bits/gates_ex.hpp"
 
+using namespace ket::base;
+
 void ket::pown(size_t n, size_t a, quant x, quant fx) {
     std::stringstream args;
     args << n << " " << a;

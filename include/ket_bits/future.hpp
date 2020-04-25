@@ -1,16 +1,16 @@
 #pragma once
 #include "base.hpp"
 
-namespace ket {
+namespace ket::base {
     class future {
     public:
-        future(const std::shared_ptr<base::i64>& bits);
+        future(const std::shared_ptr<i64>& bits);
 
-        const std::shared_ptr<base::i64>& get_base_i64() const;
+        const std::shared_ptr<i64>& get_base_i64() const;
 
         std::int64_t get();
 
     private:
-        std::shared_ptr<base::i64> bits;
+        std::shared_ptr<i64> bits;
     };
 }
