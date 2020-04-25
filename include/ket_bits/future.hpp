@@ -10,6 +10,8 @@ namespace ket {
 
         std::int64_t get();
 
+        process* get_ps() const;
+
     private:
         process *ps;
 

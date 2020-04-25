@@ -21,3 +21,7 @@ std::int64_t future::get() {
 
     return bits->get_value();
 }
+
+process* future::get_ps() const {
+    return ps;
+}
