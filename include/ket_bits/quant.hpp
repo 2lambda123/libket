@@ -1,13 +1,13 @@
 #pragma once
 #include "base.hpp"
 
-namespace ket::base {
+namespace ket {
 
     class qubit_iterator;
 
     class quant {
     public:
-        quant(size_t size, bool dirty = false);
+        quant(size_t size, bool dirty, process *ps);
 
         quant operator()(size_t idx) const;
 
@@ -15,17 +15,21 @@ namespace ket::base {
 
         quant invert() const;
 
-        const std::vector<std::shared_ptr<qubit>>& get_base_qubits() const;
+        const std::vector<std::shared_ptr<base::qubit>>& get_base_qubits() const;
 
         size_t len() const;
 
-        qubit_iterator begin();
-        qubit_iterator end();
+        qubit_iterator begin() const;
+        qubit_iterator end() const;
+
+        process* get_ps() const;
 
     private:
-        quant(const std::vector<std::shared_ptr<qubit>> &qubits);
+        quant(const std::vector<std::shared_ptr<base::qubit>> &qubits, process *ps);
 
-        std::vector<std::shared_ptr<qubit>> qubits;
+        process *ps;
+        
+        std::vector<std::shared_ptr<base::qubit>> qubits;
 
         friend class qubit_iterator;
     };
@@ -39,10 +43,11 @@ namespace ket::base {
         bool operator!=(const qubit_iterator& other) const;
         
     private:
-        qubit_iterator(const std::vector<std::shared_ptr<qubit>> &qubits);
+        qubit_iterator(const std::vector<std::shared_ptr<base::qubit>> &qubits, process* ps);
         qubit_iterator(size_t size);
 
-        const std::vector<std::shared_ptr<qubit>> *qubits;
+        process *ps;
+        const std::vector<std::shared_ptr<base::qubit>> *qubits;
         size_t index;
         friend class quant;
     };

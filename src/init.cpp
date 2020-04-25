@@ -13,8 +13,8 @@ char* str_copy(const std::string& str) {
 }
 
 void ket::begin(int argc, char* argv[]) {
-    ket_hdl = new ket::process;
-    ket_hdl->begin_block("entry");
+    ket_ps = new process;
+
     boost::program_options::options_description desc{"Options"};
     desc.add_options()
         ("help,h", "Show this information")
@@ -43,7 +43,6 @@ void ket::begin(int argc, char* argv[]) {
 
     std::string out_path = vm["out"].as<std::string>();
     if (out_path != "") {
-        ket_out = 1;   
         ket_kqasm_path = str_copy(out_path);
         
         std::ofstream out{ket_kqasm_path};
@@ -54,7 +53,7 @@ void ket::begin(int argc, char* argv[]) {
 }
 
 void ket::end() {
-    if (ket_hdl) delete ket_hdl;
+    if (ket_ps) delete ket_ps;
     if (ket_kbw_path) delete[] ket_kbw_path;
     if (ket_kqasm_path) delete[] ket_kqasm_path;
     if (ket_plugin_path) delete[] ket_plugin_path;

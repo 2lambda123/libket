@@ -133,9 +133,9 @@ namespace ket::base {
         bool visit;
     };
 
-    class handler {
+    class process {
     public:
-        handler();    
+        process();    
         std::shared_ptr<qubit> alloc(bool dirty = false);
 
         void add_gate(gate::TAG gate_tag, 
@@ -178,7 +178,7 @@ namespace ket::base {
 
         size_t get_label_count();
 
-        void set_value(size_t idx, std::int64_t value);
+        void eval();
 
     private:
         size_t qubit_count;
@@ -203,4 +203,4 @@ namespace ket::base {
 
 }
 
-namespace ket { using process = base::handler; }
+namespace ket { using process = base::process; }

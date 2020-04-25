@@ -4,7 +4,10 @@
 #include "future.hpp"
 
 namespace ket {
-    using namespace base;
+    quant alloc(size_t size, process *ps = ket_ps);
+    quant alloc_dirty(size_t size, process *ps = ket_ps);
+    void free(const quant& q);
+    void free_dirty(const quant& q);
     future measure(const quant& q, bool wait = false);
     void wait(const quant& q);
     void x(const quant& q);
@@ -17,27 +20,27 @@ namespace ket {
     void u2(double phi, double lambda, const quant& q);
     void u3(double theta, double phi, double lambda, const quant& q);
     void dump(const quant& q);
-
+    
     template <class F, class... Args>
     void ctrl(const quant& q, F gate, Args... args) {
-        ket_hdl->ctrl_begin(q.get_base_qubits());
+        q.get_ps()->ctrl_begin(q.get_base_qubits());
         gate(args...);
-        ket_hdl->ctrl_end();
+        q.get_ps()->ctrl_end();
     }
     
     template <class F, class... Args>
-    void adj(F gate, Args... args) {
-        ket_hdl->adj_begin();
+    void adj(F gate, Args... args, process* ps = ket_ps) {
+        ps->adj_begin();
         gate(args...);
-        ket_hdl->adj_end();
+        ps->adj_end();
     }
     
     template <class F, class... Args>
     void ctrl_adj(const quant& q, F gate, Args... args) {
-        ket_hdl->ctrl_begin(q.get_base_qubits());
-        ket_hdl->adj_begin();
+        q.get_ps()->ctrl_begin(q.get_base_qubits());
+        q.get_ps()->adj_begin();
         gate(args...);
-        ket_hdl->adj_end();
-        ket_hdl->ctrl_end();
+        q.get_ps()->adj_end();
+        q.get_ps()->ctrl_end();
     }
 }
