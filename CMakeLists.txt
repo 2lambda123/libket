@@ -31,8 +31,6 @@ install(TARGETS ket
         LIBRARY DESTINATION /usr/lib
         PUBLIC_HEADER DESTINATION /usr/include)
         
-install(DIRECTORY include/ket_bits DESTINATION /usr/include)
-
 add_executable(test EXCLUDE_FROM_ALL
                test/test.cpp)
 set_target_properties(test PROPERTIES 

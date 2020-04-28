@@ -1,4 +1,4 @@
-#include "../include/ket_bits/macros.hpp"
+#include "../include/ket"
 #include <boost/program_options.hpp>
 #include <iostream>
 #include <fstream>

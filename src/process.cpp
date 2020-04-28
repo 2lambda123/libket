@@ -1,14 +1,9 @@
 
 #include "../include/ket_bits/base.hpp"
-#include "../include/ket_bits/macros.hpp"
-#include <boost/process.hpp>
-#include <boost/process/async.hpp>
-#include <boost/asio.hpp>
-#include <iostream>
 
 using namespace ket::base;
 
-process::process() : 
+_process::_process() : 
     qubit_count{0},
     bit_count{0},
     i64_count{0},
@@ -17,7 +12,7 @@ process::process() :
     begin_block("entry");
 }
 
-std::shared_ptr<qubit> process::alloc(bool dirty) {
+std::shared_ptr<qubit> _process::alloc(bool dirty) {
     if (not (adj_call.empty() and ctrl_qubit.empty())) 
         throw std::runtime_error("alloc cannot be used with adj or ctrl");
 
@@ -35,7 +30,7 @@ std::shared_ptr<qubit> process::alloc(bool dirty) {
     return new_qubit;
 }
 
-void process::add_gate(gate::TAG gate_tag, 
+void _process::add_gate(gate::TAG gate_tag, 
                        const std::shared_ptr<qubit>& qbit,
                        const std::vector<double>& args) 
 {
@@ -74,7 +69,7 @@ void process::add_gate(gate::TAG gate_tag,
     } 
 }
 
-void process::add_plugin_gate(const std::string &gate_name, 
+void _process::add_plugin_gate(const std::string &gate_name, 
                               const std::vector<std::shared_ptr<qubit>>& qbits,
                               const std::string& args) 
 {
@@ -102,7 +97,7 @@ void process::add_plugin_gate(const std::string &gate_name,
     block_qubits.insert(qbits_idx.begin(), qbits_idx.end());
 }
 
-void process::wait(const std::vector<std::shared_ptr<qubit>>& qbits) {
+void _process::wait(const std::vector<std::shared_ptr<qubit>>& qbits) {
     std::vector<size_t> qbits_idx;
     for (auto &i : qbits) 
         qbits_idx.push_back(i->idx());
@@ -122,7 +117,7 @@ void process::wait(const std::vector<std::shared_ptr<qubit>>& qbits) {
     block_qubits.insert(qbits_idx.begin(), qbits_idx.end());
 }
 
-std::shared_ptr<bit> process::measure(const std::shared_ptr<qubit>& qbit) {
+std::shared_ptr<bit> _process::measure(const std::shared_ptr<qubit>& qbit) {
     if (not (adj_call.empty() and ctrl_qubit.empty())) 
         throw std::runtime_error("measure cannot be used with adj or ctrl");
 
@@ -150,7 +145,7 @@ std::shared_ptr<bit> process::measure(const std::shared_ptr<qubit>& qbit) {
     return new_bit;
 }
 
-void process::free(const std::shared_ptr<qubit>& qbit, bool dirty) {
+void _process::free(const std::shared_ptr<qubit>& qbit, bool dirty) {
     if (not (adj_call.empty() and ctrl_qubit.empty())) 
         throw std::runtime_error("measure cannot be used with adj or ctrl");
     
@@ -171,13 +166,13 @@ void process::free(const std::shared_ptr<qubit>& qbit, bool dirty) {
     block_call.push(fgate);
 }
 
-std::shared_ptr<i64> process::new_i64(const std::vector<std::shared_ptr<bit>>& bits) {
+std::shared_ptr<i64> _process::new_i64(const std::vector<std::shared_ptr<bit>>& bits) {
     auto i64_ptr = std::make_shared<i64>(bits, i64_count);
     measurement_map[i64_count] = i64_ptr.get();
     return i64_ptr;
 }
 
-std::shared_ptr<i64> process::i64_op(const std::string& op,
+std::shared_ptr<i64> _process::i64_op(const std::string& op,
                                      const std::vector<std::shared_ptr<i64>>& args, 
                                      bool infix) 
  {
@@ -186,11 +181,11 @@ std::shared_ptr<i64> process::i64_op(const std::string& op,
     return i64_ptr;
 }
 
-void process::adj_begin() {
+void _process::adj_begin() {
     adj_call.push({});
 }
 
-void process::adj_end() {
+void _process::adj_end() {
     auto inner = adj_call.top();
     adj_call.pop();
     
@@ -208,23 +203,23 @@ void process::adj_end() {
 }
 
 
-void process::ctrl_begin(const std::vector<std::shared_ptr<qubit>>& ctrl) {
+void _process::ctrl_begin(const std::vector<std::shared_ptr<qubit>>& ctrl) {
     std::vector<size_t> ctrl_q;
     for (auto &i: ctrl) ctrl_q.push_back(i->idx());
     ctrl_qubit.push_back(ctrl_q);
 }
 
-void process::ctrl_end() {
+void _process::ctrl_end() {
     ctrl_qubit.pop_back();
 }
 
-void process::begin_block(const std::string& label,
+void _process::begin_block(const std::string& label,
                           const boost::unordered_set<size_t>& block_qubits) {
     this->block_qubits = block_qubits;
     this->label = label;
 } 
 
-void process::end_block(const std::string& label_true,
+void _process::end_block(const std::string& label_true,
                         const std::string& label_false,
                         const std::shared_ptr<i64>& bri64) {
     std::vector<size_t> qubits;
@@ -258,12 +253,12 @@ void process::end_block(const std::string& label_true,
     block_free.clear();
 }
 
-boost::unordered_set<size_t> process::block_qubits_backup() {
+boost::unordered_set<size_t> _process::block_qubits_backup() {
     return block_qubits;
 }
 
 
-void process::if_then(const std::shared_ptr<i64>& cond, std::function<void()> then, std::function<void()> otherwise) {
+void _process::if_then(const std::shared_ptr<i64>& cond, std::function<void()> then, std::function<void()> otherwise) {
     auto then_label = label+std::string{".if.then"}+std::to_string(label_count);
     auto else_label = label+std::string{".if.else"}+std::to_string(label_count);
     auto end_label = label+std::string{".if.end"}+std::to_string(label_count);
@@ -290,53 +285,6 @@ void process::if_then(const std::shared_ptr<i64>& cond, std::function<void()> th
     label_count++;
 }
 
-size_t process::get_label_count() {
+size_t _process::get_label_count() {
     return label_count++;
-}
-
-std::string call(const std::string& command, const std::string& in) {
-    boost::asio::io_service ios;
-
-    std::future<std::string> outdata;
-
-    boost::process::async_pipe qasm(ios);
-    boost::process::child c(command+std::string{},
-                            boost::process::std_out > outdata,
-                            boost::process::std_in < qasm, ios);
-
-    boost::asio::async_write(qasm, boost::process::buffer(in),
-                            [&](boost::system::error_code, size_t) { qasm.close(); });
-
-    ios.run();
-
-    return outdata.get();
-}
-
-void process::eval() {
-    end_block("end");
-
-    std::stringstream ss;
-    for (auto &i : measurement_map) 
-        i.second->eval(ss);
-
-    if (ket_kqasm_path) {
-        std::ofstream out{ket_kqasm_path, std::ofstream::app};
-        out << ss.str() 
-            << "- - - - - - - - - - - - - - - - - - - - - - - - - - - - -" 
-            << std::endl;
-        out.close();
-    }
-
-    if (not ket_no_execute) {
-        std::stringstream kbw;
-        kbw << ket_kbw_path << " -s " << ket_seed++ << " -p " << ket_plugin_path;
-        std::stringstream result{call(kbw.str(), ss.str())};
-
-        size_t i64_idx;
-        std::int64_t val;
-        while (result >> i64_idx >> val) measurement_map[i64_idx]->set_value(val);
-    } else for (auto &i : measurement_map) {
-        i.second->set_value(0);
-    }
-        
 }

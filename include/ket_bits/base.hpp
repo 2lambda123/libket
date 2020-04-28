@@ -133,9 +133,9 @@ namespace ket::base {
         bool visit;
     };
 
-    class process {
+    class _process {
     public:
-        process();    
+        _process();    
         std::shared_ptr<qubit> alloc(bool dirty = false);
 
         void add_gate(gate::TAG gate_tag, 
@@ -202,5 +202,3 @@ namespace ket::base {
     };
 
 }
-
-namespace ket { using process = base::process; }

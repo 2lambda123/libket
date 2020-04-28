@@ -1,6 +1,114 @@
-#include "ket_bits/base.hpp"
-#include "ket_bits/macros.hpp"
-#include "ket_bits/quant.hpp"
-#include "ket_bits/future.hpp"
-#include "ket_bits/gates.hpp"
-#include "ket_bits/gates_ex.hpp"
+#pragma once
+#include <cstddef>
+#include <cstdint>
+#include <memory>
+
+namespace ket {
+
+    struct quant {
+        quant(const std::shared_ptr<void> &quant_ptr);
+
+        quant operator()(size_t idx) const;
+        quant operator|(const quant& other) const;
+        quant invert() const;
+        size_t len() const;
+
+        std::shared_ptr<void> quant_ptr;
+    };
+
+    struct future {
+        future(const std::shared_ptr<void> &future_ptr);
+
+        std::int64_t get();
+
+        std::shared_ptr<void> future_ptr;
+    };
+
+    struct process {
+        process();
+        std::shared_ptr<void> ps;
+    };
+}
+
+extern "C" ket::process* ket_ps;
+extern "C" char* ket_kbw_path;
+extern "C" int ket_no_execute;
+extern "C" size_t ket_seed;
+extern "C" char* ket_kqasm_path;
+extern "C" char* ket_plugin_path;
+
+inline ket::process* ket_ps = nullptr;
+inline char* ket_kbw_path = nullptr;
+inline int ket_no_execute;
+inline size_t ket_seed; 
+inline char* ket_kqasm_path = nullptr;
+inline char* ket_plugin_path = nullptr;
+
+namespace ket {
+    void begin(int argc, char* argv[]);
+    void end();
+    
+    void ctrl_begin(const quant& q);
+    void ctrl_end(const quant& q);
+    
+    void adj_begin(process &ps = *ket_ps);
+    void adj_end(process &ps = *ket_ps);
+    
+    void ctrl_adj_begin(const quant& q);
+    void ctrl_adj_end(const quant& q);
+
+    quant alloc(size_t size, process &ps = *ket_ps);
+    quant alloc_dirty(size_t size, process &ps = *ket_ps);
+
+    void free(const quant& q);
+    void free_dirty(const quant& q);
+
+    future measure(const quant& q, bool wait = false);
+    void wait(const quant& q);
+
+    void x(const quant& q);
+    void y(const quant& q);
+    void z(const quant& q);
+    void h(const quant& q);
+    void s(const quant& q);
+    void t(const quant& q);
+    void u1(double lambda, const quant& q);
+    void u2(double phi, double lambda, const quant& q);
+    void u3(double theta, double phi, double lambda, const quant& q);
+    
+    void dump(const quant& q);
+
+    template <class F, class... Args> 
+    auto run(F func, Args... args) {
+        auto* backup_ket_ps = ket_ps;
+        ket_ps = new process;
+        auto ret = func(args...);
+        delete ket_ps;
+        ket_ps = backup_ket_ps;
+        return ret;
+    }
+
+    template <class F, class... Args>
+    void ctrl(const quant& q, F gate, Args... args) {
+        ctrl_begin(q);
+        gate(args...);
+        ctrl_end(q);
+    }
+
+    template <class F, class... Args>
+    void adj(F gate, Args... args, process& ps = *ket_ps) {
+        adj_begin(ps);
+        gate(args...);
+        adj_end(ps);
+    }
+    
+    template <class F, class... Args>
+    void ctrl_adj(const quant& q, F gate, Args... args) {
+        ctrl_adj_begin(q);
+        gate(args...);
+        ctrl_adj_end(q);
+    }
+
+    quant pown(size_t a, const quant& x, size_t n);
+}
+

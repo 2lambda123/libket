@@ -2,18 +2,18 @@
 #include "base.hpp"
 
 namespace ket {
-    class future {
+    class _future {
     public:
-        future(const std::shared_ptr<base::i64>& bits, process* ps);
+        _future(const std::shared_ptr<base::i64>& bits, base::_process* ps);
 
         const std::shared_ptr<base::i64>& get_base_i64() const;
 
         std::int64_t get();
 
-        process* get_ps() const;
+        base::_process* get_ps() const;
 
     private:
-        process *ps;
+        base::_process *ps;
 
         std::shared_ptr<base::i64> bits;
     };

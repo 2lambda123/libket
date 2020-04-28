@@ -2,9 +2,9 @@
 #include <iostream>
 
 ket_main(
-    ket::quant a{1};
-    ket::quant aux{1};
-    ket::quant b{1};
+    ket::_quant a{1};
+    ket::_quant aux{1};
+    ket::_quant b{1};
 
     ket::h(aux);
     ket::ctrl(aux, ket::x, b);

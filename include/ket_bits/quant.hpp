@@ -5,15 +5,15 @@ namespace ket {
 
     class qubit_iterator;
 
-    class quant {
+    class _quant {
     public:
-        quant(size_t size, bool dirty, process *ps);
+        _quant(size_t size, bool dirty, base::_process *ps);
 
-        quant operator()(size_t idx) const;
+        _quant operator()(size_t idx) const;
 
-        quant operator|(const quant& other) const;
+        _quant operator|(const _quant& other) const;
 
-        quant invert() const;
+        _quant invert() const;
 
         const std::vector<std::shared_ptr<base::qubit>>& get_base_qubits() const;
 
@@ -22,12 +22,12 @@ namespace ket {
         qubit_iterator begin() const;
         qubit_iterator end() const;
 
-        process* get_ps() const;
+        base::_process* get_ps() const;
 
     private:
-        quant(const std::vector<std::shared_ptr<base::qubit>> &qubits, process *ps);
+        _quant(const std::vector<std::shared_ptr<base::qubit>> &qubits, base::_process *ps);
 
-        process *ps;
+        base::_process *ps;
         
         std::vector<std::shared_ptr<base::qubit>> qubits;
 
@@ -36,19 +36,19 @@ namespace ket {
 
     class qubit_iterator {
     public:
-        quant operator*();
+        _quant operator*();
 
         const qubit_iterator& operator++();
 
         bool operator!=(const qubit_iterator& other) const;
         
     private:
-        qubit_iterator(const std::vector<std::shared_ptr<base::qubit>> &qubits, process* ps);
+        qubit_iterator(const std::vector<std::shared_ptr<base::qubit>> &qubits, base::_process* ps);
         qubit_iterator(size_t size);
 
-        process *ps;
+        base::_process *ps;
         const std::vector<std::shared_ptr<base::qubit>> *qubits;
         size_t index;
-        friend class quant;
+        friend class _quant;
     };
 }
