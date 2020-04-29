@@ -1,4 +1,5 @@
 #include "../include/ket"
+#include "../include/ket_bits/future.hpp"
 #include <boost/program_options.hpp>
 #include <iostream>
 #include <fstream>
@@ -66,3 +67,11 @@ void ket::args(int argc, char* argv[]) {
 
     ket_plugin_path = str_copy(vm["plugin"].as<std::string>());
 }
+
+
+void ket::if_then(future _cond, std::function<void(void)> then, std::function<void(void)> otherwise) {
+    auto cond = static_cast<_future*>(_cond.future_ptr.get());
+
+    cond->get_ps()->if_then(cond->get_base_i64(), then, otherwise);
+}
+

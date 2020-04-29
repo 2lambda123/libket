@@ -3,7 +3,7 @@
 
 using namespace ket;
 
-quant ket::pown(size_t a, const quant& _x, size_t n) {
+quant ket::pown(size_t a, quant _x, size_t n) {
     auto x = *static_cast<_quant*>(_x.quant_ptr.get());
     _quant fx{x.len(), false, x.get_ps()};
     std::stringstream args;

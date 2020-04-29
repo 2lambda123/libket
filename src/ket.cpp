@@ -12,7 +12,7 @@ quant quant::operator()(size_t idx) const {
     return quant{{ptr, [](auto ptr){ delete static_cast<_quant*>(ptr);}}};
 }
 
-quant quant::operator|(const quant& other) const {
+quant quant::operator|(quant other) const {
     auto *ptr = new ket::_quant{(*static_cast<ket::_quant*>(quant_ptr.get()))|(*static_cast<ket::_quant*>(other.quant_ptr.get()))};
     return quant{{ptr, [](auto ptr){ delete static_cast<_quant*>(ptr);}}};
 }
@@ -34,12 +34,12 @@ int64_t future::get() {
 
 process::process() : ps{new base::_process, [](auto ptr){ delete static_cast<base::_process*>(ptr); }} {} 
 
-void ket::ctrl_begin(const quant& _q) {
+void ket::ctrl_begin(quant _q) {
     auto *q = static_cast<_quant*>(_q.quant_ptr.get());
     q->get_ps()->ctrl_begin(q->get_base_qubits());
 }
 
-void ket::ctrl_end(const quant& _q) {
+void ket::ctrl_end(quant _q) {
     auto *q = static_cast<_quant*>(_q.quant_ptr.get());
     q->get_ps()->ctrl_end();
 }
@@ -54,13 +54,13 @@ void ket::adj_end(process &_ps) {
     ps->adj_begin();
 }
 
-void ket::ctrl_adj_begin(const quant& _q) {
+void ket::ctrl_adj_begin(quant _q) {
     auto *q = static_cast<_quant*>(_q.quant_ptr.get());
     q->get_ps()->ctrl_begin(q->get_base_qubits());
     q->get_ps()->adj_begin();
 }
 
-void ket::ctrl_adj_end(const quant& _q) {
+void ket::ctrl_adj_end(quant _q) {
     auto *q = static_cast<_quant*>(_q.quant_ptr.get());
     q->get_ps()->adj_end();
     q->get_ps()->ctrl_end();

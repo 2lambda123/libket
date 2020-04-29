@@ -2,6 +2,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <memory>
+#include <functional>
 
 namespace ket {
 
@@ -9,7 +10,7 @@ namespace ket {
         quant(const std::shared_ptr<void> &quant_ptr);
 
         quant operator()(size_t idx) const;
-        quant operator|(const quant& other) const;
+        quant operator|(quant other) const;
         quant invert() const;
         size_t len() const;
 
@@ -51,35 +52,35 @@ inline char* ket_plugin_path;
 namespace ket {
     void args(int argc, char* argv[]);
     
-    void ctrl_begin(const quant& q);
-    void ctrl_end(const quant& q);
+    void ctrl_begin(quant q);
+    void ctrl_end(quant q);
     
     void adj_begin(process &ps = *ket_ps);
     void adj_end(process &ps = *ket_ps);
     
-    void ctrl_adj_begin(const quant& q);
-    void ctrl_adj_end(const quant& q);
+    void ctrl_adj_begin(quant q);
+    void ctrl_adj_end(quant q);
 
     quant alloc(size_t size, process &ps = *ket_ps);
     quant alloc_dirty(size_t size, process &ps = *ket_ps);
 
-    void free(const quant& q);
-    void free_dirty(const quant& q);
+    void free(quant q);
+    void free_dirty(quant q);
 
-    future measure(const quant& q, bool wait = true);
-    void wait(const quant& q);
+    future measure(quant q, bool wait = true);
+    void wait(quant q);
 
-    void x(const quant& q);
-    void y(const quant& q);
-    void z(const quant& q);
-    void h(const quant& q);
-    void s(const quant& q);
-    void t(const quant& q);
-    void u1(double lambda, const quant& q);
-    void u2(double phi, double lambda, const quant& q);
-    void u3(double theta, double phi, double lambda, const quant& q);
+    void x(quant q);
+    void y(quant q);
+    void z(quant q);
+    void h(quant q);
+    void s(quant q);
+    void t(quant q);
+    void u1(double lambda, quant q);
+    void u2(double phi, double lambda, quant q);
+    void u3(double theta, double phi, double lambda, quant q);
     
-    void dump(const quant& q);
+    void dump(quant q);
 
     template <class F, class... Args> 
     auto run(F func, Args... args) {
@@ -92,7 +93,7 @@ namespace ket {
     }
 
     template <class F, class... Args>
-    void ctrl(const quant& q, F gate, Args... args) {
+    void ctrl(quant q, F gate, Args... args) {
         ctrl_begin(q);
         gate(args...);
         ctrl_end(q);
@@ -106,12 +107,19 @@ namespace ket {
     }
     
     template <class F, class... Args>
-    void ctrl_adj(const quant& q, F gate, Args... args) {
+    void ctrl_adj(quant q, F gate, Args... args) {
         ctrl_adj_begin(q);
         gate(args...);
         ctrl_adj_end(q);
     }
 
-    quant pown(size_t a, const quant& x, size_t n);
+    quant pown(size_t a, quant x, size_t n);
+
+    void if_then(future cond, std::function<void(void)> then, std::function<void(void)> otherwise = nullptr);
+
 }
 
+#define IF(cond) ket::if_then(cond,
+#define THEN(...) [&] { __VA_ARGS__ } 
+#define END )
+#define ELSE(...) , [&] { __VA_ARGS__ });
