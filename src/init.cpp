@@ -21,7 +21,7 @@ void ket::begin(int argc, char* argv[]) {
         ("seed,s", boost::program_options::value<size_t>(), "Pseudo random number generator seed")
         ("out,o", boost::program_options::value<std::string>()->default_value(""), "kqasm output file")
         ("kbw,b", boost::program_options::value<std::string>()->default_value("kbw"), "Path to the Ket Bitwise simulator")
-        ("plugin,p", boost::program_options::value<std::string>()->default_value("./"), "Ket Bitwise plugin directory path")
+        ("plugin,p", boost::program_options::value<std::string>()->default_value("/usr/lib/kbw/"), "Ket Bitwise plugin directory path")
         ("no-execute", "Do not execute the quantum code, measuments will return 0");
 
     boost::program_options::parsed_options parsed = boost::program_options::command_line_parser(argc, argv).options(desc).allow_unregistered().run();
