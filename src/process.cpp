@@ -169,6 +169,7 @@ void _process::free(const std::shared_ptr<qubit>& qbit, bool dirty) {
 std::shared_ptr<i64> _process::new_i64(const std::vector<std::shared_ptr<bit>>& bits) {
     auto i64_ptr = std::make_shared<i64>(bits, i64_count);
     measurement_map[i64_count] = i64_ptr.get();
+    i64_count++;
     return i64_ptr;
 }
 
@@ -178,6 +179,7 @@ std::shared_ptr<i64> _process::i64_op(const std::string& op,
  {
     auto i64_ptr = std::make_shared<i64>(op, args, i64_count++, infix);
     measurement_map[i64_count] = i64_ptr.get();
+    i64_count++;
     return i64_ptr;
 }
 
