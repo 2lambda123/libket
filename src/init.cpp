@@ -12,9 +12,26 @@ char* str_copy(const std::string& str) {
     return ptr;
 }
 
-void ket::begin(int argc, char* argv[]) {
+_init::_init() {
     ket_ps = new process;
+    ket_kbw_path = str_copy("kbw");
+    ket_no_execute = 0;
+    ket_seed = std::time(nullptr);
+    ket_kqasm_path = nullptr;
+    ket_plugin_path = str_copy("/usr/lib/kbw/");
+}
 
+_init::~_init() {
+    if (ket_ps) delete ket_ps;
+    if (ket_kbw_path) delete[] ket_kbw_path;
+    if (ket_kqasm_path) delete[] ket_kqasm_path;
+    if (ket_plugin_path) delete[] ket_plugin_path;
+}
+
+void ket::args(int argc, char* argv[]) {
+    if (ket_kbw_path) delete[] ket_kbw_path;
+    if (ket_plugin_path) delete[] ket_plugin_path;
+    
     boost::program_options::options_description desc{"Options"};
     desc.add_options()
         ("help,h", "Show this information")
@@ -34,8 +51,6 @@ void ket::begin(int argc, char* argv[]) {
     } 
 
     if (vm.count("seed")) ket_seed = vm["seed"].as<size_t>();
-    else ket_seed =std::time(nullptr);
-    
     
     ket_kbw_path= str_copy(vm["kbw"].as<std::string>());
 
@@ -50,11 +65,4 @@ void ket::begin(int argc, char* argv[]) {
     }
 
     ket_plugin_path = str_copy(vm["plugin"].as<std::string>());
-}
-
-void ket::end() {
-    if (ket_ps) delete ket_ps;
-    if (ket_kbw_path) delete[] ket_kbw_path;
-    if (ket_kqasm_path) delete[] ket_kqasm_path;
-    if (ket_plugin_path) delete[] ket_plugin_path;
 }

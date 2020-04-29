@@ -28,6 +28,7 @@ namespace ket {
         process();
         std::shared_ptr<void> ps;
     };
+
 }
 
 extern "C" ket::process* ket_ps;
@@ -37,16 +38,17 @@ extern "C" size_t ket_seed;
 extern "C" char* ket_kqasm_path;
 extern "C" char* ket_plugin_path;
 
-inline ket::process* ket_ps = nullptr;
-inline char* ket_kbw_path = nullptr;
+inline struct _init {_init();~_init();} ket_init;
+
+inline ket::process* ket_ps;
+inline char* ket_kbw_path;
 inline int ket_no_execute;
 inline size_t ket_seed; 
-inline char* ket_kqasm_path = nullptr;
-inline char* ket_plugin_path = nullptr;
+inline char* ket_kqasm_path;
+inline char* ket_plugin_path;
 
 namespace ket {
-    void begin(int argc, char* argv[]);
-    void end();
+    void args(int argc, char* argv[]);
     
     void ctrl_begin(const quant& q);
     void ctrl_end(const quant& q);
@@ -63,7 +65,7 @@ namespace ket {
     void free(const quant& q);
     void free_dirty(const quant& q);
 
-    future measure(const quant& q, bool wait = false);
+    future measure(const quant& q, bool wait = true);
     void wait(const quant& q);
 
     void x(const quant& q);
