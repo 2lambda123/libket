@@ -29,6 +29,7 @@ namespace ket {
         std::shared_ptr<void> ps;
     };
 
+    struct _init {_init();~_init();};
 }
 
 extern "C" ket::process* ket_ps;
@@ -38,7 +39,7 @@ extern "C" size_t ket_seed;
 extern "C" char* ket_kqasm_path;
 extern "C" char* ket_plugin_path;
 
-inline struct _init {_init();~_init();} ket_init;
+inline ket::_init ket_init;
 
 inline ket::process* ket_ps;
 inline char* ket_kbw_path;
