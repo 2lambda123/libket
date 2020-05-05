@@ -50,7 +50,25 @@ inline char* ket_kqasm_path;
 inline char* ket_plugin_path;
 
 namespace ket {
+    
+    class label {
+    public:
+        label(const std::string& name, process& ps = *ket_ps);
+        operator std::string() const;
+
+        void begin();
+
+         
+        process& ps;
+    private:
+        std::string name;
+        inline static size_t count = 0;
+    };
+
     void args(int argc, char* argv[]);
+
+    void jump(label& label_name);
+    void branch(future cond, label& label_true, label& label_false);
     
     void ctrl_begin(quant q);
     void ctrl_end(quant q);
@@ -68,7 +86,7 @@ namespace ket {
     void free_dirty(quant q);
 
     future measure(quant q, bool wait = true);
-    void wait(quant q);
+    void wait(process &ps = *ket_ps);
 
     void x(quant q);
     void y(quant q);
@@ -115,11 +133,7 @@ namespace ket {
 
     quant pown(size_t a, quant x, size_t n);
 
-    void if_then(future cond, std::function<void(void)> then, std::function<void(void)> otherwise = nullptr);
+    void if_then(future cond, std::function<void(void)> then, std::function<void(void)> otherwise = nullptr, process& ps = *ket_ps);
 
 }
 
-#define IF(cond) ket::if_then(cond,
-#define THEN(...) [&] { __VA_ARGS__ } 
-#define END )
-#define ELSE(...) , [&] { __VA_ARGS__ });

@@ -146,7 +146,7 @@ namespace ket::base {
                              const std::vector<std::shared_ptr<qubit>>& qbit,
                              const std::string& args = "");
 
-        void wait(const std::vector<std::shared_ptr<qubit>>& qbits);
+        void wait();
 
         std::shared_ptr<bit> measure(const std::shared_ptr<qubit>& qbit);
 
@@ -165,26 +165,18 @@ namespace ket::base {
         void ctrl_begin(const std::vector<std::shared_ptr<qubit>>& ctrl);
         void ctrl_end();
 
-        void begin_block(const std::string& next_label,
-                         const boost::unordered_set<size_t>& block_qubits = {});
+        void begin_block(const std::string& next_label);
 
         void end_block(const std::string& label_goto1,
                        const std::string& label_goto2 = "",
                        const std::shared_ptr<i64>& bri64 = nullptr);
-        
-        boost::unordered_set<size_t> block_qubits_backup();
          
-        void if_then(const std::shared_ptr<i64>& cond, std::function<void()> then, std::function<void()> otherwise= nullptr);
-
-        size_t get_label_count();
-
         void eval();
 
     private:
         size_t qubit_count;
         size_t bit_count;
         size_t i64_count;
-        size_t label_count;
 
         std::string label;
 
@@ -196,7 +188,6 @@ namespace ket::base {
         std::vector<std::vector<size_t>> ctrl_qubit;
 
         std::queue<std::function<void()>> block_call;
-        boost::unordered_set<size_t> block_qubits;
         boost::unordered_set<size_t> block_free;
         
     };

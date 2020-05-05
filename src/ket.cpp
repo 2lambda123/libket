@@ -34,6 +34,29 @@ int64_t future::get() {
 
 process::process() : ps{new base::_process, [](auto ptr){ delete static_cast<base::_process*>(ptr); }} {} 
 
+label::label(const std::string& label_name, process& _ps) : ps{_ps}, name{label_name+std::to_string(count++)} {} 
+
+label::operator std::string() const {
+    return name;
+}
+
+void label::begin() {
+    auto psb = static_cast<base::_process*>(ps.ps.get());
+    psb->begin_block(name);
+}
+
+void ket::jump(label& label_name) {
+    auto ps = static_cast<base::_process*>(label_name.ps.ps.get());
+    ps->end_block(label_name);
+}
+
+void ket::branch(future _cond, label& label_true, label& label_false) {
+    auto ps = static_cast<base::_process*>(label_true.ps.ps.get());
+    auto cond = static_cast<ket::_future*>(_cond.future_ptr.get());
+
+    ps->end_block(label_true, label_false, cond->get_base_i64());
+}
+
 void ket::ctrl_begin(quant _q) {
     auto *q = static_cast<_quant*>(_q.quant_ptr.get());
     q->get_ps()->ctrl_begin(q->get_base_qubits());

@@ -27,7 +27,7 @@ void free_dirty(quant _q) {
 
 future ket::measure(quant _q, bool wait) {
     auto *q = static_cast<_quant*>(_q.quant_ptr.get());
-    if (wait) q->get_ps()->wait(q->get_base_qubits());
+    if (wait) q->get_ps()->wait();
 
     std::vector<std::shared_ptr<base::bit>> bits;
     for (auto &i : q->get_base_qubits()) 
@@ -36,9 +36,9 @@ future ket::measure(quant _q, bool wait) {
                    [](auto ptr){ delete static_cast<_future*>(ptr); } }};
 }
 
-void ket::wait(quant _q) {
-    auto *q = static_cast<_quant*>(_q.quant_ptr.get());
-    q->get_ps()->wait(q->get_base_qubits());
+void ket::wait(process &_ps) {
+    auto qs = static_cast<base::_process*>(_ps.ps.get());
+    qs->wait();
 }
 
 void ket::x(quant _q) {

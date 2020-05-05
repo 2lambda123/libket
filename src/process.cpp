@@ -6,8 +6,7 @@ using namespace ket::base;
 _process::_process() : 
     qubit_count{0},
     bit_count{0},
-    i64_count{0},
-    label_count{}
+    i64_count{0}
 {
     begin_block("entry");
 }
@@ -18,8 +17,6 @@ std::shared_ptr<qubit> _process::alloc(bool dirty) {
 
     auto new_qubit = std::make_shared<qubit>(qubit_count);
     qubit_map[qubit_count] = new_qubit.get();
-
-    block_qubits.insert(qubit_count);
 
     block_call.push([new_qubit, dirty]() {
         auto alloc_gate = std::make_shared<gate>(gate::ALLOC, new_qubit->idx(), dirty, new_qubit->last_gate());
@@ -60,8 +57,6 @@ void _process::add_gate(gate::TAG gate_tag,
             this->qubit_map[i]->add_gate(new_gate);
     };
 
-    block_qubits.insert(ctrl_q.begin(), ctrl_q.end());
-    block_qubits.insert(qbit->idx());
     if (not adj_call.empty()) {
         adj_call.top().push(add);
     } else {
@@ -94,13 +89,12 @@ void _process::add_plugin_gate(const std::string &gate_name,
             this->qubit_map[i]->add_gate(new_gate);
     });
 
-    block_qubits.insert(qbits_idx.begin(), qbits_idx.end());
 }
 
-void _process::wait(const std::vector<std::shared_ptr<qubit>>& qbits) {
+void _process::wait() {
     std::vector<size_t> qbits_idx;
-    for (auto &i : qbits) 
-        qbits_idx.push_back(i->idx());
+    for (auto &i : qubit_map) 
+        qbits_idx.push_back(i.second->idx());
         
     block_call.push([this, qbits_idx]{
         std::vector<std::shared_ptr<gate>> qbits_back;
@@ -114,7 +108,6 @@ void _process::wait(const std::vector<std::shared_ptr<qubit>>& qbits) {
             this->qubit_map[i]->add_gate(wait_gate);
     });
     
-    block_qubits.insert(qbits_idx.begin(), qbits_idx.end());
 }
 
 std::shared_ptr<bit> _process::measure(const std::shared_ptr<qubit>& qbit) {
@@ -128,7 +121,6 @@ std::shared_ptr<bit> _process::measure(const std::shared_ptr<qubit>& qbit) {
     
     auto new_bit = std::make_shared<bit>(bit_count, m_gate);
 
-    block_qubits.insert(qbit->idx());
     block_call.push([this, m_gate, qbit]() {
         if (this->block_free.find(qbit->idx()) != this->block_free.end())
             throw std::runtime_error("measuring a freed qubit");
@@ -162,7 +154,6 @@ void _process::free(const std::shared_ptr<qubit>& qbit, bool dirty) {
         this->block_free.insert(qbit->idx());
     };
 
-    block_qubits.insert(qbit->idx());
     block_call.push(fgate);
 }
 
@@ -215,9 +206,7 @@ void _process::ctrl_end() {
     ctrl_qubit.pop_back();
 }
 
-void _process::begin_block(const std::string& label,
-                          const boost::unordered_set<size_t>& block_qubits) {
-    this->block_qubits = block_qubits;
+void _process::begin_block(const std::string& label) {
     this->label = label;
 } 
 
@@ -225,9 +214,8 @@ void _process::end_block(const std::string& label_true,
                         const std::string& label_false,
                         const std::shared_ptr<i64>& bri64) {
     std::vector<size_t> qubits;
-    for (auto &i: block_qubits) 
-        qubits.push_back(i);
-    block_qubits.clear();
+    for (auto &i: qubit_map) 
+        qubits.push_back(i.first);
     
     std::vector<std::shared_ptr<gate>> qubits_back;
     for (auto i: qubits) 
@@ -251,42 +239,4 @@ void _process::end_block(const std::string& label_true,
 
     for (auto i: qubits) 
         qubit_map[i]->add_gate(end_gate);
-
-    block_free.clear();
-}
-
-boost::unordered_set<size_t> _process::block_qubits_backup() {
-    return block_qubits;
-}
-
-
-void _process::if_then(const std::shared_ptr<i64>& cond, std::function<void()> then, std::function<void()> otherwise) {
-    auto then_label = label+std::string{".if.then"}+std::to_string(label_count);
-    auto else_label = label+std::string{".if.else"}+std::to_string(label_count);
-    auto end_label = label+std::string{".if.end"}+std::to_string(label_count);
-
-    auto backup = block_qubits_backup();
-    if (otherwise) {
-        end_block(then_label, else_label, cond);
-    } else {
-        end_block(then_label, end_label, cond);
-    }
-    
-    begin_block(then_label, backup);
-    then();
-    end_block(end_label);
-
-    if (otherwise) {
-        begin_block(else_label, backup);
-        otherwise();
-        end_block(end_label);
-    }
-    
-    begin_block(end_label, backup);
-
-    label_count++;
-}
-
-size_t _process::get_label_count() {
-    return label_count++;
 }
