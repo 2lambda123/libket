@@ -1,19 +1,18 @@
 #include "../include/ket"
-#include "../include/ket_bits/future.hpp"
 #include <boost/program_options.hpp>
 #include <iostream>
 #include <fstream>
 
 using namespace ket;
 
-char* str_copy(const std::string& str) {
+inline char* str_copy(const std::string& str) {
     char* ptr = new char[str.size()+1];
     std::copy(str.begin(), str.end(), ptr);
     ptr[str.size()] = '\0';
     return ptr;
 }
 
-_init::_init() {
+void ket_init_new() {
     ket_ps = new process;
     ket_kbw_path = str_copy("kbw");
     ket_no_execute = 0;
@@ -22,7 +21,7 @@ _init::_init() {
     ket_plugin_path = str_copy("/usr/lib/kbw/");
 }
 
-_init::~_init() {
+void ket_init_free() {
     if (ket_ps) delete ket_ps;
     if (ket_kbw_path) delete[] ket_kbw_path;
     if (ket_kqasm_path) delete[] ket_kqasm_path;

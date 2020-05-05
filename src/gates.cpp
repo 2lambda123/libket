@@ -13,13 +13,13 @@ quant ket::alloc_dirty(size_t size, process& ps) {
     return quant{{new _quant{size, true, static_cast<_process*>(ps.ps.get())}, [](auto ptr){ delete static_cast<_quant*>(ptr);}}};
 }
 
-void free(quant _q) {
+void ket::free(quant _q) {
     auto *q = static_cast<_quant*>(_q.quant_ptr.get());
     for (auto &i : q->get_base_qubits()) 
         q->get_ps()->free(i, false);
 }
 
-void free_dirty(quant _q) {
+void ket::free_dirty(quant _q) {
     auto *q = static_cast<_quant*>(_q.quant_ptr.get());
     for (auto &i : q->get_base_qubits()) 
         q->get_ps()->free(i, true);
