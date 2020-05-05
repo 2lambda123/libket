@@ -38,7 +38,7 @@ extern "C" {
     inline size_t ket_seed;
     inline char* ket_kqasm_path;
     inline char* ket_plugin_path;
-    void ket_init_new() __attribute__((constructor));
+    void ket_init_new(int argc, char* argv[]) __attribute__((constructor));
     void ket_init_free() __attribute__((destructor));
 } 
 
@@ -57,8 +57,6 @@ namespace ket {
         std::string name;
         inline static size_t count = 0;
     };
-
-    void args(int argc, char* argv[]);
 
     void jump(label& label_name);
     void branch(future cond, label& label_true, label& label_false);

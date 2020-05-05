@@ -12,15 +12,6 @@ inline char* str_copy(const std::string& str) {
     return ptr;
 }
 
-void ket_init_new() {
-    ket_ps = new process;
-    ket_kbw_path = str_copy("kbw");
-    ket_no_execute = 0;
-    ket_seed = std::time(nullptr);
-    ket_kqasm_path = nullptr;
-    ket_plugin_path = str_copy("/usr/lib/kbw/");
-}
-
 void ket_init_free() {
     if (ket_ps) delete ket_ps;
     if (ket_kbw_path) delete[] ket_kbw_path;
@@ -28,11 +19,10 @@ void ket_init_free() {
     if (ket_plugin_path) delete[] ket_plugin_path;
 }
 
-void ket::args(int argc, char* argv[]) {
-    if (ket_kbw_path) delete[] ket_kbw_path;
-    if (ket_plugin_path) delete[] ket_plugin_path;
-    
-    boost::program_options::options_description desc{"Options"};
+void ket_init_new(int argc, char* argv[]) {
+    ket_ps = new process;
+
+    boost::program_options::options_description desc{"Ket program options"};
     desc.add_options()
         ("help,h", "Show this information")
         ("seed,s", boost::program_options::value<size_t>(), "Pseudo random number generator seed")

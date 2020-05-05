@@ -41,10 +41,6 @@ void ket_label_begin(ket_label* l) {
     static_cast<label*>(l)->begin();
 }
 
-void ket_args(int argc, char* argv[]) {
-    args(argc, argv);
-}
-
 void ket_jump(ket_label* l) {
     jump(*static_cast<label*>(l));
 }
