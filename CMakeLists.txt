@@ -31,8 +31,3 @@ install(TARGETS ket
         LIBRARY DESTINATION /usr/lib
         PUBLIC_HEADER DESTINATION /usr/include)
         
-add_executable(test EXCLUDE_FROM_ALL
-               test/test.cpp)
-set_target_properties(test PROPERTIES 
-                      CXX_STANDARD 17)
-target_link_libraries(test ket)
