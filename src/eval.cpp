@@ -42,7 +42,8 @@ void _process::eval() {
 
     if (not ket_no_execute) {
         std::stringstream kbw;
-        kbw << ket_kbw_path << " -s " << ket_seed++ << " -p " << ket_plugin_path;
+        kbw << ket_kbw_path << " -s " << ket_seed++;
+        if (ket_plugin_path) kbw << " -p " << ket_plugin_path;
         std::stringstream result{call(kbw.str(), ss.str())};
 
         size_t i64_idx;
