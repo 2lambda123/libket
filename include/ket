@@ -31,6 +31,7 @@ namespace ket {
     };
 }
 
+#ifndef SWIG
 extern "C" {
     inline ket::process* ket_ps;
     inline char* ket_kbw_path;
@@ -41,6 +42,7 @@ extern "C" {
     void ket_init_new(int argc, char* argv[]) __attribute__((constructor));
     void ket_init_free() __attribute__((destructor));
 } 
+#endif
 
 namespace ket {
     
@@ -91,6 +93,9 @@ namespace ket {
     
     void dump(quant q);
 
+    quant pown(size_t a, quant x, size_t n);
+
+    #ifndef SWIG
     template <class F, class... Args> 
     auto run(F func, Args... args) {
         auto* backup_ket_ps = ket_ps;
@@ -122,9 +127,7 @@ namespace ket {
         ctrl_adj_end(q);
     }
 
-    quant pown(size_t a, quant x, size_t n);
-
     void if_then(future cond, std::function<void(void)> then, std::function<void(void)> otherwise = nullptr, process& ps = *ket_ps);
-
+    #endif
 }
 

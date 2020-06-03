@@ -2,6 +2,10 @@ cmake_minimum_required(VERSION 3.15)
 
 project(libket)
 
+if(NOT CMAKE_BUILD_TYPE) 
+    set(CMAKE_BUILD_TYPE Debug)
+endif()
+
 add_compile_options(-Wall -Wextra -pedantic -Werror)
 
 if(NOT EXISTS "${CMAKE_BINARY_DIR}/conan.cmake")
