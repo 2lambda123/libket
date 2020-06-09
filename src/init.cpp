@@ -27,7 +27,7 @@ void ket_init_new(int argc, char* argv[]) {
         ("help,h", "Show this information")
         ("seed,s", boost::program_options::value<size_t>(), "Pseudo random number generator seed")
         ("out,o", boost::program_options::value<std::string>(), "kqasm output file")
-        ("kbw,b", boost::program_options::value<std::string>()->default_value("kbw"), "Path to the Ket Bitwise simulator")
+        ("kbw,b", boost::program_options::value<std::string>(), "Path to the Ket Bitwise simulator")
         ("plugin,p", boost::program_options::value<std::string>(), "Ket Bitwise plugin directory path")
         ("no-execute", "Do not execute the quantum code, measuments will return 0");
 
@@ -42,8 +42,16 @@ void ket_init_new(int argc, char* argv[]) {
 
     if (vm.count("seed")) ket_seed = vm["seed"].as<size_t>();
     else ket_seed = std::time(nullptr);
-    
-    ket_kbw_path= str_copy(vm["kbw"].as<std::string>());
+
+    if (vm.count("kbw")) {
+        ket_kbw_path= str_copy(vm["kbw"].as<std::string>());
+    } else {
+#ifdef SNAP 
+        ket_kbw_path = str_copy(std::string{std::getenv("SNAP")} + "/usr/bin/kbw"};
+#else
+        ket_kbw_path = str_copy("kbw");
+#endif
+    }
 
     ket_no_execute = vm.count("no-execute");
 
