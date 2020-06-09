@@ -180,8 +180,8 @@ namespace ket::base {
 
         std::string label;
 
-        boost::unordered_map<size_t, qubit*> qubit_map;
-        boost::unordered_map<size_t, i64*> measurement_map;
+        boost::unordered_map<size_t, std::shared_ptr<qubit>> qubit_map;
+        boost::unordered_map<size_t, std::shared_ptr<i64>> measurement_map;
 
         std::stack<std::stack<std::function<void()>>> adj_call;
 

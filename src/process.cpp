@@ -16,7 +16,7 @@ std::shared_ptr<qubit> _process::alloc(bool dirty) {
         throw std::runtime_error("alloc cannot be used with adj or ctrl");
 
     auto new_qubit = std::make_shared<qubit>(qubit_count);
-    qubit_map[qubit_count] = new_qubit.get();
+    qubit_map[qubit_count] = new_qubit;
 
     block_call.push([new_qubit, dirty]() {
         auto alloc_gate = std::make_shared<gate>(gate::ALLOC, new_qubit->idx(), dirty, new_qubit->last_gate());
@@ -159,7 +159,7 @@ void _process::free(const std::shared_ptr<qubit>& qbit, bool dirty) {
 
 std::shared_ptr<i64> _process::new_i64(const std::vector<std::shared_ptr<bit>>& bits) {
     auto i64_ptr = std::make_shared<i64>(bits, i64_count);
-    measurement_map[i64_count] = i64_ptr.get();
+    measurement_map[i64_count] = i64_ptr;
     i64_count++;
     return i64_ptr;
 }
@@ -169,7 +169,7 @@ std::shared_ptr<i64> _process::i64_op(const std::string& op,
                                      bool infix) 
  {
     auto i64_ptr = std::make_shared<i64>(op, args, i64_count++, infix);
-    measurement_map[i64_count] = i64_ptr.get();
+    measurement_map[i64_count] = i64_ptr;
     i64_count++;
     return i64_ptr;
 }
