@@ -22,6 +22,7 @@
  * SOFTWARE.
  */
 
+#include "../include/ket"
 #include "../include/ket_bits/quant.hpp"
 
 using namespace ket;
@@ -97,4 +98,25 @@ const qubit_iterator& qubit_iterator::operator++() {
 
 bool qubit_iterator::operator!=(const qubit_iterator& other) const {
     return index != other.index;
+}
+
+quant::quant(const std::shared_ptr<void> &quant_ptr) : quant_ptr{quant_ptr} {}
+
+quant quant::operator()(size_t idx) const {
+    auto *ptr = new ket::_quant{(*static_cast<ket::_quant*>(quant_ptr.get()))(idx)};
+    return quant{{ptr, [](auto ptr){ delete static_cast<_quant*>(ptr);}}};
+}
+
+quant quant::operator|(quant other) const {
+    auto *ptr = new ket::_quant{(*static_cast<ket::_quant*>(quant_ptr.get()))|(*static_cast<ket::_quant*>(other.quant_ptr.get()))};
+    return quant{{ptr, [](auto ptr){ delete static_cast<_quant*>(ptr);}}};
+}
+
+quant quant::invert() const {
+    auto *ptr = new ket::_quant{static_cast<ket::_quant*>(quant_ptr.get())->invert()};
+    return quant{{ptr, [](auto ptr){ delete static_cast<_quant*>(ptr);}}};
+}
+
+size_t quant::len() const {
+    return static_cast<ket::_quant*>(quant_ptr.get())->len();
 }

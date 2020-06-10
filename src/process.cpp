@@ -22,8 +22,10 @@
  * SOFTWARE.
  */
 
+#include "../include/ket"
 #include "../include/ket_bits/base.hpp"
 
+using namespace ket;
 using namespace ket::base;
 
 _process::_process() : 
@@ -270,3 +272,5 @@ void _process::end_block(const std::string& label_true,
     for (auto i: qubits) 
         qubit_map[i]->add_gate(end_gate);
 }
+
+process::process() : ps{new base::_process, [](auto ptr){ delete static_cast<base::_process*>(ptr); }} {} 
