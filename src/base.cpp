@@ -243,13 +243,13 @@ void i64::eval(std::stringstream& circuit) {
                     << args[0]->idx() << "\t" << op << "\ti" 
                     << args[1]->idx() << endl;
         } else {
-            circuit << "\tINT i" << i64_idx << "\t@" << op << "(";
+            circuit << "\tINT\ti" << i64_idx << "\t@" << op << "(";
             for (auto &i: args) circuit << "i" << i->idx() << " ";
             circuit << ")" << ";" << endl;
         } 
         break;
     case VALUE:
-        circuit << "\tINT i" << i64_idx << "\t" << value << endl;
+        circuit << "\tINT\ti" << i64_idx << "\t" << value << endl;
         break;
     default:
         break;
