@@ -250,7 +250,6 @@ void i64::eval(std::stringstream& circuit) {
         break;
     case VALUE:
         circuit << "\tINT i" << i64_idx << "\t" << value << endl;
-        visit = false;
         break;
     default:
         break;
