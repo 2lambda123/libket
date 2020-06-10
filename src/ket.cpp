@@ -51,6 +51,10 @@ size_t quant::len() const {
     return static_cast<ket::_quant*>(quant_ptr.get())->len();
 }
 
+size_t quant::__len__() const {
+    return len();
+}
+
 future::future(const std::shared_ptr<void> &future_ptr) : future_ptr{future_ptr} {}
 
 int64_t future::get() {

@@ -38,6 +38,7 @@ namespace ket {
         quant operator|(quant other) const;
         quant invert() const;
         size_t len() const;
+        size_t __len__() const;
 
         std::shared_ptr<void> quant_ptr;
     };
