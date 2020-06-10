@@ -131,7 +131,7 @@ namespace ket::base {
             const std::vector<std::shared_ptr<i64>>& args, 
             size_t i64_idx,
             bool infix = true);
-        i64(std::int64_t value);
+        i64(std::int64_t value, size_t i64_idx);
 
         bool has_value();
         std::int64_t get_value();
@@ -181,6 +181,8 @@ namespace ket::base {
         std::shared_ptr<i64> i64_op(const std::string& op, 
                                     const std::vector<std::shared_ptr<i64>>& args, 
                                     bool infix=true);
+                                    
+        std::shared_ptr<i64> const_i64(std::int64_t value);
 
         void adj_begin();
         

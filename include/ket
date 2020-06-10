@@ -45,6 +45,50 @@ namespace ket {
     struct future {
         future(const std::shared_ptr<void> &future_ptr);
 
+        future operator==(const future& other) const;
+        future operator!=(const future& other) const;
+        future operator<(const future& other) const;
+        future operator<=(const future& other) const;
+        future operator>(const future& other) const;
+        future operator>=(const future& other) const;
+
+        future operator==(std::int64_t other) const;
+        future operator!=(std::int64_t other) const;
+        future operator<(std::int64_t  ther) const;
+        future operator<=(std::int64_t  other) const;
+        future operator>(std::int64_t  ther) const;
+        future operator>=(std::int64_t  other) const;
+
+        future operator+(const future& other) const;
+        future operator-(const future& other) const;
+        future operator*(const future& other) const;
+        future operator/(const future& other) const;
+        future operator<<(const future& other) const;
+        future operator>>(const future& other) const;
+        future operator&(const future& other) const;
+        future operator^(const future& other) const;
+        future operator|(const future& other) const;
+        
+        future operator+(std::int64_t other) const;
+        future operator-(std::int64_t other) const;
+        future operator*(std::int64_t other) const;
+        future operator/(std::int64_t other) const;
+        future operator<<(std::int64_t other) const;
+        future operator>>(std::int64_t other) const;
+        future operator&(std::int64_t other) const;
+        future operator^(std::int64_t other) const;
+        future operator|(std::int64_t other) const;
+
+        future __radd__(std::int64_t other) const;
+        future __rsub__(std::int64_t other) const;
+        future __rmul__(std::int64_t other) const;
+        future __rtruediv__(std::int64_t other) const;
+        future __rlshift__(std::int64_t other) const;
+        future __rrshift__(std::int64_t other) const;
+        future __rand__(std::int64_t other) const;
+        future __rxor__(std::int64_t other) const;
+        future __ror__(std::int64_t other) const;
+
         std::int64_t get();
 
         std::shared_ptr<void> future_ptr;

@@ -212,8 +212,9 @@ i64::i64(const std::string& op,
     visit{false}
     {}
 
-i64::i64(std::int64_t value) :
+i64::i64(std::int64_t value, size_t i64_idx) :
     tag{VALUE},
+    i64_idx{i64_idx},
     value{value},
     visit{false}
     {}
@@ -239,7 +240,7 @@ void i64::eval(std::stringstream& circuit) {
         for (auto &i: args) i->eval(circuit);
         if (infix) {
             circuit << "\tINT\ti" << i64_idx << "\ti" 
-                    << args[0]->idx() << op << "i" 
+                    << args[0]->idx() << "\t" << op << "\ti" 
                     << args[1]->idx() << endl;
         } else {
             circuit << "\tINT i" << i64_idx << "\t@" << op << "(";
