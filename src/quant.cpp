@@ -120,3 +120,7 @@ quant quant::invert() const {
 size_t quant::len() const {
     return static_cast<ket::_quant*>(quant_ptr.get())->len();
 }
+
+size_t quant::__len__() const {
+    return static_cast<ket::_quant*>(quant_ptr.get())->len();
+}
