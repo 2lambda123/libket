@@ -184,10 +184,10 @@ namespace ket {
     }
 
     template <class F, class... Args>
-    void adj(F gate, Args... args, process& ps = *ket_ps) {
-        adj_begin(ps);
+    void adj(F gate, Args... args) {
+        adj_begin();
         gate(args...);
-        adj_end(ps);
+        adj_end();
     }
     
     template <class F, class... Args>

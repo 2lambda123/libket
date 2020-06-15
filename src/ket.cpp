@@ -70,7 +70,7 @@ void ket::adj_begin(process &_ps) {
 
 void ket::adj_end(process &_ps) {
     auto ps = static_cast<base::_process*>(_ps.ps.get());
-    ps->adj_begin();
+    ps->adj_end();
 }
 
 void ket::ctrl_adj_begin(quant _q) {
