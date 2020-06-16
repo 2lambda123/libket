@@ -53,6 +53,17 @@ void ket::branch(future _cond, label& label_true, label& label_false) {
     ps->end_block(label_true, label_false, cond->get_base_i64());
 }
 
+void ket::process_begin() {
+    ket_ps_stack.push(ket_ps);
+    ket_ps = new process;
+}
+
+void ket::process_end() {
+    delete ket_ps;
+    ket_ps = ket_ps_stack.top();
+    ket_ps_stack.pop();
+}
+
 void ket::ctrl_begin(quant _q) {
     auto *q = static_cast<_quant*>(_q.quant_ptr.get());
     q->get_ps()->ctrl_begin(q->get_base_qubits());

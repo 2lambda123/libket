@@ -27,6 +27,7 @@
 #include <cstdint>
 #include <string>
 #include <memory>
+#include <stack>
 #include <functional>
 
 namespace ket {
@@ -104,6 +105,7 @@ namespace ket {
 #ifndef SWIG
 extern "C" {
     inline ket::process* ket_ps;
+    inline std::stack<ket::process*> ket_ps_stack;
     inline char* ket_kbw_path;
     inline int ket_no_execute;
     inline size_t ket_seed;
@@ -130,6 +132,9 @@ namespace ket {
         inline static size_t count = 0;
     };
 
+    void process_begin();
+    void process_end();
+
     void jump(label& label_name);
     void branch(future cond, label& label_true, label& label_false);
     
@@ -142,8 +147,8 @@ namespace ket {
     void ctrl_adj_begin(quant q);
     void ctrl_adj_end(quant q);
 
-    quant alloc(size_t size, process &ps = *ket_ps);
-    quant alloc_dirty(size_t size, process &ps = *ket_ps);
+    quant qalloc(size_t size, process &ps = *ket_ps);
+    quant qalloc_dirty(size_t size, process &ps = *ket_ps);
 
     void free(quant q);
     void free_dirty(quant q);
@@ -168,11 +173,9 @@ namespace ket {
     #ifndef SWIG
     template <class F, class... Args> 
     auto run(F func, Args... args) {
-        auto* backup_ket_ps = ket_ps;
-        ket_ps = new process;
+        process_begin();
         auto ret = func(args...);
-        delete ket_ps;
-        ket_ps = backup_ket_ps;
+        process_end();
         return ret;
     }
 
