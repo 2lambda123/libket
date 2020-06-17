@@ -40,8 +40,8 @@ const std::shared_ptr<i64>& _future::get_base_i64() const {
 std::int64_t _future::get() {
     if (not bits->has_value()) { 
         ps->eval();
-        delete ps;
-        new (ps)_process;
+        ps->~_process();
+        new (ps) _process;
     }
 
     return bits->get_value();
