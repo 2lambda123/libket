@@ -41,7 +41,7 @@ std::int64_t _future::get() {
     if (not bits->has_value()) { 
         ps->eval();
         delete ps;
-        ps = new _process;
+        new (ps)_process;
     }
 
     return bits->get_value();
