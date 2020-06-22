@@ -107,6 +107,10 @@ quant quant::operator()(size_t idx) const {
     return quant{{ptr, [](auto ptr){ delete static_cast<_quant*>(ptr);}}};
 }
 
+quant quant::__getitem__(size_t idx) const {
+    return (*this)(idx);
+}
+
 quant quant::operator|(quant other) const {
     auto *ptr = new ket::_quant{(*static_cast<ket::_quant*>(quant_ptr.get()))|(*static_cast<ket::_quant*>(other.quant_ptr.get()))};
     return quant{{ptr, [](auto ptr){ delete static_cast<_quant*>(ptr);}}};

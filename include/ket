@@ -36,6 +36,7 @@ namespace ket {
         quant(const std::shared_ptr<void> &quant_ptr);
 
         quant operator()(size_t idx) const;
+        quant __getitem__(size_t idx) const;
         quant operator|(quant other) const;
         quant invert() const;
         size_t len() const;
