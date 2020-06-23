@@ -27,6 +27,7 @@
 #include <cstdint>
 #include <string>
 #include <memory>
+#include <stack>
 #include <functional>
 
 namespace ket {
@@ -56,10 +57,12 @@ namespace ket {
         quant(const std::shared_ptr<void> &quant_ptr);
         quant(size_t n, bool dirty = false, process& ps = *ket_ps);
 
-        quant operator()(int idx) const;
+        quant operator()(size_t idx) const;
+        quant __getitem__(size_t idx) const;
         quant operator|(quant other) const;
         quant invert() const;
         size_t len() const;
+        size_t __len__() const;
 
         std::shared_ptr<void> quant_ptr;
     };
@@ -121,7 +124,6 @@ namespace ket {
 
 }
 
-
 namespace ket {
     
     class label {
@@ -138,6 +140,9 @@ namespace ket {
         inline static size_t count = 0;
     };
 
+    void process_begin();
+    void process_end();
+
     void jump(label& label_name);
     void branch(future cond, label& label_true, label& label_false);
     
@@ -150,8 +155,8 @@ namespace ket {
     void ctrl_adj_begin(quant q);
     void ctrl_adj_end(quant q);
 
-    quant alloc(size_t size, process &ps = *ket_ps);
-    quant alloc_dirty(size_t size, process &ps = *ket_ps);
+    quant qalloc(size_t size, process &ps = *ket_ps);
+    quant qalloc_dirty(size_t size, process &ps = *ket_ps);
 
     void free(quant q);
     void free_dirty(quant q);
@@ -176,11 +181,9 @@ namespace ket {
     #ifndef SWIG
     template <class F, class... Args> 
     auto run(F func, Args... args) {
-        auto* backup_ket_ps = ket_ps;
-        ket_ps = new process;
+        process_begin();
         auto ret = func(args...);
-        delete ket_ps;
-        ket_ps = backup_ket_ps;
+        process_end();
         return ret;
     }
 
@@ -192,10 +195,10 @@ namespace ket {
     }
 
     template <class F, class... Args>
-    void adj(F gate, Args... args, process& ps = *ket_ps) {
-        adj_begin(ps);
+    void adj(F gate, Args... args) {
+        adj_begin();
         gate(args...);
-        adj_end(ps);
+        adj_end();
     }
     
     template <class F, class... Args>

@@ -137,10 +137,10 @@ void gate::eval(std::stringstream& circuit) {
         circuit << "\tMEASURE\tq" << qubit_idx;
         break;
     case ALLOC:
-        circuit << "\tALLOC " << (adj_dirty? "DIRTY " : "")  << "\tq" << qubit_idx << endl;
+        circuit << "\tALLOC" << (adj_dirty? " DIRTY " : "")  << "\tq" << qubit_idx << endl;
         break;
     case FREE:
-        circuit << "\tFREE " << (adj_dirty? "DIRTY " : "")  << "\tq" << qubit_idx << endl;
+        circuit << "\tFREE" << (adj_dirty? " DIRTY " : "")  << "\tq" << qubit_idx << endl;
         break;
     case JUMP:
         circuit << "\tJUMP\t@" << label << endl;

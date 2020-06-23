@@ -71,7 +71,7 @@ void ket_init_new(int argc, char* argv[]) {
         ket_kbw_path= str_copy(vm["kbw"].as<std::string>());
     } else {
 #ifdef SNAP 
-        ket_kbw_path = str_copy(std::string{std::getenv("SNAP")} + "/usr/bin/kbw"};
+        ket_kbw_path = str_copy(std::string{std::getenv("SNAP")} + "/usr/bin/kbw");
 #else
         ket_kbw_path = str_copy("kbw");
 #endif

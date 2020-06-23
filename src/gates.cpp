@@ -29,11 +29,11 @@
 using namespace ket;
 using namespace ket::base;
 
-quant ket::alloc(size_t size, process& ps) {
+quant ket::qalloc(size_t size, process& ps) {
     return quant{{new _quant{size, false, static_cast<_process*>(ps.ps.get())}, [](auto ptr){ delete static_cast<_quant*>(ptr);}}};
 }
 
-quant ket::alloc_dirty(size_t size, process& ps) {
+quant ket::qalloc_dirty(size_t size, process& ps) {
     return quant{{new _quant{size, true, static_cast<_process*>(ps.ps.get())}, [](auto ptr){ delete static_cast<_quant*>(ptr);}}};
 }
 

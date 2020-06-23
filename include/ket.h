@@ -36,13 +36,6 @@ typedef void ket_future;
 typedef void ket_process;
 typedef void ket_label;
 
-#define ket_init ket_process* ket_ps;\
-char* ket_kbw_path;\
-int ket_no_execute;\
-size_t ket_seed;\
-char* ket_kqasm_path;\
-char* ket_plugin_path;
-
 void ket_quant_delete(ket_quant*);
 ket_quant* ket_quant_at(ket_quant*, size_t);
 void ket_future_delete(ket_future*);
@@ -69,8 +62,8 @@ void ket_adj_end(ket_process*);
 void ket_ctrl_adj_begin(ket_quant*);
 void ket_ctrl_adj_end(ket_quant*);
 
-ket_quant* ket_alloc(size_t size, ket_process*);
-ket_quant* ket_alloc_dirty(size_t size, ket_process*);
+ket_quant* ket_qalloc(size_t size, ket_process*);
+ket_quant* ket_qalloc_dirty(size_t size, ket_process*);
 
 void ket_free(ket_quant*);
 void ket_free_dirty(ket_quant*);
