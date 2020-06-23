@@ -105,3 +105,10 @@ future::future(const std::shared_ptr<void> &future_ptr) : future_ptr{future_ptr}
 int64_t future::get() {
     return static_cast<ket::_future*>(future_ptr.get())->get();
 }
+
+void future::assing(const future& other) {
+    auto *this_future = static_cast<_future*>(future_ptr.get());
+    auto *other_future = static_cast<_future*>(other.future_ptr.get());
+
+    this_future->get_ps()->set_i64(this_future->get_base_i64(), other_future->get_base_i64());
+}

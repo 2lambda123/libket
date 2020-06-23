@@ -60,6 +60,19 @@ gate::gate(TAG tag,
     visit{false}
     {}
 
+gate::gate(const std::vector<size_t>& ctrl_idx,
+           const std::vector<std::shared_ptr<gate>>& ctrl_back,
+           const std::shared_ptr<i64>& bri64,
+           const std::shared_ptr<i64>& assi64) :
+    tag{ASS},
+    back{nullptr},
+    ctrl_idx{ctrl_idx},
+    ctrl_back{ctrl_back},
+    bri64{bri64},
+    assi64{assi64},
+    visit{false}
+    {}
+
 void gate::eval(std::stringstream& circuit) {
     using std::endl;
     
@@ -136,6 +149,11 @@ void gate::eval(std::stringstream& circuit) {
         bri64->eval(circuit);
         circuit << "\tBR\ti" << bri64->idx() << "\t@" << label << "\t@" << label_false << endl;
         break;    
+    case ASS:
+        bri64->eval(circuit);
+        assi64->eval(circuit);
+        circuit << "\tSET\ti" << bri64->idx() << "\ti" << assi64->idx() << endl;
+        break;
     case LABEL:
         circuit << "LABEL @" << label << endl;
         break;

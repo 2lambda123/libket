@@ -30,11 +30,33 @@
 #include <functional>
 
 namespace ket {
+    
+    struct process {
+        process();
+        std::shared_ptr<void> ps;
+    };
 
+} 
+
+#ifndef SWIG
+extern "C" {
+    inline ket::process* ket_ps;
+    inline char* ket_kbw_path;
+    inline int ket_no_execute;
+    inline size_t ket_seed;
+    inline char* ket_kqasm_path;
+    inline char* ket_plugin_path;
+    void ket_init_new(int argc, char* argv[]) __attribute__((constructor));
+    void ket_init_free() __attribute__((destructor));
+} 
+#endif
+
+namespace ket {
     struct quant {
         quant(const std::shared_ptr<void> &quant_ptr);
+        quant(size_t n, bool dirty = false, process& ps = *ket_ps);
 
-        quant operator()(size_t idx) const;
+        quant operator()(int idx) const;
         quant operator|(quant other) const;
         quant invert() const;
         size_t len() const;
@@ -44,6 +66,7 @@ namespace ket {
 
     struct future {
         future(const std::shared_ptr<void> &future_ptr);
+        future(std::int64_t value, process& ps = *ket_ps);
 
         future operator==(const future& other) const;
         future operator!=(const future& other) const;
@@ -90,28 +113,14 @@ namespace ket {
         future __ror__(std::int64_t other) const;
 
         std::int64_t get();
+        void assing(const future& other);
 
         std::shared_ptr<void> future_ptr;
     };
 
-    struct process {
-        process();
-        std::shared_ptr<void> ps;
-    };
+
 }
 
-#ifndef SWIG
-extern "C" {
-    inline ket::process* ket_ps;
-    inline char* ket_kbw_path;
-    inline int ket_no_execute;
-    inline size_t ket_seed;
-    inline char* ket_kqasm_path;
-    inline char* ket_plugin_path;
-    void ket_init_new(int argc, char* argv[]) __attribute__((constructor));
-    void ket_init_free() __attribute__((destructor));
-} 
-#endif
 
 namespace ket {
     

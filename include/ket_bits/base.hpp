@@ -53,6 +53,7 @@ namespace ket::base {
                   FREE,
                   JUMP, BR,
                   LABEL,
+                  ASS,
                   WAIT};
 
         gate(TAG tag, 
@@ -70,6 +71,11 @@ namespace ket::base {
              const std::string& label2 = "",
              const std::shared_ptr<i64>& bri64 = nullptr);
 
+        gate(const std::vector<size_t>& ctrl_idx,
+             const std::vector<std::shared_ptr<gate>>& ctrl_back,
+             const std::shared_ptr<i64>& bri64,
+             const std::shared_ptr<i64>& assi64);
+
         void eval(std::stringstream& circuit);
 
     private:
@@ -85,6 +91,7 @@ namespace ket::base {
         std::string label, label_false;
 
         std::shared_ptr<i64> bri64;
+        std::shared_ptr<i64> assi64;
 
         bool visit;
     };
@@ -183,6 +190,8 @@ namespace ket::base {
                                     bool infix=true);
                                     
         std::shared_ptr<i64> const_i64(std::int64_t value);
+
+        void set_i64(const std::shared_ptr<i64>& target, const std::shared_ptr<i64>& value);
 
         void adj_begin();
         
