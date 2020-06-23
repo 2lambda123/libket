@@ -103,6 +103,11 @@ FUTURE_ROP(__ror__, "or")
 
 future::future(const std::shared_ptr<void> &future_ptr) : future_ptr{future_ptr} {}
 
+future::future(std::int64_t value, process& _ps) : 
+    future_ptr{new _future{static_cast<_process*>(_ps.ps.get())->const_i64(value), static_cast<_process*>(_ps.ps.get())},
+               [](auto ptr){ delete static_cast<_future*>(ptr); } } 
+    {}
+
 int64_t future::get() {
     return static_cast<ket::_future*>(future_ptr.get())->get();
 }

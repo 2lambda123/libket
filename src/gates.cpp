@@ -29,14 +29,6 @@
 using namespace ket;
 using namespace ket::base;
 
-quant ket::qalloc(size_t size, process& ps) {
-    return quant{{new _quant{size, false, static_cast<_process*>(ps.ps.get())}, [](auto ptr){ delete static_cast<_quant*>(ptr);}}};
-}
-
-quant ket::qalloc_dirty(size_t size, process& ps) {
-    return quant{{new _quant{size, true, static_cast<_process*>(ps.ps.get())}, [](auto ptr){ delete static_cast<_quant*>(ptr);}}};
-}
-
 void ket::free(quant _q) {
     auto *q = static_cast<_quant*>(_q.quant_ptr.get());
     for (auto &i : q->get_base_qubits()) 

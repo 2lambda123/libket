@@ -42,6 +42,7 @@ namespace ket {
 #ifndef SWIG
 extern "C" {
     inline ket::process* ket_ps;
+    inline std::stack<ket::process*> ket_ps_stack;
     inline char* ket_kbw_path;
     inline int ket_no_execute;
     inline size_t ket_seed;
@@ -55,10 +56,11 @@ extern "C" {
 namespace ket {
     struct quant {
         quant(const std::shared_ptr<void> &quant_ptr);
-        quant(size_t n, bool dirty = false, process& ps = *ket_ps);
+        quant(size_t size, process& ps = *ket_ps);
+        static quant dirty(size_t size, process& ps = *ket_ps);
 
-        quant operator()(size_t idx) const;
-        quant __getitem__(size_t idx) const;
+        quant operator()(int idx) const;
+        quant __getitem__(int idx) const;
         quant operator|(quant other) const;
         quant invert() const;
         size_t len() const;
@@ -154,9 +156,6 @@ namespace ket {
     
     void ctrl_adj_begin(quant q);
     void ctrl_adj_end(quant q);
-
-    quant qalloc(size_t size, process &ps = *ket_ps);
-    quant qalloc_dirty(size_t size, process &ps = *ket_ps);
 
     void free(quant q);
     void free_dirty(quant q);

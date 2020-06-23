@@ -98,11 +98,11 @@ void ket_ctrl_adj_end(ket_quant* q) {
 }
 
 ket_quant* ket_qalloc(size_t size, ket_process* p) {
-    return new quant{qalloc(size, *static_cast<process*>(p))};
+    return new quant{size, *static_cast<process*>(p)};
 }
 
 ket_quant* ket_qalloc_dirty(size_t size, ket_process* p) {
-    return new quant{qalloc_dirty(size, *static_cast<process*>(p))};
+    return new quant(quant::dirty(size, *static_cast<process*>(p)));
 }
 
 void ket_free(ket_quant* q) {

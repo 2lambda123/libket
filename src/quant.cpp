@@ -102,12 +102,23 @@ bool qubit_iterator::operator!=(const qubit_iterator& other) const {
 
 quant::quant(const std::shared_ptr<void> &quant_ptr) : quant_ptr{quant_ptr} {}
 
-quant quant::operator()(size_t idx) const {
+quant::quant(size_t size, process& ps) :
+    quant_ptr{new _quant{size, false, static_cast<_process*>(ps.ps.get())}, [](auto ptr){ delete static_cast<_quant*>(ptr);}}
+    {}
+
+quant quant::dirty(size_t size, process& ps) {
+    return quant{{new _quant{size, true, static_cast<_process*>(ps.ps.get())}, [](auto ptr){ delete static_cast<_quant*>(ptr);}}};
+} 
+
+quant quant::operator()(int idx) const {
+    if (idx < 0) 
+        idx = len() + idx;
+
     auto *ptr = new ket::_quant{(*static_cast<ket::_quant*>(quant_ptr.get()))(idx)};
     return quant{{ptr, [](auto ptr){ delete static_cast<_quant*>(ptr);}}};
 }
 
-quant quant::__getitem__(size_t idx) const {
+quant quant::__getitem__(int idx) const {
     return (*this)(idx);
 }
 
