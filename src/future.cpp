@@ -112,7 +112,7 @@ int64_t future::get() {
     return static_cast<ket::_future*>(future_ptr.get())->get();
 }
 
-void future::assing(const future& other) {
+void future::assign(const future& other) {
     auto *this_future = static_cast<_future*>(future_ptr.get());
     auto *other_future = static_cast<_future*>(other.future_ptr.get());
 
