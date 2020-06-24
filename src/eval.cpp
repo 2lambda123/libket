@@ -53,6 +53,11 @@ void _process::eval() {
     end_block("end");
 
     std::stringstream ss;
+    while (not ass_map.empty()) {
+        ass_map.front()->eval(ss);
+        ass_map.pop();
+    }
+    
     for (auto &i : measurement_map) 
         i.second->eval(ss);
 

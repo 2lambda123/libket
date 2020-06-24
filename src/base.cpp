@@ -60,19 +60,6 @@ gate::gate(TAG tag,
     visit{false}
     {}
 
-gate::gate(const std::vector<size_t>& ctrl_idx,
-           const std::vector<std::shared_ptr<gate>>& ctrl_back,
-           const std::shared_ptr<i64>& bri64,
-           const std::shared_ptr<i64>& assi64) :
-    tag{ASS},
-    back{nullptr},
-    ctrl_idx{ctrl_idx},
-    ctrl_back{ctrl_back},
-    bri64{bri64},
-    assi64{assi64},
-    visit{false}
-    {}
-
 void gate::eval(std::stringstream& circuit) {
     using std::endl;
     
@@ -149,11 +136,6 @@ void gate::eval(std::stringstream& circuit) {
         bri64->eval(circuit);
         circuit << "\tBR\ti" << bri64->idx() << "\t@" << label << "\t@" << label_false << endl;
         break;    
-    case ASS:
-        bri64->eval(circuit);
-        assi64->eval(circuit);
-        circuit << "\tSET\ti" << bri64->idx() << "\ti" << assi64->idx() << endl;
-        break;
     case LABEL:
         circuit << "LABEL @" << label << endl;
         break;
@@ -236,6 +218,12 @@ i64::i64(std::int64_t value, size_t i64_idx) :
     value{value},
     visit{false}
     {}
+    
+i64::i64(const std::vector<std::shared_ptr<i64>>& args) :
+    tag{ASS},
+    args{args}, 
+    visit{false}
+    {}
 
 std::int64_t i64::get_value() {
     if (tag == VALUE) return value;
@@ -268,6 +256,9 @@ void i64::eval(std::stringstream& circuit) {
         break;
     case VALUE:
         circuit << "\tINT\ti" << i64_idx << "\t" << value << endl;
+        break;
+    case ASS:
+        circuit << "\tSET\ti" << args[0]->idx() << "\ti" << args[1]->idx() << endl;
         break;
     default:
         break;

@@ -53,7 +53,6 @@ namespace ket::base {
                   FREE,
                   JUMP, BR,
                   LABEL,
-                  ASS,
                   WAIT};
 
         gate(TAG tag, 
@@ -71,11 +70,6 @@ namespace ket::base {
              const std::string& label2 = "",
              const std::shared_ptr<i64>& bri64 = nullptr);
 
-        gate(const std::vector<size_t>& ctrl_idx,
-             const std::vector<std::shared_ptr<gate>>& ctrl_back,
-             const std::shared_ptr<i64>& bri64,
-             const std::shared_ptr<i64>& assi64);
-
         void eval(std::stringstream& circuit);
 
     private:
@@ -91,7 +85,6 @@ namespace ket::base {
         std::string label, label_false;
 
         std::shared_ptr<i64> bri64;
-        std::shared_ptr<i64> assi64;
 
         bool visit;
     };
@@ -139,6 +132,8 @@ namespace ket::base {
             size_t i64_idx,
             bool infix = true);
         i64(std::int64_t value, size_t i64_idx);
+        
+        i64(const std::vector<std::shared_ptr<i64>>& args);
 
         bool has_value();
         std::int64_t get_value();
@@ -149,7 +144,7 @@ namespace ket::base {
         size_t idx() const;
 
     private:
-        enum TAG { BIT = 1, TMP = 8, VALUE = 16 } tag;
+        enum TAG { BIT, TMP, VALUE, ASS } tag;
 
         std::vector<std::shared_ptr<bit>> bits;
         bool se;
@@ -217,6 +212,7 @@ namespace ket::base {
 
         boost::unordered_map<size_t, std::shared_ptr<qubit>> qubit_map;
         boost::unordered_map<size_t, std::shared_ptr<i64>> measurement_map;
+        std::queue<std::shared_ptr<i64>> ass_map;
 
         std::stack<std::stack<std::function<void()>>> adj_call;
 

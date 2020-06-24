@@ -135,26 +135,6 @@ void _process::wait() {
     
 }
 
-void _process::set_i64(const std::shared_ptr<i64>& target, const std::shared_ptr<i64>& value) {
-    std::vector<size_t> qbits_idx;
-    for (auto &i : qubit_map) 
-        qbits_idx.push_back(i.second->idx());
-          
-    block_call.push([this, qbits_idx, target, value]{
-        std::vector<std::shared_ptr<gate>> qbits_back;
-        for (auto &i: qbits_idx) 
-            qbits_back.push_back(this->qubit_map[i]->last_gate());
-
-        auto ass_gate = std::make_shared<gate>(qbits_idx,
-                                               qbits_back,
-                                               target,
-                                               value);
-        for (auto &i : qbits_idx) 
-            this->qubit_map[i]->add_gate(ass_gate);
-    });
-
-}
-
 std::shared_ptr<bit> _process::measure(const std::shared_ptr<qubit>& qbit) {
     if (not (adj_call.empty() and ctrl_qubit.empty())) 
         throw std::runtime_error("measure cannot be used with adj or ctrl");
@@ -224,6 +204,11 @@ std::shared_ptr<i64> _process::const_i64(std::int64_t value) {
     measurement_map[i64_count] = i64_ptr;
     i64_count++;
     return i64_ptr;   
+}
+
+void _process::set_i64(const std::shared_ptr<i64>& target, const std::shared_ptr<i64>& value) {
+    auto i64_ptr = std::make_shared<i64>(std::vector<std::shared_ptr<i64>>{target, value});
+    ass_map.push(i64_ptr);
 }
 
 void _process::adj_begin() {
