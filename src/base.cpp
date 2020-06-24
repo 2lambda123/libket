@@ -230,7 +230,7 @@ i64::i64(const std::vector<std::shared_ptr<i64>>& args) :
     {}
 
 std::int64_t i64::get_value() {
-    if (tag == VALUE) return value;
+    if (tag == PC) return value;
     else return -1;
 } 
 
@@ -238,6 +238,8 @@ void i64::eval(std::stringstream& circuit) {
     using std::endl;
     if (visit) return;
     else visit = true;
+
+    label->eval(circuit);
 
     switch (tag) {
     case BIT:
@@ -272,12 +274,16 @@ void i64::eval(std::stringstream& circuit) {
 }
 
 bool i64::has_value() {
-    return tag == VALUE;
+    return tag == PC;
 }
 
 void i64::set_value(std::int64_t value) {
     this->value = value;
-    tag = VALUE;
+    tag = PC;
+}
+
+void i64::set_label(const std::shared_ptr<base::gate>& label) {
+    this->label = label;
 }
 
 size_t i64::idx() const {

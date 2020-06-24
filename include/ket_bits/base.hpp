@@ -142,12 +142,14 @@ namespace ket::base {
         std::int64_t get_value();
         void set_value(std::int64_t value);
 
+        void set_label(const std::shared_ptr<base::gate>& label);
+
         void eval(std::stringstream& circuit);
 
         size_t idx() const;
 
     private:
-        enum TAG { BIT, TMP, VALUE, ASS } tag;
+        enum TAG { BIT, TMP, VALUE, ASS, PC } tag;
 
         std::vector<std::shared_ptr<bit>> bits;
         bool se;
@@ -158,6 +160,8 @@ namespace ket::base {
         bool infix;
 
         std::int64_t value;
+
+        std::shared_ptr<base::gate> label;
 
         bool visit;
     };

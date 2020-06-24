@@ -266,6 +266,9 @@ std::shared_ptr<ket::base::gate> _process::end_block(const std::string& label_tr
     for (auto i: qubits) 
         this->qubit_map[i]->add_gate(label_gate);
     
+    for (auto i: block_i64)
+        i->set_label(label_gate);
+    
     while (not block_call.empty()) {
         block_call.front()();
         block_call.pop();
