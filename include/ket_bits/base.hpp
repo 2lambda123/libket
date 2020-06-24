@@ -68,7 +68,8 @@ namespace ket::base {
              const std::vector<std::shared_ptr<gate>>& ctrl_back,
              const std::string& label1 = "",
              const std::string& label2 = "",
-             const std::shared_ptr<i64>& bri64 = nullptr);
+             const std::shared_ptr<i64>& bri64 = nullptr,
+             const std::vector<std::shared_ptr<i64>>& back_i64 = {});
 
         void eval(std::stringstream& circuit);
 
@@ -85,6 +86,8 @@ namespace ket::base {
         std::string label, label_false;
 
         std::shared_ptr<i64> bri64;
+
+        std::vector<std::shared_ptr<i64>> back_i64;
 
         bool visit;
     };
@@ -197,9 +200,9 @@ namespace ket::base {
 
         void begin_block(const std::string& next_label);
 
-        void end_block(const std::string& label_goto1,
-                       const std::string& label_goto2 = "",
-                       const std::shared_ptr<i64>& bri64 = nullptr);
+        std::shared_ptr<ket::base::gate> end_block(const std::string& label_goto1,
+                                                   const std::string& label_goto2 = "",
+                                                   const std::shared_ptr<i64>& bri64 = nullptr);
          
         void eval();
 
@@ -212,7 +215,6 @@ namespace ket::base {
 
         boost::unordered_map<size_t, std::shared_ptr<qubit>> qubit_map;
         boost::unordered_map<size_t, std::shared_ptr<i64>> measurement_map;
-        std::queue<std::shared_ptr<i64>> ass_map;
 
         std::stack<std::stack<std::function<void()>>> adj_call;
 
@@ -220,6 +222,7 @@ namespace ket::base {
 
         std::queue<std::function<void()>> block_call;
         boost::unordered_set<size_t> block_free;
+        std::vector<std::shared_ptr<i64>> block_i64;
         
     };
 

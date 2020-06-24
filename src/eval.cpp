@@ -50,13 +50,10 @@ std::string call(const std::string& command, const std::string& in) {
 }
 
 void _process::eval() {
-    end_block("end");
+    auto gate = end_block("kqasm.end");
 
     std::stringstream ss;
-    while (not ass_map.empty()) {
-        ass_map.front()->eval(ss);
-        ass_map.pop();
-    }
+    gate->eval(ss);
     
     for (auto &i : measurement_map) 
         i.second->eval(ss);

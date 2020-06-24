@@ -118,7 +118,7 @@ namespace ket {
         future __ror__(std::int64_t other) const;
 
         std::int64_t get();
-        void assign(const future& other);
+        void set(const future& other);
 
         std::shared_ptr<void> future_ptr;
     };

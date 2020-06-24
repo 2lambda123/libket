@@ -49,7 +49,8 @@ gate::gate(TAG tag,
            const std::vector<std::shared_ptr<gate>>& ctrl_back,
            const std::string& label1,
            const std::string& label2,
-           const std::shared_ptr<i64>& bri64) :
+           const std::shared_ptr<i64>& bri64,
+           const std::vector<std::shared_ptr<i64>>& back_i64) :
     tag{tag},
     back{nullptr},
     ctrl_idx{ctrl_idx},
@@ -57,6 +58,7 @@ gate::gate(TAG tag,
     label{label1},
     label_false{label2},
     bri64{bri64},
+    back_i64{back_i64},
     visit{false}
     {}
 
@@ -68,6 +70,8 @@ void gate::eval(std::stringstream& circuit) {
 
     for (auto& i : ctrl_back) if (i) i->eval(circuit);
     if (back) back->eval(circuit);
+
+    for (auto& i : back_i64) i->eval(circuit);
 
     if (tag <= U3 and not ctrl_back.empty()) {
         circuit << "\tCTRL\t";
@@ -130,7 +134,7 @@ void gate::eval(std::stringstream& circuit) {
         circuit << "\tFREE" << (adj_dirty? " DIRTY " : "")  << "\tq" << qubit_idx << endl;
         break;
     case JUMP:
-        circuit << "\tJUMP\t@" << label << endl;
+        if (label != "kqasm.end") circuit << "\tJUMP\t@" << label << endl;
         break;
     case BR:
         bri64->eval(circuit);

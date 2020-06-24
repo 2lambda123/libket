@@ -186,6 +186,7 @@ std::shared_ptr<i64> _process::new_i64(const std::vector<std::shared_ptr<bit>>& 
     auto i64_ptr = std::make_shared<i64>(bits, i64_count);
     measurement_map[i64_count] = i64_ptr;
     i64_count++;
+    block_i64.push_back(i64_ptr);
     return i64_ptr;
 }
 
@@ -196,6 +197,7 @@ std::shared_ptr<i64> _process::i64_op(const std::string& op,
     auto i64_ptr = std::make_shared<i64>(op, args, i64_count, infix);
     measurement_map[i64_count] = i64_ptr;
     i64_count++;
+    block_i64.push_back(i64_ptr);
     return i64_ptr;
 }
 
@@ -203,12 +205,13 @@ std::shared_ptr<i64> _process::const_i64(std::int64_t value) {
     auto i64_ptr = std::make_shared<i64>(value, i64_count);
     measurement_map[i64_count] = i64_ptr;
     i64_count++;
+    block_i64.push_back(i64_ptr);
     return i64_ptr;   
 }
 
 void _process::set_i64(const std::shared_ptr<i64>& target, const std::shared_ptr<i64>& value) {
     auto i64_ptr = std::make_shared<i64>(std::vector<std::shared_ptr<i64>>{target, value});
-    ass_map.push(i64_ptr);
+    block_i64.push_back(i64_ptr);
 }
 
 void _process::adj_begin() {
@@ -247,7 +250,7 @@ void _process::begin_block(const std::string& label) {
     this->label = label;
 } 
 
-void _process::end_block(const std::string& label_true,
+std::shared_ptr<ket::base::gate> _process::end_block(const std::string& label_true,
                         const std::string& label_false,
                         const std::shared_ptr<i64>& bri64) {
     std::vector<size_t> qubits;
@@ -272,10 +275,14 @@ void _process::end_block(const std::string& label_true,
     for (auto i: qubits) 
         qubits_back.push_back(qubit_map[i]->last_gate());
 
-    auto end_gate = std::make_shared<gate>(bri64? gate::TAG::BR : gate::TAG::JUMP, qubits, qubits_back,label_true, label_false, bri64);
+    auto end_gate = std::make_shared<gate>(bri64? gate::TAG::BR : gate::TAG::JUMP, qubits, qubits_back, label_true, label_false, bri64, block_i64);
 
     for (auto i: qubits) 
         qubit_map[i]->add_gate(end_gate);
+
+    block_i64.clear();
+
+    return end_gate;
 }
 
 process::process() : ps{new base::_process, [](auto ptr){ delete static_cast<base::_process*>(ptr); }} {} 
