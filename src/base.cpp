@@ -258,6 +258,8 @@ void i64::eval(std::stringstream& circuit) {
         circuit << "\tINT\ti" << i64_idx << "\t" << value << endl;
         break;
     case ASS:
+        args[0]->eval(circuit);
+        args[1]->eval(circuit);
         circuit << "\tSET\ti" << args[0]->idx() << "\ti" << args[1]->idx() << endl;
         break;
     default:
