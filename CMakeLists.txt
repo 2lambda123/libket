@@ -26,7 +26,7 @@ file(GLOB_RECURSE SOURCES src/*.cpp)
 
 add_library(ket SHARED ${SOURCES})
 set_target_properties(ket PROPERTIES 
-                      PUBLIC_HEADER "include/ket;include/ket.h"
+                      PUBLIC_HEADER "include/ket"
                       CXX_STANDARD 17)
 
 target_link_libraries(ket CONAN_PKG::boost)

@@ -23,55 +23,103 @@
  */
 
 #pragma once
-#include <cstddef>
+#include <unordered_map>
+#include <unordered_set>
 #include <cstdint>
-#include <string>
+#include <sstream>
 #include <memory>
+#include <vector>
+#include <string>
 #include <stack>
-#include <functional>
+#include <stack>
 
 namespace ket {
-    
-    struct process {
+    class process {
+    public:
+        enum Gate { X, Y, Z, H, S, SD, T, TD, U1, U2, U3 };
+
         process();
-        std::shared_ptr<void> ps;
+
+        void exec();
+
+        void add_inst(const std::string& inst);
+        void add_gate(Gate gate, size_t qubit, std::vector<double> args = {});
+
+        std::vector<size_t> quant(size_t size, bool dirty);
+
+        std::tuple<size_t, std::shared_ptr<std::int64_t>, std::shared_ptr<bool>>
+        measure(const std::vector<size_t>& qubits);  
+        size_t const_int(std::int64_t value);
+
+        void adj_begin();
+        void adj_end();
+
+        void ctrl_begin(const std::vector<size_t>& control);
+        void ctrl_end();
+
+        size_t new_label_id();
+
+    private:
+        size_t qubit_count, future_count, label_count; 
+        
+        std::unordered_map<size_t,
+                           std::pair<std::shared_ptr<std::int64_t>, 
+                                     std::shared_ptr<bool>         >> measure_map;
+        std::unordered_set<size_t> qubits_free;
+        std::stack<std::stack<std::string>> adj_stack;
+        std::vector<std::vector<size_t>> ctrl_stack;  
+        std::stringstream kqasm;
     };
 
-} 
+    #ifndef SWIG
+    inline std::stack<std::shared_ptr<process>> process_stack;
+    inline std::stack<std::shared_ptr<bool>> process_on_top_stack;
 
-#ifndef SWIG
-extern "C" {
-    inline ket::process* ket_ps;
-    inline std::stack<ket::process*> ket_ps_stack;
-    inline char* ket_kbw_path;
-    inline int ket_no_execute;
-    inline size_t ket_seed;
-    inline char* ket_kqasm_path;
-    inline char* ket_plugin_path;
-    void ket_init_new(int argc, char* argv[]) __attribute__((constructor));
-    void ket_init_free() __attribute__((destructor));
-} 
-#endif
+    inline std::string kbw_path;
+    inline std::string plugin_path;
+    inline bool execute_kqasm;
+    inline size_t seed;
 
-namespace ket {
+    inline std::string kqasm_path;
+    inline bool output_kqasm;
+
+    extern "C" void ket_init_new(int argc, char* argv[]) __attribute__((constructor));
+    extern "C" void ket_init_free() __attribute__((destructor));
+    #endif
+
     struct quant {
-        quant(const std::shared_ptr<void> &quant_ptr);
-        quant(size_t size, process& ps = *ket_ps);
-        static quant dirty(size_t size, process& ps = *ket_ps);
+        #ifndef SWIG
+        quant(const std::vector<size_t> &qubits, const std::shared_ptr<bool> &process_on_top);
+        #endif
+
+        quant(size_t size);
+        static quant dirty(size_t size);
 
         quant operator()(int idx) const;
         quant __getitem__(int idx) const;
+
         quant operator|(quant other) const;
+
         quant invert() const;
+
         size_t len() const;
         size_t __len__() const;
 
-        std::shared_ptr<void> quant_ptr;
+        #ifndef SWIG
+        const std::vector<size_t> qubits;
+        const size_t process_id;
+        const std::shared_ptr<bool> process_on_top;
+        #endif
     };
 
     struct future {
-        future(const std::shared_ptr<void> &future_ptr);
-        future(std::int64_t value, process& ps = *ket_ps);
+        #ifndef SWIG
+        future(size_t id,
+               const std::shared_ptr<std::int64_t>& result,
+               const std::shared_ptr<bool>& available,
+               const std::shared_ptr<bool> process_on_top);
+        #endif
+        future(std::int64_t value);
 
         future operator==(const future& other) const;
         future operator!=(const future& other) const;
@@ -120,62 +168,56 @@ namespace ket {
         std::int64_t get();
         void set(const future& other);
 
-        std::shared_ptr<void> future_ptr;
+        #ifndef SWIG
+        const size_t id;
+        const std::shared_ptr<std::int64_t> result;
+        const std::shared_ptr<bool> available;
+        #endif
     };
 
+    struct label {
+        label(const std::string& name);
 
-}
-
-namespace ket {
-    
-    class label {
-    public:
-        label(const std::string& name, process& ps = *ket_ps);
-        operator std::string() const;
-
-        void begin();
-
+        void begin() const;
          
-        process& ps;
-    private:
-        std::string name;
-        inline static size_t count = 0;
+        #ifndef SWIG
+        const std::string name;
+        const std::shared_ptr<bool> process_on_top;
+        #endif
     };
 
     void process_begin();
     void process_end();
 
-    void jump(label& label_name);
-    void branch(future cond, label& label_true, label& label_false);
+    void jump(const label& label_name);
+    void branch(const future& cond, const label& label_true, label& label_false);
     
-    void ctrl_begin(quant q);
-    void ctrl_end(quant q);
+    void ctrl_begin(const quant& q);
+    void ctrl_end();
     
-    void adj_begin(process &ps = *ket_ps);
-    void adj_end(process &ps = *ket_ps);
+    void adj_begin();
+    void adj_end();
     
-    void ctrl_adj_begin(quant q);
-    void ctrl_adj_end(quant q);
+    void free(const quant& q);
+    void free_dirty(const quant& q);
 
-    void free(quant q);
-    void free_dirty(quant q);
+    future measure(quant q);
 
-    future measure(quant q, bool wait = true);
-    void wait(process &ps = *ket_ps);
-
-    void x(quant q);
-    void y(quant q);
-    void z(quant q);
-    void h(quant q);
-    void s(quant q);
-    void t(quant q);
-    void u1(double lambda, quant q);
-    void u2(double phi, double lambda, quant q);
-    void u3(double theta, double phi, double lambda, quant q);
+    void x(const quant& q);
+    void y(const quant& q);
+    void z(const quant& q);
+    void h(const quant& q);
+    void s(const quant& q);
+    void t(const quant& q);
+    void u1(double lambda, const quant& q);
+    void u2(double phi, double lambda, const quant& q);
+    void u3(double theta, double phi, double lambda, const quant& q);
     
-    void dump(quant q);
+    void dump(const quant& q);
 
-    quant pown(size_t a, quant x, size_t n);
+    namespace plugin {
+        quant pown(size_t a, const quant& x, size_t n);
+    }
 
     #ifndef SWIG
     template <class F, class... Args> 
@@ -190,7 +232,7 @@ namespace ket {
     void ctrl(quant q, F gate, Args... args) {
         ctrl_begin(q);
         gate(args...);
-        ctrl_end(q);
+        ctrl_end();
     }
 
     template <class F, class... Args>
@@ -202,11 +244,11 @@ namespace ket {
     
     template <class F, class... Args>
     void ctrl_adj(quant q, F gate, Args... args) {
-        ctrl_adj_begin(q);
+        ctrl_begin(q);
+        adj_begin();
         gate(args...);
-        ctrl_adj_end(q);
+        adj_end();
+        ctrl_end();
     }
-
-    void if_then(future cond, std::function<void(void)> then, std::function<void(void)> otherwise = nullptr, process& ps = *ket_ps);
     #endif
 }
