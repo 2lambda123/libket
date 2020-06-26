@@ -1,5 +1,4 @@
 #include <ket>
-#include <iostream>
 
 using namespace ket;
 
@@ -39,5 +38,7 @@ int main() {
     auto y = teleport(a);
     h(y);
     std::cout << measure(y).get() << std::endl;
+
+    return 0;
 }
 
