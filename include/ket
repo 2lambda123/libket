@@ -178,14 +178,13 @@ namespace ket {
 
         #ifndef SWIG
         bool get_id() const;
-        bool on_top() const;
+        const std::shared_ptr<bool> process_on_top;
         #endif
 
     private:
         size_t id;
         std::shared_ptr<std::int64_t> result;
         std::shared_ptr<bool> available;
-        std::shared_ptr<bool> process_on_top;
     };
 
     class label {

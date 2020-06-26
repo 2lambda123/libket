@@ -29,13 +29,15 @@ using namespace ket;
 future::future(size_t id,
        const std::shared_ptr<std::int64_t>& result,
        const std::shared_ptr<bool>& available) :
+    process_on_top{process_on_top_stack.top()},
     id{id},
     result{result},
-    available{available},
-    process_on_top{process_on_top_stack.top()}
+    available{available}
     {} 
     
-future::future(std::int64_t value) {
+future::future(std::int64_t value) :
+    process_on_top{process_on_top_stack.top()}
+{
     auto [_id, _result, _available] = process_stack.top()->new_int(value);
     id = _id;
     result = _result;
@@ -117,8 +119,4 @@ void future::set(const future& other) {
 
 bool future::get_id() const {
     return id;
-}
-
-bool future::on_top() const {
-    return *process_on_top;
 }
