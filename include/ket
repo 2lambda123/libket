@@ -112,7 +112,7 @@ namespace ket {
         size_t len() const;
         size_t __len__() const;
 
-        void free(bool dirty) const;
+        void free(bool dirty = false) const;
 
         #ifndef SWIG
         const std::vector<size_t> qubits;
