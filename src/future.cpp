@@ -103,7 +103,7 @@ std::int64_t future::get() {
     *(process_on_top) = false;
 
     process_stack.push(std::make_shared<process>());
-    process_on_top_stack.push(std::make_shared<bool>());
+    process_on_top_stack.push(std::make_shared<bool>(true));
 
     return *result;    
 }
