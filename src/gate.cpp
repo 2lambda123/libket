@@ -52,7 +52,7 @@ void ket::u1(double lambda, const quant& q) {
         process_stack.top()->add_gate(process::u1, i, {lambda});
 }
 
-void u2(double phi, double lambda, const quant& q) {
+void ket::u2(double phi, double lambda, const quant& q) {
     if (not *(q.process_on_top))
         throw std::runtime_error("process out of scope");
         
@@ -60,7 +60,7 @@ void u2(double phi, double lambda, const quant& q) {
         process_stack.top()->add_gate(process::u2, i, {phi, lambda});
 }
 
-void u3(double theta, double phi, double lambda, const quant& q) {
+void ket::u3(double theta, double phi, double lambda, const quant& q) {
     if (not *(q.process_on_top))
         throw std::runtime_error("process out of scope");
         
