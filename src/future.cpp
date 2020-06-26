@@ -35,7 +35,90 @@ future::future(size_t id,
     process_on_top{process_on_top_stack.top()}
     {} 
     
-future future::with(std::int64_t value) {
-    auto [id, result, available] = process_stack.top()->new_int(value);
-    return future{id, result, available};
+future::future(std::int64_t value) {
+    auto [_id, _result, _available] = process_stack.top()->new_int(value);
+    id = _id;
+    result = _result;
+    available = _available;
+}
+
+#define FUTURE_OP(op, name) future future::operator op(const future& other) const {\
+    if (not *process_on_top or not *(other.process_on_top))\
+        throw std::runtime_error("process out of scope");\
+    auto [_id, _result, _available] = process_stack.top()->op_int(id, name, other.id);\
+    return future{_id, _result, _available};\
+}\
+future future::operator op(std::int64_t other) const {\
+    if (not *process_on_top)\
+        throw std::runtime_error("process out of scope");\
+    auto [other_id, other_result, other_available] = process_stack.top()->new_int(other);\
+    auto [_id, _result, _available] = process_stack.top()->op_int(id, name, other_id);\
+    return future{_id, _result, _available};\
+}
+
+FUTURE_OP(==, "==")
+FUTURE_OP(!=, "!=")
+FUTURE_OP(<, "<")
+FUTURE_OP(<=, "<=")
+FUTURE_OP(>, ">")
+FUTURE_OP(>=, ">=")
+
+FUTURE_OP(+, "+")
+FUTURE_OP(-, "-")
+FUTURE_OP(*, "*")
+FUTURE_OP(/, "/")
+FUTURE_OP(<<, "<<")
+FUTURE_OP(>>, ">>")
+FUTURE_OP(&, "and")
+FUTURE_OP(^, "xor")
+FUTURE_OP(|, "or")
+
+#define FUTURE_ROP(op, name) future future::op(std::int64_t other) const {\
+    if (not *process_on_top)\
+        throw std::runtime_error("process out of scope");\
+    auto [other_id, other_result, other_available] = process_stack.top()->new_int(other);\
+    auto [_id, _result, _available] = process_stack.top()->op_int(other_id, name, id);\
+    return future{_id, _result, _available};\
+}
+
+FUTURE_ROP(__radd__, "+")
+FUTURE_ROP(__rsub__, "-")
+FUTURE_ROP(__rmul__, "*")
+FUTURE_ROP(__rtruediv__, "/")
+FUTURE_ROP(__rlshift__, "<<")
+FUTURE_ROP(__rrshift__, ">>")
+FUTURE_ROP(__rand__, "and")
+FUTURE_ROP(__rxor__, "xor")
+FUTURE_ROP(__ror__, "or")
+
+std::int64_t future::get() {
+    if (*available) return *result;
+    if (not *process_on_top)
+        throw std::runtime_error("process out of scope");
+    
+    process_stack.top()->exec();
+
+    process_stack.pop();
+    process_on_top_stack.pop();
+    *(process_on_top) = false;
+
+    process_stack.push(std::make_shared<process>());
+    process_on_top_stack.push(std::make_shared<bool>());
+
+    return *result;    
+}
+
+void future::set(const future& other) {
+    if (not *process_on_top or not *(other.process_on_top))
+        throw std::runtime_error("process out of scope");
+
+    process_stack.top()->add_inst("\tSET\ti" + std::to_string(id) + "\ti" + std::to_string(other.id));
+}
+
+bool future::get_id() const {
+    return id;
+}
+
+bool future::on_top() const {
+    return *process_on_top;
 }

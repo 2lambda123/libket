@@ -36,7 +36,7 @@
 namespace ket {
     class process {
     public:
-        enum Gate { X, Y, Z, H, S, SD, T, TD, U1, U2, U3 };
+        enum Gate { x, y, z, h, s, sd, t, td, u1, u2, u3, dump };
 
         process();
 
@@ -51,12 +51,16 @@ namespace ket {
         measure(const std::vector<size_t>& qubits);  
         std::tuple<size_t, std::shared_ptr<std::int64_t>, std::shared_ptr<bool>>
         new_int(std::int64_t value);
+        std::tuple<size_t, std::shared_ptr<std::int64_t>, std::shared_ptr<bool>>
+        op_int(size_t left, const std::string& op, size_t right);
 
         void adj_begin();
         void adj_end();
 
         void ctrl_begin(const std::vector<size_t>& control);
         void ctrl_end();
+
+        void free(size_t qubit, bool dirty);
 
         size_t new_label_id();
 
@@ -108,19 +112,22 @@ namespace ket {
         size_t len() const;
         size_t __len__() const;
 
+        void free(bool dirty) const;
+
         #ifndef SWIG
         const std::vector<size_t> qubits;
         const std::shared_ptr<bool> process_on_top;
         #endif
     };
 
-    struct future {
+    class future {
+    public:
         #ifndef SWIG
         future(size_t id,
                const std::shared_ptr<std::int64_t>& result,
                const std::shared_ptr<bool>& available);
         #endif
-        static future with(std::int64_t value);
+        future(std::int64_t value);
 
         future operator==(const future& other) const;
         future operator!=(const future& other) const;
@@ -170,29 +177,36 @@ namespace ket {
         void set(const future& other);
 
         #ifndef SWIG
-        const size_t id;
-        const std::shared_ptr<std::int64_t> result;
-        const std::shared_ptr<bool> available;
-        const std::shared_ptr<bool> process_on_top;
+        bool get_id() const;
+        bool on_top() const;
         #endif
+
+    private:
+        size_t id;
+        std::shared_ptr<std::int64_t> result;
+        std::shared_ptr<bool> available;
+        std::shared_ptr<bool> process_on_top;
     };
 
-    struct label {
+    class label {
+    public:
         label(const std::string& name);
 
-        void begin() const;
+        void begin();
          
         #ifndef SWIG
         const std::string name;
         const std::shared_ptr<bool> process_on_top;
         #endif
+    private:  
+        bool placed;
     };
 
     void process_begin();
     void process_end();
 
     void jump(const label& label_name);
-    void branch(const future& cond, const label& label_true, label& label_false);
+    void branch(const future& cond, const label& label_true, const label& label_false);
     
     void ctrl_begin(const quant& q);
     void ctrl_end();
@@ -200,17 +214,16 @@ namespace ket {
     void adj_begin();
     void adj_end();
     
-    void free(const quant& q);
-    void free_dirty(const quant& q);
-
-    future measure(quant q);
+    future measure(const quant& q);
 
     void x(const quant& q);
     void y(const quant& q);
     void z(const quant& q);
     void h(const quant& q);
     void s(const quant& q);
+    void sd(const quant& q);
     void t(const quant& q);
+    void td(const quant& q);
     void u1(double lambda, const quant& q);
     void u2(double phi, double lambda, const quant& q);
     void u3(double theta, double phi, double lambda, const quant& q);

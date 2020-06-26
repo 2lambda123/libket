@@ -32,7 +32,9 @@ process::process() :
     qubit_count{0},
     future_count{0},
     label_count{0}
-    {}
+{
+    kqasm << "LABEL @entry" << std::endl;
+}
 
 
 void process::add_inst(const std::string& inst) {
@@ -45,19 +47,19 @@ void process::add_inst(const std::string& inst) {
 inline void set_to_adj(process::Gate gate, std::vector<double> args) {
     double theta, phi, lambda;
     switch (gate) {
-        case process::Gate::S:
-            gate = process::Gate::SD;
+        case process::s:
+            gate = process::sd;
             break;
-        case process::Gate::T:
-            gate = process::Gate::TD;
+        case process::t:
+            gate = process::td;
             break;
-        case process::Gate::U2:
+        case process::u2:
             phi = -args[1]-M_PI;
             lambda = -args[0]+M_PI;
             args[0] = phi;
             args[1] = lambda;
             break;
-        case process::Gate::U3:
+        case process::u3:
             theta = -args[0];
             phi = -args[2];
             lambda = -args[1];
@@ -74,31 +76,33 @@ inline std::string gate_to_string(process::Gate gate, std::vector<double> args) 
     std::stringstream tmp;
     tmp.precision(std::numeric_limits<double>::max_digits10);
     switch (gate) {
-        case process::Gate::X:        
+        case process::x:        
             return "X";
-        case process::Gate::Y:        
+        case process::y:        
             return "Y";
-        case process::Gate::Z:        
+        case process::z:        
             return "z";
-        case process::Gate::H:        
+        case process::h:        
             return "H";
-        case process::Gate::S:        
+        case process::s:        
             return "S";
-        case process::Gate::SD:        
+        case process::sd:        
             return "SD";
-        case process::Gate::T:        
+        case process::t:        
             return "T";
-        case process::Gate::TD:        
+        case process::td:        
             return "TD";
-        case process::Gate::U1:        
+        case process::u1:        
             tmp << "U1(" << args[0] << ")";
             return tmp.str();
-        case process::Gate::U2:        
+        case process::u2:        
             tmp << "U2(" << args[0] << ' ' << args[1] << ')';
             return tmp.str();
-        case process::Gate::U3:        
+        case process::u3:        
             tmp << "U3(" << args[0] << ' ' << args[1] << ' ' << args[2] <<  ")";
             return tmp.str();
+        case process::dump:
+            return "DUMP";
     }
     return "<GATE NOT DEFINED>";
 }
@@ -170,11 +174,25 @@ process::new_int(std::int64_t value) {
     auto result = std::make_shared<std::int64_t>(0);
     auto available = std::make_shared<bool>(false);
 
+    measure_map[future_count] = std::make_pair(result, available);
+
     return std::make_tuple(future_count++, result, available);
 }
 
 void process::adj_begin() {
     adj_stack.push({});
+}
+
+std::tuple<size_t, std::shared_ptr<std::int64_t>, std::shared_ptr<bool>>
+process::op_int(size_t left, const std::string& op, size_t right) {
+    add_inst("\tINT\ti" + std::to_string(future_count) + "\ti" + std::to_string(left) + "\t" + op + "\ti" + std::to_string(right));
+
+    auto result = std::make_shared<std::int64_t>(0);
+    auto available = std::make_shared<bool>(false);
+    
+    measure_map[future_count] = std::make_pair(result, available);
+    
+    return std::make_tuple(future_count++, result, available);
 }
 
 void process::adj_end() {
@@ -206,6 +224,15 @@ void process::ctrl_end() {
         throw std::runtime_error("no ctrl to end");
     
     ctrl_stack.pop_back();
+}
+
+void process::free(size_t qubit, bool dirty) {
+    if (qubits_free.find(qubit) != qubits_free.end()) 
+        throw std::runtime_error("Double free on qubit q" + std::to_string(qubit));
+
+    add_inst("\tFREE" + std::string{dirty? " DIRTY\tq" : "\tq"} + std::to_string(qubit));
+
+    qubits_free.insert(qubit);
 }
 
 size_t process::new_label_id() {

@@ -26,67 +26,55 @@
 
 using namespace ket;
 
-quant::quant(const std::vector<size_t> &qubits) :
-    qubits{qubits},
-    process_on_top{process_on_top_stack.top()}
-    {} 
+void ket::process_begin() {
+    process_stack.push(std::make_shared<process>());
+    *(process_on_top_stack.top()) = false;
+    process_on_top_stack.push(std::make_shared<bool>(true));
+}
 
-quant::quant(size_t size) :
-    qubits{process_stack.top()->quant(size, false)},
-    process_on_top{process_on_top_stack.top()}
-    {} 
+void ket::process_end() {
+    process_stack.pop();
+    *(process_on_top_stack.top()) = false;
+    process_on_top_stack.pop();
+    *(process_on_top_stack.top()) = true;
+}
+
+void ket::jump(const label& label_name) {
+    if (not *(label_name.process_on_top))
+        throw std::runtime_error("process out of scope");
+    process_stack.top()->add_inst("\tJUMP\t@" + label_name.name); 
+}
+
+void ket::branch(const future& cond, const label& label_true, const label& label_false) {
+    if (not cond.on_top() or not *(label_true.process_on_top) or not *(label_false.process_on_top))
+        throw std::runtime_error("process out of scope");
     
-quant quant::dirty(size_t size) {
-    return quant(process_stack.top()->quant(size, true));
+    process_stack.top()->add_inst("\tBR\ti" + std::to_string(cond.get_id()) + "\t@" + label_true.name + "\t@" + label_true.name); 
 }
 
-quant quant::operator()(int idx) const {
-    if (not *process_on_top) 
+void ket::ctrl_begin(const quant& q) {
+    if (not *(q.process_on_top))
+        throw std::runtime_error("process out of scope");
+    process_stack.top()->ctrl_begin(q.qubits);
+}
+
+void ket::ctrl_end() {
+    process_stack.top()->ctrl_end();
+}
+
+void ket::adj_begin() {
+    process_stack.top()->adj_begin();
+}
+
+void ket::adj_end() {
+    process_stack.top()->adj_end();
+}
+
+future ket::measure(const quant& q) {
+    if (not *(q.process_on_top))
         throw std::runtime_error("process out of scope");
 
-    if (idx < 0) idx = len() + idx;
+    auto [id, result, available] = process_stack.top()->measure(q.qubits); 
 
-    return quant{{qubits[idx]}};
-}
-
-quant quant::__getitem__(int idx) const {
-    return (*this)(idx);
-}
-
-quant quant::operator|(const quant& other) const {
-    if (not *process_on_top) 
-        throw std::runtime_error("process out of scope");
-
-    auto tmp_qubits = qubits;
-    for (auto i : other.qubits)
-        tmp_qubits.push_back(i);
-
-    return quant{tmp_qubits};
-}
-
-quant quant::invert() const {
-    if (not *process_on_top) 
-        throw std::runtime_error("process out of scope");
-
-    std::vector<size_t> tmp_qubits;
-    for (auto i = qubits.rbegin(); i != qubits.rend(); ++i) 
-        tmp_qubits.push_back(*i);
-    
-    return quant{tmp_qubits};
-}
-
-size_t quant::len() const {
-    return qubits.size();
-}
-
-size_t quant::__len__() const {
-    return len();
-}
-
-void quant::free(bool dirty) const {
-    if (not *process_on_top) 
-        throw std::runtime_error("process out of scope");
-
-    for (auto i : qubits)
-        process_stack.top()->free(i, dirty);
+    return future{id, result, available};
 }

@@ -31,7 +31,7 @@ using namespace ket;
 
 void ket_init_new(int argc, char* argv[]) {
     process_stack.push(std::make_shared<process>());
-    process_on_top_stack.push(std::make_shared<bool>());
+    process_on_top_stack.push(std::make_shared<bool>(true));
 
     boost::program_options::options_description desc{"Ket program options"};
     desc.add_options()

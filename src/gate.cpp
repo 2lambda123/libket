@@ -26,67 +26,44 @@
 
 using namespace ket;
 
-quant::quant(const std::vector<size_t> &qubits) :
-    qubits{qubits},
-    process_on_top{process_on_top_stack.top()}
-    {} 
-
-quant::quant(size_t size) :
-    qubits{process_stack.top()->quant(size, false)},
-    process_on_top{process_on_top_stack.top()}
-    {} 
-    
-quant quant::dirty(size_t size) {
-    return quant(process_stack.top()->quant(size, true));
+#define GATE(x) void ket::x(const quant& q) {\
+    if (not *(q.process_on_top))\
+        throw std::runtime_error("process out of scope");\
+    for (auto i : q.qubits)\
+        process_stack.top()->add_gate(process::x, i);\
 }
 
-quant quant::operator()(int idx) const {
-    if (not *process_on_top) 
+GATE(x)
+GATE(y)
+GATE(z)
+GATE(h)
+GATE(s)
+GATE(sd)
+GATE(t)
+GATE(td)
+
+GATE(dump)
+
+void ket::u1(double lambda, const quant& q) {
+    if (not *(q.process_on_top))
         throw std::runtime_error("process out of scope");
 
-    if (idx < 0) idx = len() + idx;
-
-    return quant{{qubits[idx]}};
+    for (auto i : q.qubits)
+        process_stack.top()->add_gate(process::u1, i, {lambda});
 }
 
-quant quant::__getitem__(int idx) const {
-    return (*this)(idx);
-}
-
-quant quant::operator|(const quant& other) const {
-    if (not *process_on_top) 
+void u2(double phi, double lambda, const quant& q) {
+    if (not *(q.process_on_top))
         throw std::runtime_error("process out of scope");
-
-    auto tmp_qubits = qubits;
-    for (auto i : other.qubits)
-        tmp_qubits.push_back(i);
-
-    return quant{tmp_qubits};
+        
+    for (auto i : q.qubits)
+        process_stack.top()->add_gate(process::u2, i, {phi, lambda});
 }
 
-quant quant::invert() const {
-    if (not *process_on_top) 
+void u3(double theta, double phi, double lambda, const quant& q) {
+    if (not *(q.process_on_top))
         throw std::runtime_error("process out of scope");
-
-    std::vector<size_t> tmp_qubits;
-    for (auto i = qubits.rbegin(); i != qubits.rend(); ++i) 
-        tmp_qubits.push_back(*i);
-    
-    return quant{tmp_qubits};
-}
-
-size_t quant::len() const {
-    return qubits.size();
-}
-
-size_t quant::__len__() const {
-    return len();
-}
-
-void quant::free(bool dirty) const {
-    if (not *process_on_top) 
-        throw std::runtime_error("process out of scope");
-
-    for (auto i : qubits)
-        process_stack.top()->free(i, dirty);
+        
+    for (auto i : q.qubits)
+        process_stack.top()->add_gate(process::u3, i, {theta, phi, lambda});
 }
