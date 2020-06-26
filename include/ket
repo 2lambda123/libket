@@ -49,7 +49,8 @@ namespace ket {
 
         std::tuple<size_t, std::shared_ptr<std::int64_t>, std::shared_ptr<bool>>
         measure(const std::vector<size_t>& qubits);  
-        size_t const_int(std::int64_t value);
+        std::tuple<size_t, std::shared_ptr<std::int64_t>, std::shared_ptr<bool>>
+        new_int(std::int64_t value);
 
         void adj_begin();
         void adj_end();
@@ -77,28 +78,30 @@ namespace ket {
 
     inline std::string kbw_path;
     inline std::string plugin_path;
+    inline bool use_plugin; 
     inline bool execute_kqasm;
-    inline size_t seed;
+    inline size_t exec_seed;
 
     inline std::string kqasm_path;
     inline bool output_kqasm;
 
     extern "C" void ket_init_new(int argc, char* argv[]) __attribute__((constructor));
-    extern "C" void ket_init_free() __attribute__((destructor));
     #endif
 
     struct quant {
         #ifndef SWIG
-        quant(const std::vector<size_t> &qubits, const std::shared_ptr<bool> &process_on_top);
+        quant(const std::vector<size_t> &qubits);
         #endif
 
         quant(size_t size);
         static quant dirty(size_t size);
 
+        #ifndef SWIG
         quant operator()(int idx) const;
+        #endif
         quant __getitem__(int idx) const;
 
-        quant operator|(quant other) const;
+        quant operator|(const quant& other) const;
 
         quant invert() const;
 
@@ -107,7 +110,6 @@ namespace ket {
 
         #ifndef SWIG
         const std::vector<size_t> qubits;
-        const size_t process_id;
         const std::shared_ptr<bool> process_on_top;
         #endif
     };
@@ -116,10 +118,9 @@ namespace ket {
         #ifndef SWIG
         future(size_t id,
                const std::shared_ptr<std::int64_t>& result,
-               const std::shared_ptr<bool>& available,
-               const std::shared_ptr<bool> process_on_top);
+               const std::shared_ptr<bool>& available);
         #endif
-        future(std::int64_t value);
+        static future with(std::int64_t value);
 
         future operator==(const future& other) const;
         future operator!=(const future& other) const;
@@ -172,6 +173,7 @@ namespace ket {
         const size_t id;
         const std::shared_ptr<std::int64_t> result;
         const std::shared_ptr<bool> available;
+        const std::shared_ptr<bool> process_on_top;
         #endif
     };
 

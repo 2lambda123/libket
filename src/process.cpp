@@ -141,7 +141,7 @@ std::vector<size_t> process::quant(size_t size, bool dirty) {
 std::tuple<size_t, std::shared_ptr<std::int64_t>, std::shared_ptr<bool>>
 process::measure(const std::vector<size_t>& qubits) {
     std::stringstream tmp;
-    tmp << "\tINT\t" << future_count << "ZE\t";
+    tmp << "\tINT\ti" << future_count << "\tZE\t";
 
     for (auto i : qubits) {
         if (qubits_free.find(i) != qubits_free.end()) 
@@ -158,5 +158,56 @@ process::measure(const std::vector<size_t>& qubits) {
     auto result = std::make_shared<std::int64_t>(0);
     auto available = std::make_shared<bool>(false);
 
+    measure_map[future_count] = std::make_pair(result, available);
+
     return std::make_tuple(future_count++, result, available);
+}
+
+std::tuple<size_t, std::shared_ptr<std::int64_t>, std::shared_ptr<bool>>
+process::new_int(std::int64_t value) {
+    add_inst("\tINT\ti" + std::to_string(future_count) + "\t" + std::to_string(value));
+    
+    auto result = std::make_shared<std::int64_t>(0);
+    auto available = std::make_shared<bool>(false);
+
+    return std::make_tuple(future_count++, result, available);
+}
+
+void process::adj_begin() {
+    adj_stack.push({});
+}
+
+void process::adj_end() {
+    if (adj_stack.empty()) 
+        throw std::runtime_error("no adj to end");
+
+    std::stringstream tmp;
+
+    while (not adj_stack.top().empty()) {
+        tmp << adj_stack.top().top();
+        adj_stack.top().pop();
+    }
+
+    adj_stack.pop();
+
+    if (not adj_stack.empty()) {
+        adj_stack.top().push(tmp.str());
+    } else {
+        kqasm << tmp.str();
+    }
+}
+
+void process::ctrl_begin(const std::vector<size_t>& control) {
+    ctrl_stack.push_back(control);
+}
+
+void process::ctrl_end() {
+    if (ctrl_stack.empty()) 
+        throw std::runtime_error("no ctrl to end");
+    
+    ctrl_stack.pop_back();
+}
+
+size_t process::new_label_id() {
+    return label_count++;
 }
