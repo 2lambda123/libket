@@ -230,9 +230,10 @@ namespace ket {
     
     void dump(const quant& q);
 
-    namespace plugin {
-        quant pown(size_t a, const quant& x, size_t n);
-    }
+    struct plugin {
+        plugin() = delete;
+        static quant pown(size_t a, const quant& x, size_t n);
+    };
 
     #ifndef SWIG
     template <class F, class... Args> 

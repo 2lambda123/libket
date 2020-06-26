@@ -25,8 +25,6 @@
 #include "../include/ket"
 
 using namespace ket;
-using namespace ket::plugin;
-
 
 quant plugin::pown(size_t a, const quant& x, size_t n) {
     if (not *(x.process_on_top))
