@@ -81,7 +81,7 @@ inline std::string gate_to_string(process::Gate gate, std::vector<double> args) 
         case process::y:        
             return "Y";
         case process::z:        
-            return "z";
+            return "Z";
         case process::h:        
             return "H";
         case process::s:        
@@ -151,7 +151,7 @@ process::measure(const std::vector<size_t>& qubits) {
         if (qubits_free.find(i) != qubits_free.end()) 
             throw std::runtime_error("trying to operate with the freed qubit q" + std::to_string(i));
 
-        add_inst("\tMEASURE\t" + std::to_string(i));
+        add_inst("\tMEASURE\tq" + std::to_string(i));
         qubits_free.insert(i);
 
         tmp << 'c' << i << ' ';

@@ -37,7 +37,7 @@ quant::quant(size_t size) :
     {} 
     
 quant quant::dirty(size_t size) {
-    return quant(process_stack.top()->quant(size, true));
+    return quant{process_stack.top()->quant(size, true)};
 }
 
 quant quant::operator()(int idx) const {
@@ -46,7 +46,7 @@ quant quant::operator()(int idx) const {
 
     if (idx < 0) idx = len() + idx;
 
-    return quant{{qubits[idx]}};
+    return quant{{{qubits[idx]}}};
 }
 
 quant quant::__getitem__(int idx) const {

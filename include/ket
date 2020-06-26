@@ -32,6 +32,7 @@
 #include <string>
 #include <stack>
 #include <stack>
+#include <iostream>
 
 namespace ket {
     class process {
@@ -88,7 +89,6 @@ namespace ket {
 
     inline std::string kqasm_path;
     inline bool output_kqasm;
-
     extern "C" void ket_init_new(int argc, char* argv[]) __attribute__((constructor));
     #endif
 
@@ -244,7 +244,7 @@ namespace ket {
     }
 
     template <class F, class... Args>
-    void ctrl(quant q, F gate, Args... args) {
+    void ctrl(const quant& q, F gate, Args... args) {
         ctrl_begin(q);
         gate(args...);
         ctrl_end();
@@ -258,12 +258,28 @@ namespace ket {
     }
     
     template <class F, class... Args>
-    void ctrl_adj(quant q, F gate, Args... args) {
+    void ctrl_adj(const quant& q, F gate, Args... args) {
         ctrl_begin(q);
         adj_begin();
         gate(args...);
         adj_end();
         ctrl_end();
     }
+
+    template <class F>
+    void qc_if(const future& test, F body) {
+        label then{"if.then"};
+        label end{"if.end"};
+
+        branch(test, then, end);
+
+        then.begin();
+
+        body();
+
+        jump(end);
+
+        end.begin();
+    } 
     #endif
 }

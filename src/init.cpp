@@ -29,7 +29,7 @@
 
 using namespace ket;
 
-void ket_init_new(int argc, char* argv[]) {
+void ket::ket_init_new(int argc, char* argv[]) {
     process_stack.push(std::make_shared<process>());
     process_on_top_stack.push(std::make_shared<bool>(true));
 
@@ -47,7 +47,7 @@ void ket_init_new(int argc, char* argv[]) {
     boost::program_options::store(parsed, vm);
 
     if (vm.count("help")) {
-        std::cout << desc << std::endl;
+        desc.print(std::cout);
         exit(0);
     } 
 

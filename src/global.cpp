@@ -49,7 +49,7 @@ void ket::branch(const future& cond, const label& label_true, const label& label
     if (not cond.on_top() or not *(label_true.process_on_top) or not *(label_false.process_on_top))
         throw std::runtime_error("process out of scope");
     
-    process_stack.top()->add_inst("\tBR\ti" + std::to_string(cond.get_id()) + "\t@" + label_true.name + "\t@" + label_true.name); 
+    process_stack.top()->add_inst("\tBR\ti" + std::to_string(cond.get_id()) + "\t@" + label_true.name + "\t@" + label_false.name); 
 }
 
 void ket::ctrl_begin(const quant& q) {
