@@ -25,6 +25,23 @@
 #include "../include/ket"
 
 using namespace ket;
+using namespace ket::plugin;
+
+void plugin::plugin(const std::string& name, const quant& q, const std::string& args) {
+    if (not *(q.process_on_top))
+        throw std::runtime_error("process out of scope");
+    
+    std::stringstream tmp;
+
+    tmp << "\tPLUGIN\t" << name << '\t';
+
+    for (auto i : q.qubits) 
+        tmp << 'q' << i << ' ';
+
+    tmp << "\t\"" << args << '\"';
+
+    process_stack.top()->add_inst(tmp.str());
+}
 
 quant plugin::pown(size_t a, const quant& x, size_t n) {
     if (not *(x.process_on_top))
@@ -33,13 +50,9 @@ quant plugin::pown(size_t a, const quant& x, size_t n) {
     quant ret{x.len()};
 
     std::stringstream tmp;
+    tmp << n << ' ' << a;
 
-    for (auto i : (x|ret).qubits) 
-        tmp << 'q' << i << ' ';
-
-    tmp << '\t' << n << ' ' << a;
-
-    process_stack.top()->add_inst("\tPLUGIN\tket_pown\t" + tmp.str());
+    plugin("ket_pown", x|ret, tmp.str());
 
     return ret;
 }
