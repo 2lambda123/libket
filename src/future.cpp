@@ -117,6 +117,6 @@ void future::set(const future& other) {
     process_stack.top()->add_inst("\tSET\ti" + std::to_string(id) + "\ti" + std::to_string(other.id));
 }
 
-bool future::get_id() const {
+size_t future::get_id() const {
     return id;
 }

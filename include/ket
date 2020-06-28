@@ -177,7 +177,7 @@ namespace ket {
         void set(const future& other);
 
         #ifndef SWIG
-        bool get_id() const;
+        size_t get_id() const;
         const std::shared_ptr<bool> process_on_top;
         #endif
 
