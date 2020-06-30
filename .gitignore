@@ -1,3 +1,6 @@
 .vscode
 **.old
-build
+**build
+**html
+**latex
+**xml
