@@ -223,8 +223,6 @@ namespace ket {
      *      X = \begin{bmatrix} 0 & 1 \\
      *                          1 & 0 \end{bmatrix}
      *  \f]
-     *  
-     *  \sa ket::y ket::z ket::h ket::s ket::sd ket::t ket::td ket::u1 ket::u2 ket::u3
      */
     void x(const quant& q);
 
@@ -235,8 +233,6 @@ namespace ket {
      *      Y = \begin{bmatrix} 0 & -i \\
      *                          i & 0 \end{bmatrix}
      *  \f]
-     *  
-     *  \sa ket::x ket::z ket::h ket::s ket::sd ket::t ket::td ket::u1 ket::u2 ket::u3
      */   
     void y(const quant& q);
     
@@ -247,8 +243,6 @@ namespace ket {
      *      Z = \begin{bmatrix} 1 & 0 \\
      *                          0 & -1 \end{bmatrix}
      *  \f]
-     *  
-     *  \sa ket::x ket::y ket::h ket::s ket::sd ket::t ket::td ket::u1 ket::u2 ket::u3
      */   
  
     void z(const quant& q);
@@ -260,8 +254,6 @@ namespace ket {
      *      H = \frac{1}{\sqrt{2}}\begin{bmatrix} 1 & 1 \\
      *                                            1 & -1 \end{bmatrix}
      *  \f]
-     * 
-     *  \sa ket::x ket::y ket::z ket::s ket::sd ket::t ket::td ket::u1 ket::u2 ket::u3
      */   
     void h(const quant& q);
     
@@ -272,8 +264,6 @@ namespace ket {
      *      S = \begin{bmatrix} 1 & 0 \\
      *                          0 & i \end{bmatrix}
      *  \f]
-     *  
-     *  \sa ket::x ket::y ket::z ket::h ket::sd ket::t ket::td ket::u1 ket::u2 ket::u3
      */   
     void s(const quant& q);
     
@@ -284,8 +274,6 @@ namespace ket {
      *      S^\dagger = \begin{bmatrix} 1 & 0 \\
      *                                  0 & -i \end{bmatrix}
      *  \f]
-     * 
-     *  \sa ket::x ket::y ket::z ket::h ket::s ket::t ket::td ket::u1 ket::u2 ket::u3
      */   
     void sd(const quant& q);
     
@@ -296,8 +284,6 @@ namespace ket {
      *      T = \begin{bmatrix} 1 & 0 \\
      *                          0 & e^{i\pi/4} \end{bmatrix}
      *  \f]
-     *  
-     *  \sa ket::x ket::y ket::z ket::h ket::s ket::sd ket::td ket::u1 ket::u2 ket::u3
      */   
     void t(const quant& q);
     
@@ -308,8 +294,6 @@ namespace ket {
      *      T^\dagger = \begin{bmatrix} 1 & 0 \\
      *                                  0 & (e^{i\pi/4})^\dagger \end{bmatrix}
      *  \f]
-     *  
-     *  \sa ket::x ket::y ket::z ket::h ket::s ket::sd ket::t ket::u1 ket::u2 ket::u3
      */   
     void td(const quant& q);
     
@@ -322,7 +306,6 @@ namespace ket {
      *  \f]
      *  
      *  \param lambda = \f$\lambda\f$
-     *  \sa ket::x ket::y ket::z ket::h ket::s ket::sd ket::t ket::td ket::u2 ket::u3
      */   
     void u1(double lambda, const quant& q);
     
@@ -336,7 +319,6 @@ namespace ket {
      * 
      *  \param phi = \f$\phi\f$
      *  \param lambda = \f$\lambda\f$
-     *  \sa ket::x ket::y ket::z ket::h ket::s ket::sd ket::t ket::td ket::u1 ket::u3
      */   
     void u2(double phi, double lambda, const quant& q);
     
@@ -351,7 +333,6 @@ namespace ket {
      *  \param theta = \f$\theta\f$
      *  \param phi = \f$\phi\f$
      *  \param lambda = \f$\lambda\f$
-     *  \sa ket::x ket::y ket::z ket::h ket::s ket::sd ket::t ket::td ket::u1 ket::u2 
      */   
     void u3(double theta, double phi, double lambda, const quant& q);
     
