@@ -94,6 +94,9 @@ namespace ket {
     #endif
 
     //! Array of qubits references.
+    /*!
+     *  \class quant
+     */
     struct quant {
         #ifndef SWIG
         quant(const std::vector<size_t> &qubits);
