@@ -135,7 +135,7 @@ namespace ket {
          *  \note All qubits must be at the state \f$\left|0\right>\f$ before the call,
          *  otherwise set the dirty param to true.
          * 
-         *  \warning No check is applied to see of the qubits are at state
+         *  \warning No check is applied to see if the qubits are at state
          *  \f$\left|0\right>\f$.
          */
         void free(bool dirty = false) const;
