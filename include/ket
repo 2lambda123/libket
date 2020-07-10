@@ -123,8 +123,8 @@ namespace ket {
          */
         quant operator|(const quant& other) const;
 
-        //! Return a quant with qubits in the inverse order
-        quant invert() const;
+        //! Return a quant with qubits in the inverted order
+        quant inverted() const;
 
         //! Return the number qubits of the quant
         size_t len() const;

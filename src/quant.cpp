@@ -64,7 +64,7 @@ quant quant::operator|(const quant& other) const {
     return quant{tmp_qubits};
 }
 
-quant quant::invert() const {
+quant quant::inverted() const {
     if (not *process_on_top) 
         throw std::runtime_error("process out of scope");
 
