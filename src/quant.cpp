@@ -75,6 +75,10 @@ quant quant::invert() const {
     return quant{tmp_qubits};
 }
 
+quant quant::__reversed__() const {
+    return invert();
+}
+
 size_t quant::len() const {
     return qubits.size();
 }
