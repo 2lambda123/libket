@@ -123,14 +123,8 @@ namespace ket {
          */
         quant operator|(const quant& other) const;
 
-        #ifndef SWIG
         //! Return a quant with qubits in the inverse order
-        /*!
-         *  \note For the Python wrapper use the reversed build-in function.
-         */
         quant invert() const;
-        #endif
-        quant __reversed__() const;
 
         //! Return the number qubits of the quant
         size_t len() const;
