@@ -26,7 +26,7 @@ auto period() {
 
     qft(reg1);
 
-    return measure(reg1.invert()).get();
+    return measure(reg1.inverted()).get();
 }
 
 int main() {
