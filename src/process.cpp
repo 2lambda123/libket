@@ -25,6 +25,7 @@
 #include "../include/ket"
 #include <limits>
 #include <cmath>
+#include <queue>
 
 using namespace ket;
 
@@ -44,7 +45,7 @@ void process::add_inst(const std::string& inst) {
     kqasm << inst << std::endl;
 }
 
-inline void set_to_adj(process::Gate gate, std::vector<double> args) {
+inline void set_to_adj(process::Gate &gate, std::vector<double> &args) {
     double theta, phi, lambda;
     switch (gate) {
         case process::s:
@@ -199,19 +200,21 @@ void process::adj_end() {
     if (adj_stack.empty()) 
         throw std::runtime_error("no adj to end");
 
-    std::stringstream tmp;
 
+    std::queue<std::string> tmp;
     while (not adj_stack.top().empty()) {
-        tmp << adj_stack.top().top();
+        tmp.push(adj_stack.top().top());
         adj_stack.top().pop();
     }
 
     adj_stack.pop();
 
-    if (not adj_stack.empty()) {
-        adj_stack.top().push(tmp.str());
-    } else {
-        kqasm << tmp.str();
+    if (not adj_stack.empty()) while (not tmp.empty()) {
+        adj_stack.top().push(tmp.front());
+        tmp.pop();
+    } else while (not tmp.empty()) {
+        kqasm << tmp.front();
+        tmp.pop();
     }
 }
 
