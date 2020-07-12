@@ -60,11 +60,7 @@ void ket::ket_init_new(int argc, char* argv[]) {
     if (vm.count("kbw")) {
         kbw_path = vm["kbw"].as<std::string>();
     } else {
-#ifdef SNAP 
-        kbw_path = std::string{std::getenv("SNAP")} + "/usr/bin/kbw";
-#else
         kbw_path = "kbw";
-#endif
     }
 
     execute_kqasm = vm.count("no-execute")? false : true;
