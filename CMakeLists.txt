@@ -32,7 +32,7 @@ set_target_properties(ket PROPERTIES
 target_link_libraries(ket CONAN_PKG::boost)
 
 install(TARGETS ket 
-        LIBRARY DESTINATION /usr/lib
-        PUBLIC_HEADER DESTINATION /usr/include)
+        LIBRARY DESTINATION usr/lib
+        PUBLIC_HEADER DESTINATION usr/include)
     
 add_subdirectory(examples)
