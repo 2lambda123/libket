@@ -49,6 +49,20 @@ quant quant::operator()(int idx) const {
     return quant{{{qubits[idx]}}};
 }
 
+quant quant::operator()(int start, int end, int step) const {
+    if (not *process_on_top) 
+        throw std::runtime_error("process out of scope");
+    
+    if (start < 0) start = len() + start;
+    if (end < 0) end = len() + end;
+
+    std::vector<size_t> ret_qubits;
+    for (int i = start; i < end; i += step) 
+        ret_qubits.push_back(qubits[i]);
+
+    return quant{ret_qubits};    
+}
+
 quant quant::__getitem__(int idx) const {
     return (*this)(idx);
 }

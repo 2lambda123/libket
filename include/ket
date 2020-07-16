@@ -114,6 +114,7 @@ namespace ket {
          *  \note For the Python wrapper use brackets instead.
          */
         quant operator()(int idx) const;
+        quant operator()(int start, int end, int step = 1) const;
         #endif
         quant __getitem__(int idx) const;
 
