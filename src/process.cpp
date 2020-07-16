@@ -34,7 +34,7 @@ process::process() :
     future_count{0},
     label_count{0}
 {
-    kqasm << "LABEL @entry" << std::endl;
+    kqasm << std::fixed << "LABEL @entry" << std::endl;
 }
 
 
