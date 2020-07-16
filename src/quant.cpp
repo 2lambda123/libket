@@ -63,10 +63,6 @@ quant quant::operator()(int start, int end, int step) const {
     return quant{ret_qubits};    
 }
 
-quant quant::__getitem__(int idx) const {
-    return (*this)(idx);
-}
-
 quant quant::operator|(const quant& other) const {
     if (not *process_on_top) 
         throw std::runtime_error("process out of scope");
