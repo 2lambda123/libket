@@ -34,7 +34,7 @@ process::process() :
     future_count{0},
     label_count{0}
 {
-    kqasm << std::fixed << "LABEL @entry" << std::endl;
+    kqasm << "LABEL @entry" << std::endl;
 }
 
 
@@ -75,6 +75,7 @@ inline void set_to_adj(process::Gate &gate, std::vector<double> &args) {
 
 inline std::string gate_to_string(process::Gate gate, std::vector<double> args) {
     std::stringstream tmp;
+    tmp << std::fixed;
     tmp.precision(std::numeric_limits<double>::max_digits10);
     switch (gate) {
         case process::x:        
