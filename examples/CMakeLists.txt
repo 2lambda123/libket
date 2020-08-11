@@ -1,5 +1,8 @@
 include_directories(../include)
 
+add_executable(random random.cpp)
+target_link_libraries(random ket)
+set_target_properties(random PROPERTIES CXX_STANDARD 17)
 
 add_executable(teleport teleport.cpp)
 target_link_libraries(teleport ket)

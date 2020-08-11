@@ -1,10 +1,12 @@
-# Lib Ket
+# Libket
 
 ## Installation
 
-```bash
+```shell
+git clone git@gitlab.com:quantum-ket/libket.git
+cd libket
 mkdir build
 cd build
-cmake .. -DCMAKE_BUILD_TYPE=Release
-sudo make install
+cmake .. -GNinja
+sudo ninja install
 ```
