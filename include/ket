@@ -360,7 +360,9 @@ namespace ket {
 
     namespace plugin {
         void plugin(const std::string& name, const quant& q, const std::string& args);
+        #ifndef SWIG
         quant pown(size_t a, const quant& x, size_t n);
+        #endif
     }
 
     #ifndef SWIG
