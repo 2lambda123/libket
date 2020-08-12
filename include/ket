@@ -343,7 +343,7 @@ namespace ket {
      *                           0 & e^{i\lambda} \end{bmatrix}
      *  \f]
      *  
-     *  \param lambda = \f$\lambda\f$
+     *  \param lambda \f$\lambda\f$
      */   
     void u1(double lambda, const quant& q);
     
@@ -354,8 +354,8 @@ namespace ket {
      *                  e^{i\phi} & e^{i(\lambda+\phi)} \end{bmatrix}
      *  \f]
      * 
-     *  \param phi = \f$\phi\f$
-     *  \param lambda = \f$\lambda\f$
+     *  \param phi \f$\phi\f$
+     *  \param lambda \f$\lambda\f$
      */   
     void u2(double phi, double lambda, const quant& q);
     
@@ -366,9 +366,9 @@ namespace ket {
      *                  e^{i\phi}\sin{\theta\over2} & e^{i(\lambda+\phi)}\cos{\theta\over2}  \end{bmatrix}
      *  \f]
      * 
-     *  \param theta = \f$\theta\f$
-     *  \param phi = \f$\phi\f$
-     *  \param lambda = \f$\lambda\f$
+     *  \param theta \f$\theta\f$
+     *  \param phi \f$\phi\f$
+     *  \param lambda \f$\lambda\f$
      */   
     void u3(double theta, double phi, double lambda, const quant& q);
     
