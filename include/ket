@@ -1,3 +1,4 @@
+
 /* MIT License
  * 
  * Copyright (c) 2020 Evandro Chagas Ribeiro da Rosa <evandro.crr@posgrad.ufsc.br>
@@ -93,8 +94,7 @@ namespace ket {
     extern "C" void ket_init_new(int argc, char* argv[]) __attribute__((constructor));
     #endif
 
-    //! Array of qubits references.
-    /*!
+    /*! \brief Array of qubits references.
      *  \class quant
      */
     struct quant {
@@ -109,22 +109,25 @@ namespace ket {
         static quant dirty(size_t size);
 
         #ifndef SWIG
-        //! Return the reference for a single qubit.
-        /*!
-         *  \note For the Python wrapper use brackets instead.
+        /*! \brief Return the reference for a single qubit.
+         * 
+         *  \note
+         *      For the Python wrapper use brackets instead.
          */
         quant operator()(int idx) const;
 
-        //! Return the reference for a range of qubits.
-        /*!
-         *  \note For the Python wrapper use brackets instead.
+        /*! \brief Return the reference for a range of qubits.
+         * 
+         *  \note
+         *      For the Python wrapper use brackets instead.
          */
         quant operator()(int start, int end, int step = 1) const;
         #endif
 
-        //! Concatenate two quant.
-        /*!
-         *  \note The two quant needs to belong to the same process. 
+        /*! \brief Concatenate two quant.
+         * 
+         *  \note
+         *      The two quant needs to belong to the same process. 
          */
         quant operator|(const quant& other) const;
 
@@ -135,13 +138,15 @@ namespace ket {
         size_t len() const;
         size_t __len__() const;
 
-        //! Free the qubits
-        /*!
-         *  \note All qubits must be at the state \f$\left|0\right>\f$ before the call,
-         *  otherwise set the dirty param to true.
+        /*! \brief Free the qubits
          * 
-         *  \warning No check is applied to see if the qubits are at state
-         *  \f$\left|0\right>\f$.
+         *  \note 
+         *      All qubits must be at the state \f$\left|0\right>\f$ before the call,
+         *      otherwise set the dirty param to true.
+         * 
+         *  \warning 
+         *      No check is applied to see if the qubits are at state
+         *      \f$\left|0\right>\f$.
          */
         void free(bool dirty = false) const;
 
@@ -151,6 +156,9 @@ namespace ket {
         #endif
     };
 
+    /*! \brief Refers to a integer generated in a quantum computer.
+     *  \class future
+     */
     class future {
     public:
         #ifndef SWIG
@@ -158,6 +166,8 @@ namespace ket {
                const std::shared_ptr<std::int64_t>& result,
                const std::shared_ptr<bool>& available);
         #endif
+
+        //! Initialize a future with a value.
         future(std::int64_t value);
 
         future operator==(const future& other) const;
@@ -204,7 +214,14 @@ namespace ket {
         future __rxor__(std::int64_t other) const;
         future __ror__(std::int64_t other) const;
 
+        /*! \brief Get the integer from the quantum computer.
+         *  
+         *  \note
+         *      This method triggers the quantum execution.
+         */
         std::int64_t get();
+
+        //! Set the future value with another future.
         void set(const future& other);
 
         #ifndef SWIG
@@ -246,8 +263,8 @@ namespace ket {
     
     future measure(const quant& q);
     
-    //! Apply Pauli X gate on every qubit of q.
-    /*!
+    /*! \brief Apply Pauli X gate on every qubit of q.
+     *
      *  \f[
      *      X = \begin{bmatrix} 0 & 1 \\
      *                          1 & 0 \end{bmatrix}
@@ -255,8 +272,8 @@ namespace ket {
      */
     void x(const quant& q);
 
-    //!  Apply Pauli Y gate on every qubit of q.
-    /*!
+    /*! \brief  Apply Pauli Y gate on every qubit of q.
+     *
      *  \f[
      *      Y = \begin{bmatrix} 0 & -i \\
      *                          i & 0 \end{bmatrix}
@@ -264,8 +281,8 @@ namespace ket {
      */   
     void y(const quant& q);
     
-    //! Apply Pauli Z gate on every qubit of q.
-    /*!
+    /*! \brief Apply Pauli Z gate on every qubit of q.
+     *
      *  \f[
      *      Z = \begin{bmatrix} 1 & 0 \\
      *                          0 & -1 \end{bmatrix}
@@ -274,8 +291,8 @@ namespace ket {
  
     void z(const quant& q);
     
-    //! Apply Hadamard gate on every qubit of q.
-    /*!
+    /*! \brief Apply Hadamard gate on every qubit of q.
+     *
      *  \f[
      *      H = \frac{1}{\sqrt{2}}\begin{bmatrix} 1 & 1 \\
      *                                            1 & -1 \end{bmatrix}
@@ -283,8 +300,8 @@ namespace ket {
      */   
     void h(const quant& q);
     
-    //! Apply S gate on every qubit of q.
-    /*!
+    /*! \brief Apply S gate on every qubit of q.
+     *
      *  \f[
      *      S = \begin{bmatrix} 1 & 0 \\
      *                          0 & i \end{bmatrix}
@@ -292,8 +309,8 @@ namespace ket {
      */   
     void s(const quant& q);
     
-    //! Apply the inverse of S gate on every qubit of q.
-    /*!
+    /*! \brief Apply the inverse of S gate on every qubit of q.
+     *
      *  \f[
      *      S^\dagger = \begin{bmatrix} 1 & 0 \\
      *                                  0 & -i \end{bmatrix}
@@ -301,8 +318,8 @@ namespace ket {
      */   
     void sd(const quant& q);
     
-    //! Apply T gate on every qubit of q.
-    /*!
+    /*! \brief Apply T gate on every qubit of q.
+     *
      *  \f[
      *      T = \begin{bmatrix} 1 & 0 \\
      *                          0 & e^{i\pi/4} \end{bmatrix}
@@ -310,17 +327,17 @@ namespace ket {
      */   
     void t(const quant& q);
     
-    //! Apply the inverse of t gate on every qubit of q.
-    /*!
+    /*! \brief Apply the inverse of t gate on every qubit of q.
+     *
      *  \f[
      *      T^\dagger = \begin{bmatrix} 1 & 0 \\
-     *                                  0 & (e^{i\pi/4})^\dagger \end{bmatrix}
+     *                                  0 & e^{-i\pi/4} \end{bmatrix}
      *  \f]
      */   
     void td(const quant& q);
     
-    //! Apply U1 gate on every qubit of q.
-    /*!
+    /*! \brief Apply U1 gate on every qubit of q.
+     *
      *  \f[ 
      *      U1 = \begin{bmatrix} 1 & 0 \\
      *                           0 & e^{i\lambda} \end{bmatrix}
@@ -330,8 +347,8 @@ namespace ket {
      */   
     void u1(double lambda, const quant& q);
     
-    //! Apply U2 gate on every qubit of q.
-    /*!
+    /*! \brief Apply U2 gate on every qubit of q.
+     *
      *  \f[
      *      U2 = \begin{bmatrix} 1 & -e^{i\lambda} \\
      *                  e^{i\phi} & e^{i(\lambda+\phi)} \end{bmatrix}
@@ -342,8 +359,8 @@ namespace ket {
      */   
     void u2(double phi, double lambda, const quant& q);
     
-    //! Apply U3 gate on every qubit of q.
-    /*!
+    /*! \brief Apply U3 gate on every qubit of q.
+     *
      *  \f[
      *      U3 = \begin{bmatrix} \cos{\theta\over2} & -e^{i\lambda}\sin{\theta\over2} \\
      *                  e^{i\phi}\sin{\theta\over2} & e^{i(\lambda+\phi)}\cos{\theta\over2}  \end{bmatrix}
