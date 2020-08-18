@@ -365,7 +365,7 @@ namespace ket {
     //! End the inverse scope.
     void adj_end();
     
-    //! Measure a ket::quant and return a ket::future.
+    //! Measure a quant and return a future.
     future measure(const quant& q);
     
     /*! \brief Apply Pauli X gate on every qubit of q.
