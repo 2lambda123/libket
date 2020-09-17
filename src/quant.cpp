@@ -46,7 +46,7 @@ quant quant::operator()(int idx) const {
 
     if (idx < 0) idx = len() + idx;
 
-    if (idx >= len()) 
+    if (size_t(idx) >= len()) 
         throw std::out_of_range("qubit index out of bounds");
 
     return quant{{{qubits[idx]}}};
@@ -59,7 +59,7 @@ quant quant::operator()(int start, int end, int step) const {
     if (start < 0) start = len() + start;
     if (end < 0) end = len() + end;
     
-    if (start < 0 or end >= len())
+    if (start < 0 or size_t(end) >= len())
         throw std::out_of_range("qubits range out of bounds");
 
     std::vector<size_t> ret_qubits;
