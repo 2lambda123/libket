@@ -61,6 +61,8 @@ quant quant::operator()(int start, int end, int step) const {
     
     if (start < 0 or size_t(end) >= len())
         throw std::out_of_range("qubits range out of bounds");
+    if (start >= end)
+        throw std::runtime_error("empty quant are not allowed");
 
     std::vector<size_t> ret_qubits;
     for (int i = start; i < end; i += step) 
