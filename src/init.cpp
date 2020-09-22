@@ -36,11 +36,10 @@ void ket::ket_init_new(int argc, char* argv[]) {
     boost::program_options::options_description desc{"Ket program options"};
     desc.add_options()
         ("help,h", "Show this information")
-        ("seed,s", boost::program_options::value<size_t>(), "Pseudo random number generator seed")
-        ("out,o", boost::program_options::value<std::string>(), "kqasm output file")
-        ("kbw,b", boost::program_options::value<std::string>(), "Path to the Ket Bitwise simulator")
-        ("plugin,p", boost::program_options::value<std::string>(), "Ket Bitwise plugin directory path")
-        ("no-execute", "Do not execute the quantum code, measuments will return 0");
+        ("out,o", boost::program_options::value<std::string>(), "KQASM output file")
+        ("kbw,s", boost::program_options::value<std::string>()->default_value("127.0.1.1"), "Quantum execution (KBW) address")
+        ("port,p", boost::program_options::value<int>()->default_value(4242), "Quantum execution (KBW) port address")
+        ("no-execute", "Does not execute the quantum code, measuments return 0");
 
     boost::program_options::parsed_options parsed = boost::program_options::command_line_parser(argc, argv).options(desc).allow_unregistered().run();
     boost::program_options::variables_map vm;
@@ -51,17 +50,8 @@ void ket::ket_init_new(int argc, char* argv[]) {
         exit(0);
     } 
 
-    if (vm.count("seed")) {
-        exec_seed = vm["seed"].as<size_t>();
-    } else {
-        exec_seed = std::time(nullptr);
-    }
-
-    if (vm.count("kbw")) {
-        kbw_path = vm["kbw"].as<std::string>();
-    } else {
-        kbw_path = "kbw";
-    }
+    kbw_addr = vm["kbw"].as<std::string>();
+    kbw_port = vm["port"].as<int>();
 
     execute_kqasm = vm.count("no-execute")? false : true;
 
@@ -74,10 +64,4 @@ void ket::ket_init_new(int argc, char* argv[]) {
         output_kqasm = false;
     }
     
-    if (vm.count("plugin")) {
-        use_plugin = true;
-        plugin_path = vm["plugin"].as<std::string>();
-    } else {
-        use_plugin = false;
-    } 
 }

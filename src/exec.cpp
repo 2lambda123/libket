@@ -23,29 +23,40 @@
  */
 
 #include "../include/ket"
-#include <boost/process.hpp>
-#include <boost/process/async.hpp>
 #include <boost/asio.hpp>
+#include <boost/array.hpp>
 #include <fstream>
 
 using namespace ket;
 
-inline std::string call(const std::string& command, const std::string& in) {
+template <class T, int N>
+inline boost::array<char, N> to_char(T value) {
+    boost::array<char, N> buffer;
+    std::memcpy(&buffer[0], &value, N);
+    return buffer;
+}
+
+template <class T, int N>
+inline T from_char(boost::array<char, N> buffer) {
+    T value;
+    std::memcpy(&value, &buffer[0], N);
+    return value;
+}
+
+inline auto conect(const std::string& addr, int port) {
     boost::asio::io_service ios;
+    boost::asio::ip::tcp::endpoint server(boost::asio::ip::address::from_string(addr), port);
+    boost::asio::ip::tcp::socket socket(ios);
 
-    std::future<std::string> outdata;
+    socket.connect(server);
+    
+    return socket;
+}
 
-    boost::process::async_pipe qasm(ios);
-    boost::process::child c(command+std::string{},
-                            boost::process::std_out > outdata,
-                            boost::process::std_in < qasm, ios);
-
-    boost::asio::async_write(qasm, boost::process::buffer(in),
-                            [&](boost::system::error_code, size_t) { qasm.close(); });
-
-    ios.run();
-
-    return outdata.get();
+inline auto buffer_str(const std::string& input) {
+    std::vector<char> buffer;
+    for (char i : input) buffer.push_back(i);
+    return buffer;
 }
 
 void process::exec() {
@@ -59,19 +70,39 @@ void process::exec() {
     }
 
     if (execute_kqasm) {
-        std::stringstream kbw;
-        kbw << kbw_path << " -s " << exec_seed++;
-        if (use_plugin) kbw << " -p " << plugin_path;
+        
+        auto kqasm_buffer = buffer_str(kqasm.str());
+        auto kqasm_size = to_char<int, 4>(kqasm_buffer.size());
+        
+        char ack[1];
 
-        std::stringstream result{call(kbw.str(), kqasm.str())};
+        auto socket = conect(kbw_addr, kbw_port);
 
-        size_t int_id;
-        std::int64_t val;
-        while (result >> int_id >> val) {
-            auto& future_tmp = measure_map[int_id];
-            *(future_tmp.first) = val;
-            *(future_tmp.second) = true;
+        socket.send(boost::asio::buffer(kqasm_size));
+        socket.receive(boost::asio::buffer(ack));
+
+        socket.send(boost::asio::buffer(kqasm_buffer));
+        socket.receive(boost::asio::buffer(ack));
+        
+        auto get_command = to_char<int, 4>(1);
+        for (auto &i : measure_map) {
+            socket.send(boost::asio::buffer(get_command));
+            socket.receive(boost::asio::buffer(ack));
+         
+            auto get_idx = to_char<size_t, 8>(i.first);
+            socket.send(boost::asio::buffer(get_idx));
+            socket.receive(boost::asio::buffer(get_idx));
+
+            *(i.second.first) = from_char<size_t, 8>(get_idx);
+            
+            *(i.second.second) = true;
         }
+
+        auto exit_command = to_char<int, 4>(0);
+        socket.send(boost::asio::buffer(exit_command));
+        socket.receive(boost::asio::buffer(ack));
+
+        socket.close();
     } else for (auto &i : measure_map) {
         *(i.second.first) =  0;
         *(i.second.second) = true;

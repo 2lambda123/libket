@@ -160,11 +160,9 @@ namespace ket {
     inline std::stack<std::shared_ptr<process>> process_stack;
     inline std::stack<std::shared_ptr<bool>> process_on_top_stack; 
 
-    inline std::string kbw_path;
-    inline std::string plugin_path;
-    inline bool use_plugin; 
+    inline std::string kbw_addr;
+    inline int kbw_port;
     inline bool execute_kqasm;
-    inline size_t exec_seed;
 
     inline std::string kqasm_path;
     inline bool output_kqasm;

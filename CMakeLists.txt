@@ -22,6 +22,8 @@ if (NOT TARGET CONAN_PKG::boost)
                     BUILD missing)
 endif()
 
+find_package(Threads REQUIRED)
+
 file(GLOB_RECURSE SOURCES src/*.cpp)
 
 add_library(ket SHARED ${SOURCES})
@@ -29,7 +31,7 @@ set_target_properties(ket PROPERTIES
                       PUBLIC_HEADER "include/ket"
                       CXX_STANDARD 17)
 
-target_link_libraries(ket CONAN_PKG::boost)
+target_link_libraries(ket CONAN_PKG::boost Threads::Threads)
 
 install(TARGETS ket 
         LIBRARY DESTINATION usr/lib
