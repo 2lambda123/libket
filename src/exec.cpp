@@ -26,20 +26,21 @@
 #include <boost/asio.hpp>
 #include <boost/array.hpp>
 #include <fstream>
+#include <algorithm>
 
 using namespace ket;
 
-template <class T, int N>
-inline boost::array<char, N> to_char(T value) {
-    boost::array<char, N> buffer;
-    std::memcpy(&buffer[0], &value, N);
+template <class T>
+inline boost::array<char, sizeof(T)> to_char(T value) {
+    boost::array<char, sizeof(T)> buffer;
+    std::memcpy(&buffer[0], &value, sizeof(T));
     return buffer;
 }
 
-template <class T, int N>
-inline T from_char(boost::array<char, N> buffer) {
+template <class T>
+inline T from_char(boost::array<char, sizeof(T)> buffer) {
     T value;
-    std::memcpy(&value, &buffer[0], N);
+    std::memcpy(&value, &buffer[0], sizeof(T));
     return value;
 }
 
@@ -72,7 +73,7 @@ void process::exec() {
     if (execute_kqasm) {
         
         auto kqasm_buffer = buffer_str(kqasm.str());
-        auto kqasm_size = to_char<int, 4>(kqasm_buffer.size());
+        auto kqasm_size = to_char<uint32_t>(kqasm_buffer.size());
         
         char ack[1];
 
@@ -84,21 +85,69 @@ void process::exec() {
         socket.send(boost::asio::buffer(kqasm_buffer));
         socket.receive(boost::asio::buffer(ack));
         
-        auto get_command = to_char<int, 4>(1);
+        auto get_command = to_char<char>(1);
         for (auto &i : measure_map) {
             socket.send(boost::asio::buffer(get_command));
             socket.receive(boost::asio::buffer(ack));
          
-            auto get_idx = to_char<size_t, 8>(i.first);
+            auto get_idx = to_char<uint64_t>(i.first);
             socket.send(boost::asio::buffer(get_idx));
             socket.receive(boost::asio::buffer(get_idx));
 
-            *(i.second.first) = from_char<size_t, 8>(get_idx);
+            *(i.second.first) = from_char<uint64_t>(get_idx);
             
             *(i.second.second) = true;
         }
+        
+        auto dump_command = to_char<char>(2);
+        boost::array<char, 8> buffer;
+        for (auto &i : dump_map) {
+            socket.send(boost::asio::buffer(dump_command));
+            socket.receive(boost::asio::buffer(ack));
 
-        auto exit_command = to_char<int, 4>(0);
+            auto idx = to_char<uint64_t>(i.first);
+            socket.send(boost::asio::buffer(idx));
+            socket.receive(boost::asio::buffer(buffer));
+            auto size = from_char<uint64_t>(buffer);
+
+            ack[0] = 0;
+            socket.send(boost::asio::buffer(ack));
+            
+            for (auto j = 0u; j < size; j++) {
+                
+                socket.receive(boost::asio::buffer(buffer));
+                auto basis = from_char<uint64_t>(buffer); 
+                
+                socket.receive(boost::asio::buffer(buffer));
+                auto amp_size = from_char<uint64_t>(buffer); 
+
+                ack[0] = 0;
+                socket.send(boost::asio::buffer(ack));
+
+                for (auto k = 0u; k < amp_size; k++) {
+
+                    socket.receive(boost::asio::buffer(buffer));
+                    auto real = from_char<double>(buffer); 
+
+                    socket.receive(boost::asio::buffer(buffer));
+                    auto imag = from_char<double>(buffer); 
+                    
+                    ack[0] = 0;
+                    socket.send(boost::asio::buffer(ack));
+
+                    (*i.second.first)[basis].push_back(std::complex<double>{real, imag});
+                } 
+
+                std::sort((*i.second.first)[basis].begin(), (*i.second.first)[basis].end(), [](std::complex<double> a, std::complex<double> b) {
+                    if (a.real() == b.real()) return a.imag() < b.imag();
+                    else return a.real() < b.real();
+                });
+            }
+            
+            *i.second.second = true;
+        } 
+
+        auto exit_command = to_char<int>(0);
         socket.send(boost::asio::buffer(exit_command));
         socket.receive(boost::asio::buffer(ack));
 
@@ -107,4 +156,16 @@ void process::exec() {
         *(i.second.first) =  0;
         *(i.second.second) = true;
     }
+}
+
+void ket::exec_quantum() {
+    process_stack.top()->exec();
+
+    process_stack.pop();
+
+    *process_on_top_stack.top() = false;
+    process_on_top_stack.pop();
+
+    process_stack.push(std::make_shared<process>());
+    process_on_top_stack.push(std::make_shared<bool>(true));
 }

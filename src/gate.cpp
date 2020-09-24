@@ -42,8 +42,6 @@ GATE(sd)
 GATE(t)
 GATE(td)
 
-GATE(dump)
-
 void ket::u1(double lambda, const quant& q) {
     if (not *(q.process_on_top))
         throw std::runtime_error("process out of scope");

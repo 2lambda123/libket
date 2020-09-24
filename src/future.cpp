@@ -97,15 +97,8 @@ std::int64_t future::get() {
     if (*available) return *result;
     if (not *process_on_top)
         throw std::runtime_error("process out of scope");
-    
-    process_stack.top()->exec();
 
-    process_stack.pop();
-    process_on_top_stack.pop();
-    *(process_on_top) = false;
-
-    process_stack.push(std::make_shared<process>());
-    process_on_top_stack.push(std::make_shared<bool>(true));
+    exec_quantum();    
 
     return *result;    
 }

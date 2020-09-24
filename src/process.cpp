@@ -32,7 +32,8 @@ using namespace ket;
 process::process() : 
     qubit_count{0},
     future_count{0},
-    label_count{0}
+    label_count{0},
+    dump_count{0}
 {
     kqasm << "LABEL @entry" << std::endl;
 }
@@ -107,8 +108,6 @@ inline std::string gate_to_string(process::Gate gate, std::vector<double> args) 
         case process::u3:        
             tmp << "U3(" << args[0] << ' ' << args[1] << ' ' << args[2] <<  ")";
             return tmp.str();
-        case process::dump:
-            return "DUMP";
     }
     return "<GATE NOT DEFINED>";
 }
@@ -246,3 +245,28 @@ void process::free(size_t qubit, bool dirty) {
 size_t process::new_label_id() {
     return label_count++;
 }
+
+std::tuple<size_t, std::shared_ptr<std::unordered_map<std::uint64_t, std::vector<std::complex<double>>>>, std::shared_ptr<bool>>
+process::dump(const std::vector<size_t>& qubits) {
+
+    for (auto i : qubits) 
+        if (qubits_free.find(i) != qubits_free.end()) 
+            throw std::runtime_error("trying to operate with the freed qubit q" + std::to_string(i));
+
+
+    auto states = std::make_shared<std::unordered_map<std::uint64_t, std::vector<std::complex<double>>>>();    
+    auto available = std::make_shared<bool>(false);
+    
+    dump_map[dump_count] = std::make_pair(states, available);
+    
+    std::stringstream inst;
+
+    inst << "\tDUMP\t";
+    for (auto i : qubits) inst << 'q' << i << ' ';
+
+    add_inst(inst.str());
+    
+    return std::make_tuple(dump_count++, states, available);
+}
+       
+
