@@ -39,10 +39,10 @@ dump::dump(const quant& q) :
     this->available = available;
 }
 
-std::vector<std::uint64_t> dump::get_states() {
+std::vector<unsigned long long> dump::get_states() {
     if (not *available) get();
 
-    std::vector<std::uint64_t> states_key;
+    std::vector<unsigned long long> states_key;
     for (auto &i : *states) states_key.push_back(i.first);
 
     std::sort(states_key.begin(), states_key.end());

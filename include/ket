@@ -485,7 +485,7 @@ namespace ket {
     public:
         dump(const quant& q);
 
-        std::vector<std::uint64_t> get_states();
+        std::vector<unsigned long long> get_states();
         std::vector<std::complex<double>> amplitude(size_t idx);
         double probability(size_t idx);
         std::string show(std::string format = "b");
