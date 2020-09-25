@@ -82,13 +82,20 @@ std::string dump::show(std::string format) {
         throw std::invalid_argument("First char of the format string must be 'b' or 'i'.");
 
     bool binary = format[0] == 'b';
+    auto reg_sum = 0u;
     std::vector<unsigned> regs;
     std::stringstream format_buffer(format.substr(1));
     std::string reg_str;
-    while (std::getline(format_buffer, reg_str, ':')) 
-        regs.push_back(std::stoul(reg_str));    
+    while (std::getline(format_buffer, reg_str, ':')) {
+        auto reg_tmp = std::stoul(reg_str);
+        regs.push_back(reg_tmp);    
+        reg_sum += reg_tmp;
+    }
+    
+    if (reg_sum > nbits)
+        throw std::invalid_argument("Format string out of bounds.");
 
-    if (regs.empty()) regs.push_back(nbits);
+    if (nbits-reg_sum != 0) regs.push_back(nbits-reg_sum);
 
     std::stringstream out;
     for (auto i : get_states()) {
