@@ -458,8 +458,8 @@ namespace ket {
     /*! \brief Apply U2 gate on every qubit of q.
      *
      *  \f[
-     *      U2 = \begin{bmatrix} 1 & -e^{i\lambda} \\
-     *                  e^{i\phi} & e^{i(\lambda+\phi)} \end{bmatrix}
+     *      U2 = \frac{1}{\sqrt{2}}\begin{bmatrix} 1 & -e^{i\lambda} \\
+     *                             e^{i\phi} & e^{i(\lambda+\phi)} \end{bmatrix}
      *  \f]
      * 
      *  \param phi \f$\phi\f$
