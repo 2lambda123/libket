@@ -125,12 +125,13 @@ std::string dump::show(std::string format) {
                 out << (j.real() < 0.0? '-' : ' ') << '1' << (j.imag() < 0.0? '-' : '+') << "i/√" << real << std::endl;
             } else {
                 if (real > 1e-10) {
-                    out << (j.real() < 0.0?  '-' : ' ') << "1/√" << real << std::endl;
+                    out << (j.real() < 0.0?  '-' : ' ') << "1/√" << real;
                     if (imag > 1e-10) out << " + ";
                 } 
                 if (imag > 1e-10) {
-                    out << (j.imag() < 0.0? '-' : ' ') << "i/√" << imag << std::endl;
+                    out << (j.imag() < 0.0? '-' : ' ') << "i/√" << imag;
                 }
+                out << std::endl;
             } 
         } 
 
