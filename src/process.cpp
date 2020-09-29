@@ -106,7 +106,16 @@ inline std::string gate_to_string(process::Gate gate, std::vector<double> args) 
             tmp << "U2(" << args[0] << ' ' << args[1] << ')';
             return tmp.str();
         case process::u3:        
-            tmp << "U3(" << args[0] << ' ' << args[1] << ' ' << args[2] <<  ")";
+            tmp << "U3(" << args[0] << ' ' << args[1] << ' ' << args[2] <<  ')';
+            return tmp.str();
+        case process::rx:
+            tmp << "U3(" << args[0] << ' ' -M_PI_2 << ' ' << M_PI_2 << ')';
+            return tmp.str();
+        case process::ry:
+            tmp << "U3(" << args[0] << " 0.0 0.0)";
+            return tmp.str();
+        case process::rz:
+            tmp << "RZ(" << args[0] << ")";
             return tmp.str();
     }
     return "<GATE NOT DEFINED>";
