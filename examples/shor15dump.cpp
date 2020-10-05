@@ -32,7 +32,7 @@ int main() {
     
     std::cout << "|x⟩|aˣ mod 15⟩:" << std::endl
               << "==============" << std::endl;
-    std::cout << after_pown.show("i4");
+    std::cout << after_pown.show("i4:b4");
 
     std::cout << "Result:" << std::endl
               << "=======" << std::endl;

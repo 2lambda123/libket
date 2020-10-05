@@ -78,29 +78,30 @@ inline double sqrt_apx(double value) {
 std::string dump::show(std::string format) {
     if (not *available) get();
 
-    if (format[0] != 'b' and format[0] != 'i') 
-        throw std::invalid_argument("First char of the format string must be 'b' or 'i'.");
+    std::vector<std::pair<bool, unsigned>> forms;
 
-    bool binary = format[0] == 'b';
     auto reg_sum = 0u;
-    std::vector<unsigned> regs;
-    std::stringstream format_buffer(format.substr(1));
+    std::stringstream format_buffer(format);
     std::string reg_str;
     while (std::getline(format_buffer, reg_str, ':')) {
-        auto reg_tmp = std::stoul(reg_str);
-        regs.push_back(reg_tmp);    
+        if (reg_str[0] != 'b' and reg_str[0] != 'i') 
+            throw std::invalid_argument("The format string must be 'b|i<number>[...]'.");
+
+        bool binary = reg_str[0] == 'b';
+        auto reg_tmp = std::stoul(reg_str.substr(1));
+        forms.push_back(std::make_pair(binary, reg_tmp));    
         reg_sum += reg_tmp;
     }
     
     if (reg_sum > nbits)
         throw std::invalid_argument("Format string out of bounds.");
 
-    if (nbits-reg_sum != 0) regs.push_back(nbits-reg_sum);
+    if (nbits-reg_sum != 0) forms.push_back(std::make_pair(true, nbits-reg_sum));
 
     std::stringstream out;
     for (auto i : get_states()) {
         auto begin = 0u;
-        for (auto nbits_reg : regs) {
+        for (auto [binary, nbits_reg] : forms) {
             out << '|';
             if (binary) {
               for (auto j = begin; j < begin+nbits_reg; j++)

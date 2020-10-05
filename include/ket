@@ -523,7 +523,7 @@ namespace ket {
         std::vector<unsigned long long> get_states();
         std::vector<std::complex<double>> amplitude(size_t idx);
         double probability(size_t idx);
-        std::string show(std::string format = "b");
+        std::string show(std::string format = "");
 
         void get();
 

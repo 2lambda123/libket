@@ -59,7 +59,7 @@ quant quant::operator()(int start, int end, int step) const {
     if (start < 0) start = len() + start;
     if (end < 0) end = len() + end;
     
-    if (start < 0 or size_t(end) >= len())
+    if (start < 0 or size_t(end) > len())
         throw std::out_of_range("qubits range out of bounds");
     if (start >= end)
         throw std::runtime_error("empty quant are not allowed");
