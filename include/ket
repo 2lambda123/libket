@@ -147,6 +147,8 @@ namespace ket {
 
         //! Get a new label id.
         size_t new_label_id();
+        
+        bool is_free(size_t qubit) const;
 
     private:
         size_t qubit_count, future_count, label_count, dump_count; 
@@ -176,7 +178,7 @@ namespace ket {
      */
     struct quant {
         #ifndef SWIG
-        quant(const std::vector<size_t> &qubits);
+        quant(const std::vector<size_t> &qubits, const std::shared_ptr<bool> &ps_ot, const std::shared_ptr<process>& ps);
         #endif
 
         //! Alloc size qubits.
@@ -231,10 +233,13 @@ namespace ket {
          *      \f$\left|0\right>\f$.
          */
         void free(bool dirty = false) const;
+        
+        bool is_free() const;
 
         #ifndef SWIG
         const std::vector<size_t> qubits;
         const std::shared_ptr<bool> process_on_top;
+        const std::shared_ptr<process> ps;
         #endif
     };
 
@@ -518,11 +523,20 @@ namespace ket {
     //! Dump the states of the qubits of q, used for debuggin.
     class dump {
     public:
+
+        //! Dump the state of a quantum.
         dump(const quant& q);
 
+        //! Return a list of basis states.
         std::vector<unsigned long long> get_states();
+
+        //! Return a list of amplitudes of a state. 
         std::vector<std::complex<double>> amplitude(size_t idx);
+        
+        //! Return the probability of measure a state.
         double probability(size_t idx);
+        
+        //! Return a string to print the quantum state.
         std::string show(std::string format = "");
 
         void get();

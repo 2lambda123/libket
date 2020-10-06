@@ -26,36 +26,32 @@
 
 using namespace ket;
 
-quant::quant(const std::vector<size_t> &qubits) :
+quant::quant(const std::vector<size_t> &qubits, const std::shared_ptr<bool>& ps_ot, const std::shared_ptr<process>& ps) :
     qubits{qubits},
-    process_on_top{process_on_top_stack.top()}
+    process_on_top{ps_ot},
+    ps{ps}
     {} 
 
 quant::quant(size_t size) :
     qubits{process_stack.top()->quant(size, false)},
-    process_on_top{process_on_top_stack.top()}
+    process_on_top{process_on_top_stack.top()},
+    ps{process_stack.top()}
     {} 
     
 quant quant::dirty(size_t size) {
-    return quant{process_stack.top()->quant(size, true)};
+    return quant{process_stack.top()->quant(size, true), process_on_top_stack.top(), process_stack.top()};
 }
 
 quant quant::operator()(int idx) const {
-    if (not *process_on_top) 
-        throw std::runtime_error("process out of scope");
-
     if (idx < 0) idx = len() + idx;
 
     if (size_t(idx) >= len()) 
         throw std::out_of_range("qubit index out of bounds");
 
-    return quant{{{qubits[idx]}}};
+    return quant{{{qubits[idx]}}, process_on_top, ps};
 }
 
 quant quant::operator()(int start, int end, int step) const {
-    if (not *process_on_top) 
-        throw std::runtime_error("process out of scope");
-    
     if (start < 0) start = len() + start;
     if (end < 0) end = len() + end;
     
@@ -68,18 +64,18 @@ quant quant::operator()(int start, int end, int step) const {
     for (int i = start; i < end; i += step) 
         ret_qubits.push_back(qubits[i]);
 
-    return quant{ret_qubits};    
+    return quant{ret_qubits, process_on_top, ps};    
 }
 
 quant quant::operator|(const quant& other) const {
-    if (not *process_on_top) 
-        throw std::runtime_error("process out of scope");
+    if (ps != other.ps)
+        throw std::runtime_error("cannot concatenate quant of different process");
 
     auto tmp_qubits = qubits;
     for (auto i : other.qubits)
         tmp_qubits.push_back(i);
 
-    return quant{tmp_qubits};
+    return quant{tmp_qubits, process_on_top, ps};
 }
 
 quant quant::inverted() const {
@@ -90,7 +86,7 @@ quant quant::inverted() const {
     for (auto i = qubits.rbegin(); i != qubits.rend(); ++i) 
         tmp_qubits.push_back(*i);
     
-    return quant{tmp_qubits};
+    return quant{tmp_qubits, process_on_top, ps};
 }
 
 size_t quant::len() const {
@@ -107,4 +103,12 @@ void quant::free(bool dirty) const {
 
     for (auto i : qubits)
         process_stack.top()->free(i, dirty);
+}
+
+bool quant::is_free() const {
+    for (auto i : qubits)
+        if (not ps->is_free(i)) 
+            return false;
+    
+    return true;
 }

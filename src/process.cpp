@@ -278,4 +278,6 @@ process::dump(const std::vector<size_t>& qubits) {
     return std::make_tuple(dump_count++, states, available);
 }
        
-
+bool process::is_free(size_t qubit) const {
+    return qubits_free.find(qubit) != qubits_free.end();
+}
