@@ -166,7 +166,6 @@ process::measure(const std::vector<size_t>& qubits) {
             throw std::runtime_error("trying to operate with the freed qubit q" + std::to_string(i));
 
         add_inst("\tMEASURE\tq" + std::to_string(i));
-        qubits_free.insert(i);
 
         tmp << 'c' << i << ' ';
     }
