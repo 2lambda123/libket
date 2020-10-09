@@ -144,6 +144,37 @@ void process::add_gate(Gate gate, size_t qubit, std::vector<double> args) {
     }
 }
 
+void process::add_plugin(const std::string& name, const std::vector<size_t>& qubits, const std::string& args) {
+    for (auto qubit : qubits) 
+        if (qubits_free.find(qubit) != qubits_free.end()) 
+            throw std::runtime_error("trying to operate with the freed qubit q" + std::to_string(qubit));
+
+    std::stringstream tmp;
+    if (not ctrl_stack.empty()) {
+        tmp << "\tCTRL\t";
+        for (auto cc : ctrl_stack) for (auto c : cc)
+            tmp << 'q' << c << ' ';
+    }
+
+    tmp << "\tPLUGIN";
+
+    if (not adj_stack.empty() and adj_stack.size() % 2) 
+        tmp << "!";
+
+    tmp << '\t' << name << '\t';
+
+    for (auto i : qubits) 
+        tmp << 'q' << i << ' ';
+
+    tmp << "\t\"" << args << '\"' << std::endl;
+
+    if (not adj_stack.empty()) {
+        adj_stack.top().push(tmp.str());
+    } else {
+        kqasm << tmp.str();
+    }
+}
+
 std::vector<size_t> process::quant(size_t size, bool dirty) {
     std::vector<size_t> qubits;
     for (auto i = qubit_count; i < qubit_count+size; i++) {
@@ -272,7 +303,7 @@ process::dump(const std::vector<size_t>& qubits) {
     inst << "\tDUMP\t";
     for (auto i : qubits) inst << 'q' << i << ' ';
 
-    add_inst(inst.str());
+    kqasm << inst.str() << std::endl;
     
     return std::make_tuple(dump_count++, states, available);
 }

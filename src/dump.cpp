@@ -122,15 +122,14 @@ std::string dump::show(std::string format) {
             auto real = std::abs(j.real()) < 1e-10? 0 : sqrt_apx(j.real());
             auto imag = std::abs(j.imag()) < 1e-10? 0 : sqrt_apx(j.imag());
 
-            if (std::abs(real-imag) < 1e-10) {
-                out << (j.real() < 0.0? '-' : ' ') << '1' << (j.imag() < 0.0? '-' : '+') << "i/√" << real << std::endl;
+            if (std::abs(real-imag) < 1e-5) {
+                out << (j.real() < 0.0? "(-" : "(") << '1' << (j.imag() < 0.0? '-' : '+') << "i)/√" << real << std::endl;
             } else {
                 if (real > 1e-10) {
                     out << (j.real() < 0.0?  '-' : ' ') << "1/√" << real;
-                    if (imag > 1e-10) out << " + ";
                 } 
                 if (imag > 1e-10) {
-                    out << (j.imag() < 0.0? '-' : ' ') << "i/√" << imag;
+                    out << (j.imag() < 0.0? '-' : '+') << "i/√" << imag;
                 }
                 out << std::endl;
             } 

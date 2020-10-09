@@ -31,16 +31,7 @@ void plugin::plugin(const std::string& name, const quant& q, const std::string& 
     if (not *(q.process_on_top))
         throw std::runtime_error("process out of scope");
     
-    std::stringstream tmp;
-
-    tmp << "\tPLUGIN\t" << name << '\t';
-
-    for (auto i : q.qubits) 
-        tmp << 'q' << i << ' ';
-
-    tmp << "\t\"" << args << '\"';
-
-    process_stack.top()->add_inst(tmp.str());
+    process_stack.top()->add_plugin(name, q.qubits, args);
 }
 
 quant plugin::pown(size_t a, const quant& x, size_t n) {
@@ -55,4 +46,11 @@ quant plugin::pown(size_t a, const quant& x, size_t n) {
     plugin("ket_pown", x|ret, tmp.str());
 
     return ret;
+}
+
+void plugin::diagonal(std::vector<double> diag, const quant& q) {
+    std::stringstream tmp;
+    for (auto i : diag) tmp << i << ' ';
+
+    plugin("ket_diag", q, tmp.str());
 }

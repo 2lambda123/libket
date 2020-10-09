@@ -77,6 +77,8 @@ namespace ket {
 
         //! \brief Add a quantum gate in the KQASM file.
         void add_gate(Gate gate, size_t qubit, std::vector<double> args = {});
+        
+        void add_plugin(const std::string& name, const std::vector<size_t>& qubits, const std::string& args);
 
         /*! \brief Alloc qubits.
          *  
@@ -489,7 +491,7 @@ namespace ket {
      *  \f[ 
      *       RX(\theta) = U3(\theta, -\pi/2, \pi/2) = 
      *                   \begin{bmatrix} \cos{\frac{\theta}{2}} & -i\sin{\frac{\theta}{2}} \\
-     *                                 -i\sin{\frac{\theta}{2}} & \cos{\frac{theta}{2}} \end{bmatrix}
+     *                                 -i\sin{\frac{\theta}{2}} & \cos{\frac{\theta}{2}} \end{bmatrix}
      *  \f]
      * 
      *  \param theta \f$\theta\f$
@@ -567,10 +569,18 @@ namespace ket {
          *  \param args arguments for the plugin
          */
         void plugin(const std::string& name, const quant& q, const std::string& args);
-        #ifndef SWIG
-        //! Apply a modular exponentiation in the superposition.
+        
+        /*! \brief Apply a modular exponentiation in a superposition.
+         *
+         *  \f[
+         *      \left|x\\right>\left|0\\right> \\rightarrow  \left|x\\right>\left|a^x\;\\text{mod}\,n\\right>
+         *  \f] 
+         * 
+         *  \return Quant with the result of the operation.
+         */
         quant pown(size_t a, const quant& x, size_t n);
-        #endif
+        
+        void diagonal(std::vector<double> diag, const quant& q);
     }
 
     #ifndef SWIG
