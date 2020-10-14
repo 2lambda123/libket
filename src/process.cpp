@@ -56,6 +56,8 @@ inline void set_to_adj(process::Gate &gate, std::vector<double> &args) {
             gate = process::td;
             break;
         case process::u1:
+        case process::ry:
+        case process::rz:
             lambda = -args[0];
             args[0] = lambda;
             break;
@@ -65,6 +67,10 @@ inline void set_to_adj(process::Gate &gate, std::vector<double> &args) {
             args[0] = phi;
             args[1] = lambda;
             break;
+        case process::rx:
+            args[1] = -M_PI_2;
+            args[2] = M_PI_2;
+            gate = process::u3;
         case process::u3:
             theta = -args[0];
             phi = -args[2];
