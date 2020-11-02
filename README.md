@@ -38,7 +38,7 @@ Available examples:
 
 with kbw running execute:
 ```shell
-./bin/<example>
+$ ./bin/<example>
 ```
 > Replace `<example>` one of the available examples
 
