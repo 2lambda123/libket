@@ -18,23 +18,23 @@ Runtime requirement
 ### Compile 
 
 ```shell
-git clone git@gitlab.com:quantum-ket/libket.git
-cd libket
-mkdir build
-cd build
-cmake .. -GNinja
-ninja
+$ git clone git@gitlab.com:quantum-ket/libket.git
+$ cd libket
+$ mkdir build
+$ cd build
+$ cmake .. -GNinja
+$ ninja
 ```
 
 ### Execute 
 
 Available examples:
 
-* Quantum teleportation -- [`teleport`](examples/teleport.cpp) 
-* Random number generation -- [`random`](examples/random.cpp) 
-* Shor's algorithms -- [`shor15`](examples/shor15.cpp)
-* Shor's algorithms with state dumping -- [`shor15dump`](examples/shor15dump.cpp)
-* State dumping -- [`dump_state`](examples/dump_state.cpp)
+* Quantum teleportation - [`teleport`](examples/teleport.cpp) 
+* Random number generation - [`random`](examples/random.cpp) 
+* Shor's algorithms - [`shor15`](examples/shor15.cpp)
+* Shor's algorithms with state dumping - [`shor15dump`](examples/shor15dump.cpp)
+* State dumping - [`dump_state`](examples/dump_state.cpp)
 
 with kbw running execute:
 ```shell
@@ -60,12 +60,12 @@ Ket program options:
 ## Installation
 
 ```shell
-git clone git@gitlab.com:quantum-ket/libket.git
-cd libket
-mkdir build
-cd build
-cmake .. -GNinja
-sudo ninja install
+$ git clone git@gitlab.com:quantum-ket/libket.git
+$ cd libket
+$ mkdir build
+$ cd build
+$ cmake .. -GNinja
+$ sudo ninja install
 ```
 
 -----------
