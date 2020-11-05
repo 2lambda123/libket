@@ -3,7 +3,7 @@
 C++ library for quantum computation. See
 https://quantum-ket.gitlab.io/libket.html for the API documentation.
 
-## Rum examples
+## Run examples
 
 Build requirements
 
