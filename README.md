@@ -17,7 +17,7 @@ Runtime requirement
 
 ### Compile 
 
-```shell
+```console
 $ git clone git@gitlab.com:quantum-ket/libket.git
 $ cd libket
 $ mkdir build
@@ -37,7 +37,7 @@ Available examples:
 * State dumping - [`dump_state`](examples/dump_state.cpp)
 
 with kbw running execute:
-```shell
+```console
 $ ./bin/<example>
 ```
 > Replace `<example>` one of the available examples
@@ -46,7 +46,7 @@ $ ./bin/<example>
 
 Every program linked with Libket accept the follow options 
 
-```shell
+```console
 $ ./bin/teleport -h
 Ket program options:
   -h [ --help ]              Show this information
@@ -59,7 +59,7 @@ Ket program options:
 
 ## Installation
 
-```shell
+```console
 $ git clone git@gitlab.com:quantum-ket/libket.git
 $ cd libket
 $ mkdir build
