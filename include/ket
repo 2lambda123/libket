@@ -37,48 +37,54 @@
 namespace ket {
     #ifndef SWIG
     
-    /*! \brief Manage the KQASM file generation.
+    /*! \brief KQASM manager.
 
      *  \class process
      *  \note
-     *      You should no instance or manipulate this class directly.
+     *      This class should not be directly instanced or manipulated.
      */
     class process {
     public:
     
-        enum Gate { x, y, z, h, s, sd, t, td, u1, u2, u3, rx, ry, rz}; 
+        enum Gate {x,  y,  z, h,
+                   s,  sd, t, td, 
+                   u1, u2, u3, 
+                   rx, ry, rz}; //!< Available quantum gates. 
 
         /*! \brief Contructor.
          *  
          *  \note
          *      Use ket::process_begin and ket::process_end to create and
-         *      destroy a instance.
+         *      destroy process instances.
          */
         process();
 
-        /*! \brief Execute the KQASM file.
+        /*! \brief Execute the generated KQASM.
          *  
-         *  Also place the result in the future instancies.
+         *  Also, place the results in the future and dump instancies.
          *  
          *  \note
-         *      Use future.get to trigger the quantum execution.
+         *      Use ket::future.get or ket::dump.get trigger the quantum execution.
          */
         void exec();
 
-        /*! \brief Place a instruction in the KQASM file.
+        /*! \brief Add a instruction (not quantum gate).
          *  
          *  \throw
          *      std::runtime_error inside ctrl or adj scope.
          * 
-         *  \worning
+         *  \warning
          *      Place undefined instruction breaks the quantum execution.
          */
         void add_inst(const std::string& inst);
 
-        //! \brief Add a quantum gate in the KQASM file.
+        //! \brief Add a quantum gate.
         void add_gate(Gate gate, size_t qubit, std::vector<double> args = {});
         
-        void add_plugin(const std::string& name, const std::vector<size_t>& qubits, const std::string& args);
+        //! \brief Add a Ket Bitwise plugin.
+        void add_plugin(const std::string&         name, 
+                        const std::vector<size_t>& qubits,
+                        const std::string&         args);
 
         /*! \brief Alloc qubits.
          *  
@@ -95,23 +101,22 @@ namespace ket {
         std::tuple<size_t, std::shared_ptr<std::int64_t>, std::shared_ptr<bool>>
         measure(const std::vector<size_t>& qubits);  
 
-        /*! \brief Initialize an int in the KQASM file.
+        /*! \brief Initialize an int.
          *
          *  \note
-         *      Use the ket::future to instance an int in the quantum computer.
+         *      Use ket::future to instance an int in the quantum computer.
          */
         std::tuple<size_t, std::shared_ptr<std::int64_t>, std::shared_ptr<bool>>
         new_int(std::int64_t value);
 
-        //! Place a operation between int in the KQASM file.
+        //! \brief Add a operation between int.
         std::tuple<size_t, std::shared_ptr<std::int64_t>, std::shared_ptr<bool>>
         op_int(size_t left, const std::string& op, size_t right);
         
-        //! Get a dump of qubits.
+        //! \brief Get a dump of the qubits.
         std::tuple<size_t, std::shared_ptr<std::unordered_map<std::uint64_t, std::vector<std::complex<double>>>>, std::shared_ptr<bool>>
         dump(const std::vector<size_t>& qubits);
        
-
         /*! \brief Initialize an inverse scope.
          *
          * \note
@@ -143,13 +148,14 @@ namespace ket {
         /*! \brief Free qubits.
          *  
          *  \note
-         *      Use quant.free to free a ket::quant. 
+         *      Use ket::quant.free to free a ket::quant. 
          */ 
         void free(size_t qubit, bool dirty);
 
-        //! Get a new label id.
+        //! \brief Get a new label id.
         size_t new_label_id();
         
+        //! \brief See if a qubit is free.
         bool is_free(size_t qubit) const;
 
     private:
@@ -157,9 +163,12 @@ namespace ket {
         
         std::unordered_map<size_t, std::pair<std::shared_ptr<std::int64_t>, std::shared_ptr<bool>>> measure_map;
         std::unordered_map<size_t, std::pair< std::shared_ptr<std::unordered_map<std::uint64_t, std::vector<std::complex<double>>>>, std::shared_ptr<bool>>> dump_map;
+       
         std::unordered_set<size_t> qubits_free;
-        std::stack<std::stack<std::string>> adj_stack;
+        
+        std::stack<std::stack<std::string>> adj_stack; 
         std::vector<std::vector<size_t>> ctrl_stack;  
+
         std::stringstream kqasm;
     };
 
@@ -180,10 +189,12 @@ namespace ket {
      */
     struct quant {
         #ifndef SWIG
-        quant(const std::vector<size_t> &qubits, const std::shared_ptr<bool> &ps_ot, const std::shared_ptr<process>& ps);
+        quant(const std::vector<size_t>&      qubits, 
+              const std::shared_ptr<bool>&    ps_ot, 
+              const std::shared_ptr<process>& ps);
         #endif
 
-        //! Alloc size qubits.
+        //! \brief Alloc size qubits.
         quant(size_t size);
 
         /*! \brief Alloc size dirty qubits.
@@ -213,18 +224,18 @@ namespace ket {
         /*! \brief Concatenate two quant.
          * 
          *  \note
-         *      The two quant needs to belong to the same process. 
+         *      The two quant variables needs to belong to the same process. 
          */
         quant operator|(const quant& other) const;
 
-        //! Return a quant with qubits in the inverted order
+        //! \brief Return a quant with qubits in the inverted order
         quant inverted() const;
 
-        //! Return the number qubits of the quant
+        //! \brief Return the number qubits of the quant.
         size_t len() const;
         size_t __len__() const;
 
-        /*! \brief Free the qubits
+        /*! \brief Free the qubits.
          * 
          *  \note 
          *      All qubits must be at the state \f$\left|0\right>\f$ before the call,
@@ -236,6 +247,7 @@ namespace ket {
          */
         void free(bool dirty = false) const;
         
+        //! \brief See if all qubits are free.
         bool is_free() const;
 
         #ifndef SWIG
@@ -245,7 +257,7 @@ namespace ket {
         #endif
     };
 
-    /*! \brief Refers to a integer generated in a quantum computer.
+    /*! \brief Reference to a int available in the quantum computer.
      *  \class future
      */
     class future {
@@ -253,10 +265,10 @@ namespace ket {
         #ifndef SWIG
         future(size_t id,
                const std::shared_ptr<std::int64_t>& result,
-               const std::shared_ptr<bool>& available);
+               const std::shared_ptr<bool>&         available);
         #endif
 
-        //! Initialize a future with a value.
+        //! \brief Initialize a future with a value.
         future(std::int64_t value);
 
         future operator==(const future& other) const;
@@ -310,7 +322,7 @@ namespace ket {
          */
         std::int64_t get();
 
-        //! Set the future value with another future.
+        //! \brief Set the future value with another future.
         void set(const future& other);
 
         #ifndef SWIG
@@ -331,7 +343,7 @@ namespace ket {
     public:
         label(const std::string& name);
 
-        //! Place the label in the KQASM file.
+        //! \brief Place the label in the KQASM file.
         void begin();
          
         #ifndef SWIG
@@ -342,16 +354,16 @@ namespace ket {
         bool placed;
     };
 
-    //! Stack a new process.
+    //! \brief Stack a new process.
     void process_begin();
 
-    //! Pop a process from the stack.
+    //! \brief Pop a process from the stack.
     void process_end();
 
-    //! Jump to a label in the quantum code. 
+    //! \brief Jump to a label in the quantum code. 
     void jump(const label& label_name);
 
-    //! Conditional branch to a label in the quantum code. 
+    //! \brief Conditional branch to a label in the quantum code. 
     void branch(const future& cond, const label& label_true, const label& label_false);
 
     /*! \brief Initialize a controlled scope.
@@ -360,7 +372,7 @@ namespace ket {
      */ 
     void ctrl_begin(const quant& q);
 
-    //! End the controlled scope.
+    //! \brief End the controlled scope.
     void ctrl_end();
     
     /*! \brief Initialize an inverse scope.
@@ -369,10 +381,10 @@ namespace ket {
      */
     void adj_begin();
 
-    //! End the inverse scope.
+    //! \brief End the inverse scope.
     void adj_end();
     
-    //! Measure a quant and return a future.
+    //! \brief Measure a quant and return a future.
     future measure(const quant& q);
     
     /*! \brief Apply Pauli X gate on every qubit of q.
@@ -522,28 +534,34 @@ namespace ket {
      */   
     void rz(double theta, const quant& q);
     
-    //! Dump the states of the qubits of q, used for debuggin.
+    /*! \brief Dump the states of the qubits of q, used for debuggin.
+     *  \class dump
+     */
     class dump {
     public:
 
-        //! Dump the state of a quantum.
+        //! \brief Dump the state of a quant.
         dump(const quant& q);
 
-        //! Return a list of basis states.
+        //! \brief Return a list of basis states.
         std::vector<unsigned long long> get_states();
 
-        //! Return a list of amplitudes of a state. 
+        //! \brief Return a list of amplitudes of a state. 
         std::vector<std::complex<double>> amplitude(size_t idx);
         
-        //! Return the probability of measure a state.
+        //! \brief Return the probability of measure a state.
         double probability(size_t idx);
         
-        //! Return a string to print the quantum state.
+        //! \brief Return a string to print the quantum state.
         std::string show(std::string format = "");
 
+        //! \brief Triggers the quantum execution to get the dump.
         void get();
 
+        //! \brief True when the states are equal.
         bool operator==(dump& other);
+
+        //! \brief True when the states are different.
         bool operator!=(dump& other);
 
         const size_t nbits;
@@ -555,7 +573,7 @@ namespace ket {
         std::shared_ptr<bool> available;
     };
 
-    //! Execute the top process
+    //! \brief Execute the top process
     void exec_quantum();
 
     namespace plugin {
@@ -580,11 +598,12 @@ namespace ket {
          */
         quant pown(size_t a, const quant& x, size_t n);
         
+        //! \brief Apply a diagonal matrix.
         void diagonal(std::vector<double> diag, const quant& q);
     }
 
     #ifndef SWIG
-    //! Run function in a new process.
+    //! \brief Run function in a new process.
     template <class F, class... Args> 
     auto run(F func, Args... args) {
         process_begin();
@@ -593,7 +612,7 @@ namespace ket {
         return ret;
     }
 
-    //! Add qubits of control to a function.
+    //! \brief Add qubits of control to a function.
     template <class F, class... Args>
     void ctrl(const quant& q, F gate, Args... args) {
         ctrl_begin(q);
@@ -601,7 +620,7 @@ namespace ket {
         ctrl_end();
     }
 
-    //! Call the inverse of a function.
+    //! \brief Call the inverse of a function.
     template <class F, class... Args>
     void adj(F gate, Args... args) {
         adj_begin();
@@ -609,7 +628,7 @@ namespace ket {
         adj_end();
     }
     
-    //! Call the inverse of a function adding qubits of controll.
+    //! \brief Call the inverse of a function adding qubits of controll.
     template <class F, class... Args>
     void ctrl_adj(const quant& q, F gate, Args... args) {
         ctrl_begin(q);
@@ -619,7 +638,7 @@ namespace ket {
         ctrl_end();
     }
 
-    //! If statement that runs on the quantum computer.
+    //! \brief If statement that runs on the quantum computer.
     template <class F>
     void qc_if(const future& test, F body) {
         label then{"if.then"};

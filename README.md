@@ -36,7 +36,7 @@ Available examples:
 * Shor's algorithms with state dumping - [`shor15dump`](examples/shor15dump.cpp)
 * State dumping - [`dump_state`](examples/dump_state.cpp)
 
-with kbw running execute:
+With [KBW](https://gitlab.com/quantum-ket/kbw#installation) running, execute:
 ```console
 $ ./bin/<example>
 ```
