@@ -40,25 +40,64 @@ namespace ket {
 
      *  \class metrics
      */
-    struct metrics {
+    class metrics {
+    public:
+        metrics();
+        metrics(size_t used_qubits, size_t free_qubits, size_t allocated_qubits,
+                size_t max_allocated_qubits, size_t measurements, 
+                std::unordered_map<std::string, size_t> gates, size_t gates_sum, 
+                std::unordered_map<size_t, size_t> ctrl_gates, size_t ctrl_gates_sum, 
+                std::unordered_map<std::string, size_t> plugins, size_t plugins_sum);
+
+        //! \brief Cast the metrics to a string.
         std::string str() const;
         std::string __str__() const;
 
-        const size_t used_qubits;
-        const size_t free_qubits;
-        const size_t allocated_qubits;
-        const size_t max_allocated_qubits;
+        //! \brief Get the number of qubits used.
+        size_t get_qubits_used();
+        
+        //! \brief Get the number of free qubits.
+        size_t get_free_qubits();
+        
+        //! \brief Get the number of allocated qubits.
+        size_t get_allocated_qubits();
+        
+        //! \brief Get the number of max allocated qubits concurrently.
+        size_t get_max_allocated_qubits();
+        
+        //! \brief Get the number of measurements.
+        size_t get_measurements();
+        
+        //! \brief Get the number of a specific quantum gates.
+        size_t get_gates(std::string gate);
+        
+        //! \brief Get the number of quantum gates.
+        size_t get_gates_sum();
+        
+        //! \brief Get the number of quantum CTRL gates with a specific number of control.
+        size_t get_ctrl_gates(size_t number);
+        
+        //! \brief Get the number of quantum CTRL gates.
+        size_t get_ctrl_gates_sum();
+        
+        //! \brief Get the number of used of a plugins.
+        size_t get_plugins(std::string name);
+        
+        //! \brief Get the number of plugins used.
+        size_t get_plugins_sum();
 
-        const size_t measurements;
-
-        const std::unordered_map<std::string, size_t> gates;
-        const size_t gates_sum;
-
-        const std::unordered_map<size_t, size_t> ctrl_gates;
-        const size_t ctrl_gates_sum;
-
-        const std::unordered_map<std::string, size_t> plugins;
-        const size_t plugins_sum;        
+    private:
+        size_t used_qubits;
+        size_t free_qubits;
+        size_t allocated_qubits;
+        size_t max_allocated_qubits;
+        size_t measurements;
+        std::unordered_map<std::string, size_t> gates;
+        size_t gates_sum;
+        std::unordered_map<size_t, size_t> ctrl_gates;
+        size_t ctrl_gates_sum;
+        std::unordered_map<std::string, size_t> plugins;
+        size_t plugins_sum;        
     };
 
     #ifndef SWIG

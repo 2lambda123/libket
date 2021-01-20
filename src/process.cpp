@@ -40,7 +40,8 @@ process::process() :
     max_allocated_qubits{0},
     measurements{0},
     gates_sum{0},
-    ctrl_gates_sum{0}
+    ctrl_gates_sum{0},
+    plugins_sum{0}
 {
     kqasm << "LABEL @entry" << std::endl;
 }
