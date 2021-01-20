@@ -35,8 +35,33 @@
 
 //! Main libket namespace.
 namespace ket {
+
+    /*! \brief KQASM metrics.
+
+     *  \class metrics
+     */
+    struct metrics {
+        std::string str() const;
+        std::string __str__() const;
+
+        const size_t used_qubits;
+        const size_t free_qubits;
+        const size_t allocated_qubits;
+        const size_t max_allocated_qubits;
+
+        const size_t measurements;
+
+        const std::unordered_map<std::string, size_t> gates;
+        const size_t gates_sum;
+
+        const std::unordered_map<size_t, size_t> ctrl_gates;
+        const size_t ctrl_gates_sum;
+
+        const std::unordered_map<std::string, size_t> plugins;
+        const size_t plugins_sum;        
+    };
+
     #ifndef SWIG
-    
     /*! \brief KQASM manager.
 
      *  \class process
@@ -158,6 +183,8 @@ namespace ket {
         //! \brief See if a qubit is free.
         bool is_free(size_t qubit) const;
 
+        metrics get_metrics() const;
+
     private:
         size_t qubit_count, future_count, label_count, dump_count; 
         
@@ -170,6 +197,23 @@ namespace ket {
         std::vector<std::vector<size_t>> ctrl_stack;  
 
         std::stringstream kqasm;
+
+        /* Metrics */
+        size_t used_qubits;
+        size_t free_qubits;
+        size_t allocated_qubits;
+        size_t max_allocated_qubits;
+
+        size_t measurements;
+
+        std::unordered_map<std::string, size_t> gates;
+        size_t gates_sum;
+
+        std::unordered_map<size_t, size_t> ctrl_gates;
+        size_t ctrl_gates_sum;
+
+        std::unordered_map<std::string, size_t> plugins;
+        size_t plugins_sum;
     };
 
     inline std::stack<std::shared_ptr<process>> process_stack;
@@ -573,8 +617,11 @@ namespace ket {
         std::shared_ptr<bool> available;
     };
 
-    //! \brief Execute the top process
+    //! \brief Execute the top process.
     void exec_quantum();
+    
+    //! \brief Get process metrics.
+    metrics report();
 
     namespace plugin {
         /*! \brief Execute a Ket Bitwise plugin.

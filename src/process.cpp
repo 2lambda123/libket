@@ -33,7 +33,14 @@ process::process() :
     qubit_count{0},
     future_count{0},
     label_count{0},
-    dump_count{0}
+    dump_count{0},
+    used_qubits{0},
+    free_qubits{0},
+    allocated_qubits{0},
+    max_allocated_qubits{0},
+    measurements{0},
+    gates_sum{0},
+    ctrl_gates_sum{0}
 {
     kqasm << "LABEL @entry" << std::endl;
 }
@@ -84,7 +91,7 @@ inline void set_to_adj(process::Gate &gate, std::vector<double> &args) {
     }
 }
 
-inline std::string gate_to_string(process::Gate gate, std::vector<double> args) {
+inline std::string gate_to_string(process::Gate gate, const std::vector<double>& args = {}) {
     std::stringstream tmp;
     tmp << std::fixed;
     tmp.precision(std::numeric_limits<double>::max_digits10);
@@ -105,22 +112,28 @@ inline std::string gate_to_string(process::Gate gate, std::vector<double> args) 
             return "T";
         case process::td:        
             return "TD";
-        case process::u1:        
+        case process::u1:
+            if (args.empty()) return "U1";        
             tmp << "U1(" << args[0] << ")";
             return tmp.str();
         case process::u2:        
+            if (args.empty()) return "U2";
             tmp << "U2(" << args[0] << ' ' << args[1] << ')';
             return tmp.str();
         case process::u3:        
+            if (args.empty()) return "U3";
             tmp << "U3(" << args[0] << ' ' << args[1] << ' ' << args[2] <<  ')';
             return tmp.str();
         case process::rx:
+            if (args.empty()) return "RX";
             tmp << "U3(" << args[0] << ' ' -M_PI_2 << ' ' << M_PI_2 << ')';
             return tmp.str();
         case process::ry:
+            if (args.empty()) return "RY";
             tmp << "U3(" << args[0] << " 0.0 0.0)";
             return tmp.str();
         case process::rz:
+            if (args.empty()) return "RZ";
             tmp << "RZ(" << args[0] << ")";
             return tmp.str();
     }
@@ -131,11 +144,22 @@ void process::add_gate(Gate gate, size_t qubit, std::vector<double> args) {
     if (qubits_free.find(qubit) != qubits_free.end()) 
         throw std::runtime_error("trying to operate with the freed qubit q" + std::to_string(qubit));
 
+    gates_sum += 1;
+    gates[gate_to_string(gate)] += 1;
+
     std::stringstream tmp;
     if (not ctrl_stack.empty()) {
+        auto n_ctrl_qubits = 0ul;
+
         tmp << "\tCTRL\t";
-        for (auto cc : ctrl_stack) for (auto c : cc)
-            tmp << 'q' << c << ' ';
+        for (auto cc : ctrl_stack) {
+            n_ctrl_qubits += cc.size();
+            for (auto c : cc)
+                tmp << 'q' << c << ' ';
+        }
+        
+        ctrl_gates_sum += 1;
+        ctrl_gates[n_ctrl_qubits] += 1;
     }
 
     if (not adj_stack.empty() and adj_stack.size() % 2) 
@@ -154,6 +178,9 @@ void process::add_plugin(const std::string& name, const std::vector<size_t>& qub
     for (auto qubit : qubits) 
         if (qubits_free.find(qubit) != qubits_free.end()) 
             throw std::runtime_error("trying to operate with the freed qubit q" + std::to_string(qubit));
+
+    plugins[name] += 1;
+    plugins_sum += 1;
 
     std::stringstream tmp;
     if (not ctrl_stack.empty()) {
@@ -182,6 +209,11 @@ void process::add_plugin(const std::string& name, const std::vector<size_t>& qub
 }
 
 std::vector<size_t> process::quant(size_t size, bool dirty) {
+    used_qubits += size;
+    allocated_qubits += size;
+    if (allocated_qubits > max_allocated_qubits)
+        max_allocated_qubits = allocated_qubits;
+
     std::vector<size_t> qubits;
     for (auto i = qubit_count; i < qubit_count+size; i++) {
         qubits.push_back(i);
@@ -195,6 +227,9 @@ std::vector<size_t> process::quant(size_t size, bool dirty) {
 
 std::tuple<size_t, std::shared_ptr<std::int64_t>, std::shared_ptr<bool>>
 process::measure(const std::vector<size_t>& qubits) {
+
+    measurements += qubits.size();
+
     std::stringstream tmp;
     tmp << "\tINT\ti" << future_count << "\tZE\t";
 
@@ -282,6 +317,10 @@ void process::free(size_t qubit, bool dirty) {
     if (qubits_free.find(qubit) != qubits_free.end()) 
         throw std::runtime_error("Double free on qubit q" + std::to_string(qubit));
 
+    free_qubits += 1;
+    allocated_qubits -= 1;
+
+
     add_inst("\tFREE" + std::string{dirty? " DIRTY\tq" : "\tq"} + std::to_string(qubit));
 
     qubits_free.insert(qubit);
@@ -316,4 +355,18 @@ process::dump(const std::vector<size_t>& qubits) {
        
 bool process::is_free(size_t qubit) const {
     return qubits_free.find(qubit) != qubits_free.end();
+}
+
+metrics process::get_metrics() const {
+    return metrics{used_qubits, 
+                   free_qubits, 
+                   allocated_qubits, 
+                   max_allocated_qubits, 
+                   measurements,
+                   gates, 
+                   gates_sum, 
+                   ctrl_gates, 
+                   ctrl_gates_sum,
+                   plugins,
+                   plugins_sum};
 }
