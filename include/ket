@@ -37,8 +37,11 @@
 namespace ket {
 
     /*! \brief KQASM metrics.
-
+     * 
      *  \class metrics
+     * 
+     *  \note 
+     *      Use the ket::report to get current process metrics.
      */
     class metrics {
     public:
@@ -662,13 +665,14 @@ namespace ket {
     //! \brief Get process metrics.
     metrics report();
 
+    //! Ket Bitwise plugins.
     namespace plugin {
         /*! \brief Execute a Ket Bitwise plugin.
          *   
          *  The plugin must be acessable by the plugin path.
          *  All qubits are considered entangled after the plugin execution.  
          * 
-         *  \param name math lib<name>.so
+         *  \param name lib<name>.so
          *  \param q qubits affected by the plugin
          *  \param args arguments for the plugin
          */
@@ -677,14 +681,26 @@ namespace ket {
         /*! \brief Apply a modular exponentiation in a superposition.
          *
          *  \f[
-         *      \left|x\\right>\left|0\\right> \\rightarrow  \left|x\\right>\left|a^x\;\\text{mod}\,n\\right>
+         *      \left| x \right> \left| 0 \right> \rightarrow  \left| x \right> \left| a^x\; \text{mod} \, n \right>
          *  \f] 
          * 
          *  \return Quant with the result of the operation.
          */
         quant pown(size_t a, const quant& x, size_t n);
         
-        //! \brief Apply a diagonal matrix.
+        /*! \brief Apply a diagonal matrix.
+         *  
+         *  \f[
+         *      \begin{bmatrix}
+         *          \alpha_0 & 0      & \cdots & 0 \\
+         *          0      & \alpha_1 & \cdots & 0 \\
+         *          \vdots & \vdots   & \ddots & \vdots \\
+         *          0      & 0        & \cdots & \alpha_{2^n-1} 
+         *      \end{bmatrix}
+         *  \f]
+         * 
+         *  \param diag \f$ \left[ \alpha_0, \alpha_1, \dots, \alpha_{2^n-1} \right] \f$
+         */
         void diagonal(std::vector<double> diag, const quant& q);
     }
 
