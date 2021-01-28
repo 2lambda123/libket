@@ -41,7 +41,7 @@ namespace ket {
      *  \class metrics
      * 
      *  \note 
-     *      Use the ket::report to get current process metrics.
+     *      Use the report function to get current process metrics.
      */
     class metrics {
     public:
@@ -286,7 +286,7 @@ namespace ket {
         /*! \brief Alloc size dirty qubits.
          *  
          *  \warning
-         *      Use dirty qubits may have side effects due to previos
+         *      Use dirty qubits may have side effects due to previous
          *      entanglement.
          */
         static quant dirty(size_t size);
