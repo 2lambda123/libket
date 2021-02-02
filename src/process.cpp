@@ -127,7 +127,7 @@ inline std::string gate_to_string(process::Gate gate, const std::vector<double>&
             return tmp.str();
         case process::rx:
             if (args.empty()) return "RX";
-            tmp << "U3(" << args[0] << ' ' -M_PI_2 << ' ' << M_PI_2 << ')';
+            tmp << "U3(" << args[0] << ' ' << -M_PI_2 << ' ' << M_PI_2 << ')';
             return tmp.str();
         case process::ry:
             if (args.empty()) return "RY";
