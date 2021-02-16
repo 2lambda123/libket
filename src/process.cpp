@@ -155,8 +155,13 @@ void process::add_gate(Gate gate, size_t qubit, std::vector<double> args) {
         tmp << "\tCTRL\t";
         for (auto cc : ctrl_stack) {
             n_ctrl_qubits += cc.size();
-            for (auto c : cc)
-                tmp << 'q' << c << ' ';
+            for (auto c : cc) {
+                if (qubit == c) {
+                    throw std::runtime_error("trying to operate with the control qubit q" + std::to_string(qubit));
+                } else {
+                    tmp << 'q' << c << ' ';
+                }
+            }      
         }
         
         ctrl_gates_sum += 1;
