@@ -692,14 +692,14 @@ namespace ket {
          *  
          *  \f[
          *      \begin{bmatrix}
-         *          \alpha_0 & 0      & \cdots & 0 \\
-         *          0      & \alpha_1 & \cdots & 0 \\
-         *          \vdots & \vdots   & \ddots & \vdots \\
-         *          0      & 0        & \cdots & \alpha_{2^n-1} 
+         *          e^{i\lambda_0} & 0              & \cdots & 0 \\
+         *          0              & e^{i\lambda_1} & \cdots & 0 \\
+         *          \vdots         & \vdots         & \ddots & \vdots \\
+         *          0              & 0              & \cdots & e^{i\lambda_{2^n-1}} 
          *      \end{bmatrix}
          *  \f]
          * 
-         *  \param diag \f$ \left[ \alpha_0, \alpha_1, \dots, \alpha_{2^n-1} \right] \f$
+         *  \param diag \f$ \left[ \lambda_0, \lambda_1, \dots, \lambda_{2^n-1} \right] \f$
          */
         void diagonal(std::vector<double> diag, const quant& q);
     }
