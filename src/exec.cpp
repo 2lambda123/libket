@@ -79,12 +79,15 @@ void process::exec() {
 
         auto socket = conect(kbw_addr, kbw_port);
 
+        // Send KQASM size
         socket.send(boost::asio::buffer(kqasm_size));
         socket.receive(boost::asio::buffer(ack));
 
+        // Send KQASM
         socket.send(boost::asio::buffer(kqasm_buffer));
         socket.receive(boost::asio::buffer(ack));
         
+        // Get results
         auto get_command = to_char<char>(1);
         for (auto &i : measure_map) {
             socket.send(boost::asio::buffer(get_command));
@@ -99,45 +102,47 @@ void process::exec() {
             *(i.second.second) = true;
         }
         
+        // Get dumps
         auto dump_command = to_char<char>(2);
         boost::array<char, 8> buffer;
         for (auto &i : dump_map) {
+            // Send dump command
             socket.send(boost::asio::buffer(dump_command));
             socket.receive(boost::asio::buffer(ack));
 
+            // Send dump index
             auto idx = to_char<uint64_t>(i.first);
             socket.send(boost::asio::buffer(idx));
+            socket.receive(boost::asio::buffer(ack));
+
+            // Get dump size
             socket.receive(boost::asio::buffer(buffer));
             auto size = from_char<uint64_t>(buffer);
-
-            ack[0] = 0;
-            socket.send(boost::asio::buffer(ack));
-            
+        
             for (auto j = 0u; j < size; j++) {
                 
+                // Get dump state
                 socket.receive(boost::asio::buffer(buffer));
                 auto basis = from_char<uint64_t>(buffer); 
                 
+                // Get dump state size
                 socket.receive(boost::asio::buffer(buffer));
                 auto amp_size = from_char<uint64_t>(buffer); 
 
-                ack[0] = 0;
-                socket.send(boost::asio::buffer(ack));
-
                 for (auto k = 0u; k < amp_size; k++) {
 
+                    // Get real 
                     socket.receive(boost::asio::buffer(buffer));
                     auto real = from_char<double>(buffer); 
 
+                    // Get imag
                     socket.receive(boost::asio::buffer(buffer));
                     auto imag = from_char<double>(buffer); 
-                    
-                    ack[0] = 0;
-                    socket.send(boost::asio::buffer(ack));
 
                     (*i.second.first)[basis].push_back(std::complex<double>{real, imag});
                 } 
 
+                // Sort result
                 std::sort((*i.second.first)[basis].begin(), (*i.second.first)[basis].end(), [](std::complex<double> a, std::complex<double> b) {
                     if (a.real() == b.real()) return a.imag() < b.imag();
                     else return a.real() < b.real();
