@@ -23,10 +23,15 @@
  */
 
 #include "../include/ket"
-#include <boost/asio.hpp>
-#include <boost/array.hpp>
-#include <fstream>
 #include <algorithm>
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/array.hpp>
+#include <boost/asio.hpp>
+#include <boost/serialization/boost_unordered_map.hpp>
+#include <boost/serialization/complex.hpp>
+#include <boost/serialization/vector.hpp>
+#include <cmath>
+#include <fstream>
 
 using namespace ket;
 
@@ -61,7 +66,6 @@ inline auto buffer_str(const std::string& input) {
 }
 
 void process::exec() {
-    
     if (output_kqasm) {
         std::ofstream out{kqasm_path, std::ofstream::app};
         out << kqasm.str() 
@@ -104,55 +108,40 @@ void process::exec() {
         
         // Get dumps
         auto dump_command = to_char<char>(2);
-        boost::array<char, 8> buffer;
+        boost::array<char, 8> buffer_dump_size;
         for (auto &i : dump_map) {
             // Send dump command
             socket.send(boost::asio::buffer(dump_command));
             socket.receive(boost::asio::buffer(ack));
 
-            // Send dump index
-            auto idx = to_char<uint64_t>(i.first);
-            socket.send(boost::asio::buffer(idx));
-            socket.receive(boost::asio::buffer(ack));
+            auto get_idx = to_char<uint64_t>(i.first);
+            socket.send(boost::asio::buffer(get_idx));
 
-            // Get dump size
-            socket.receive(boost::asio::buffer(buffer));
-            auto size = from_char<uint64_t>(buffer);
-        
-            for (auto j = 0u; j < size; j++) {
-                
-                // Get dump state
-                socket.receive(boost::asio::buffer(buffer));
-                auto basis = from_char<uint64_t>(buffer); 
-                
-                // Get dump state size
-                socket.receive(boost::asio::buffer(buffer));
-                auto amp_size = from_char<uint64_t>(buffer); 
+            socket.receive(boost::asio::buffer(buffer_dump_size));
 
-                for (auto k = 0u; k < amp_size; k++) {
+            auto dump_size = from_char<uint64_t>(buffer_dump_size);
 
-                    // Get real 
-                    socket.receive(boost::asio::buffer(buffer));
-                    auto real = from_char<double>(buffer); 
+            boost::array<char, 2048> buffer;
+            std::vector<char> dump_file;
 
-                    // Get imag
-                    socket.receive(boost::asio::buffer(buffer));
-                    auto imag = from_char<double>(buffer); 
+            size_t bytes_transferred;
 
-                    (*i.second.first)[basis].push_back(std::complex<double>{real, imag});
-                } 
+            do {
+                bytes_transferred = socket.receive(boost::asio::buffer(buffer));
+                dump_file.insert(dump_file.end(), buffer.begin(), buffer.begin()+bytes_transferred);
+            } while (dump_file.size() < dump_size);
 
-                // Sort result
-                std::sort((*i.second.first)[basis].begin(), (*i.second.first)[basis].end(), [](std::complex<double> a, std::complex<double> b) {
-                    if (a.real() == b.real()) return a.imag() < b.imag();
-                    else return a.real() < b.real();
-                });
-            }
-            
+            std::stringstream stream_out;
+            stream_out.write(dump_file.data(), dump_file.size());
+
+            boost::archive::binary_iarchive iarchive{stream_out};
+
+            iarchive >> *i.second.first; 
+
             *i.second.second = true;
         } 
 
-        auto exit_command = to_char<int>(0);
+        auto exit_command = to_char<char>(0);
         socket.send(boost::asio::buffer(exit_command));
         socket.receive(boost::asio::buffer(ack));
 
