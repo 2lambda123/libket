@@ -29,7 +29,6 @@
 #include <memory>
 #include <sstream>
 #include <stack>
-#include <boost/unordered_map.hpp>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
@@ -182,7 +181,7 @@ namespace ket {
         op_int(size_t left, const std::string& op, size_t right);
         
         //! \brief Get a dump of the qubits.
-        std::tuple<size_t, std::shared_ptr<boost::unordered_map<std::uint64_t, std::vector<std::complex<double>>>>, std::shared_ptr<bool>>
+        std::tuple<size_t, std::shared_ptr<std::unordered_map<std::uint64_t, std::vector<std::complex<double>>>>, std::shared_ptr<bool>>
         dump(const std::vector<size_t>& qubits);
        
         /*! \brief Initialize an inverse scope.
@@ -232,7 +231,7 @@ namespace ket {
         size_t qubit_count, future_count, label_count, dump_count; 
         
         std::unordered_map<size_t, std::pair<std::shared_ptr<std::int64_t>, std::shared_ptr<bool>>> measure_map;
-        std::unordered_map<size_t, std::pair< std::shared_ptr<boost::unordered_map<std::uint64_t, std::vector<std::complex<double>>>>, std::shared_ptr<bool>>> dump_map;
+        std::unordered_map<size_t, std::pair< std::shared_ptr<std::unordered_map<std::uint64_t, std::vector<std::complex<double>>>>, std::shared_ptr<bool>>> dump_map;
        
         std::unordered_set<size_t> qubits_free;
         
@@ -656,7 +655,7 @@ namespace ket {
         const std::shared_ptr<bool> process_on_top;
 
         size_t id;
-        std::shared_ptr<boost::unordered_map<std::uint64_t, std::vector<std::complex<double>>>> states;
+        std::shared_ptr<std::unordered_map<std::uint64_t, std::vector<std::complex<double>>>> states;
         std::shared_ptr<bool> available;
     };
 

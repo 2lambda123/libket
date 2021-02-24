@@ -336,7 +336,7 @@ size_t process::new_label_id() {
     return label_count++;
 }
 
-std::tuple<size_t, std::shared_ptr<boost::unordered_map<std::uint64_t, std::vector<std::complex<double>>>>, std::shared_ptr<bool>>
+std::tuple<size_t, std::shared_ptr<std::unordered_map<std::uint64_t, std::vector<std::complex<double>>>>, std::shared_ptr<bool>>
 process::dump(const std::vector<size_t>& qubits) {
 
     for (auto i : qubits) 
@@ -344,7 +344,7 @@ process::dump(const std::vector<size_t>& qubits) {
             throw std::runtime_error("trying to operate with the freed qubit q" + std::to_string(i));
 
 
-    auto states = std::make_shared<boost::unordered_map<std::uint64_t, std::vector<std::complex<double>>>>();    
+    auto states = std::make_shared<std::unordered_map<std::uint64_t, std::vector<std::complex<double>>>>();    
     auto available = std::make_shared<bool>(false);
     
     dump_map[dump_count] = std::make_pair(states, available);
