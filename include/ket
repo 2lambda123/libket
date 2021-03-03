@@ -146,12 +146,13 @@ namespace ket {
         void add_inst(const std::string& inst);
 
         //! \brief Add a quantum gate.
-        void add_gate(Gate gate, size_t qubit, std::vector<double> args = {});
+        void add_gate(Gate gate, size_t qubit, bool indirect_ref, std::vector<double> args = {});
         
         //! \brief Add a Ket Bitwise plugin.
-        void add_plugin(const std::string&         name, 
+        void add_plugin(const std::string& name, 
                         const std::vector<size_t>& qubits,
-                        const std::string&         args);
+                        const std::vector<bool>& indirect_ref,
+                        const std::string& args);
 
         /*! \brief Alloc qubits.
          *  
@@ -270,79 +271,6 @@ namespace ket {
     extern "C" void ket_init_new(int argc, char* argv[]) __attribute__((constructor));
     #endif
 
-    /*! \brief Array of qubits references.
-     *  \class quant
-     */
-    struct quant {
-        #ifndef SWIG
-        quant(const std::vector<size_t>&      qubits, 
-              const std::shared_ptr<bool>&    ps_ot, 
-              const std::shared_ptr<process>& ps);
-        #endif
-
-        //! \brief Alloc size qubits.
-        quant(size_t size);
-
-        /*! \brief Alloc size dirty qubits.
-         *  
-         *  \warning
-         *      Use dirty qubits may have side effects due to previous
-         *      entanglement.
-         */
-        static quant dirty(size_t size);
-
-        #ifndef SWIG
-        /*! \brief Return the reference for a single qubit.
-         * 
-         *  \note
-         *      For the Python wrapper use brackets instead.
-         */
-        quant operator()(int idx) const;
-
-        /*! \brief Return the reference for a range of qubits.
-         * 
-         *  \note
-         *      For the Python wrapper use brackets instead.
-         */
-        quant operator()(int start, int end, int step = 1) const;
-        #endif
-
-        /*! \brief Concatenate two quant.
-         * 
-         *  \note
-         *      The two quant variables needs to belong to the same process. 
-         */
-        quant operator|(const quant& other) const;
-
-        //! \brief Return a quant with qubits in the inverted order
-        quant inverted() const;
-
-        //! \brief Return the number qubits of the quant.
-        size_t len() const;
-        size_t __len__() const;
-
-        /*! \brief Free the qubits.
-         * 
-         *  \note 
-         *      All qubits must be at the state \f$\left|0\right>\f$ before the call,
-         *      otherwise set the dirty param to true.
-         * 
-         *  \warning 
-         *      No check is applied to see if the qubits are at state
-         *      \f$\left|0\right>\f$.
-         */
-        void free(bool dirty = false) const;
-        
-        //! \brief See if all qubits are free.
-        bool is_free() const;
-
-        #ifndef SWIG
-        const std::vector<size_t> qubits;
-        const std::shared_ptr<bool> process_on_top;
-        const std::shared_ptr<process> ps;
-        #endif
-    };
-
     /*! \brief Reference to a int available in the quantum computer.
      *  \class future
      */
@@ -420,6 +348,84 @@ namespace ket {
         size_t id;
         std::shared_ptr<std::int64_t> result;
         std::shared_ptr<bool> available;
+    };
+
+    /*! \brief Array of qubits references.
+     *  \class quant
+     */
+    struct quant {
+        #ifndef SWIG
+        quant(const std::vector<size_t>& qubits, 
+              const std::vector<bool>& indirect_ref,
+              const std::shared_ptr<bool>& ps_ot, 
+              const std::shared_ptr<process>& ps);
+        #endif
+
+        //! \brief Alloc size qubits.
+        quant(size_t size);
+
+        /*! \brief Alloc size dirty qubits.
+         *  
+         *  \warning
+         *      Use dirty qubits may have side effects due to previous
+         *      entanglement.
+         */
+        static quant dirty(size_t size);
+
+        #ifndef SWIG
+        /*! \brief Return the reference for a single qubit.
+         * 
+         *  \note
+         *      For the Python wrapper use brackets instead.
+         */
+        quant operator()(int idx) const;
+
+        /*! \brief Return the reference for a range of qubits.
+         * 
+         *  \note
+         *      For the Python wrapper use brackets instead.
+         */
+        quant operator()(int start, int end, int step = 1) const;
+
+        quant operator()(const future& idx) const;
+
+        #endif
+
+        /*! \brief Concatenate two quant.
+         * 
+         *  \note
+         *      The two quant variables needs to belong to the same process. 
+         */
+        quant operator|(const quant& other) const;
+
+        //! \brief Return a quant with qubits in the inverted order
+        quant inverted() const;
+
+        //! \brief Return the number qubits of the quant.
+        size_t len() const;
+        size_t __len__() const;
+
+        /*! \brief Free the qubits.
+         * 
+         *  \note 
+         *      All qubits must be at the state \f$\left|0\right>\f$ before the call,
+         *      otherwise set the dirty param to true.
+         * 
+         *  \warning 
+         *      No check is applied to see if the qubits are at state
+         *      \f$\left|0\right>\f$.
+         */
+        void free(bool dirty = false) const;
+        
+        //! \brief See if all qubits are free.
+        bool is_free() const;
+
+        #ifndef SWIG
+        const std::vector<size_t> qubits;
+        const std::vector<bool> indirect_ref;
+        const std::shared_ptr<bool> process_on_top;
+        const std::shared_ptr<process> ps;
+        #endif
     };
 
     /*! \brief Label for a KQASM block.

@@ -26,20 +26,28 @@
 
 using namespace ket;
 
-quant::quant(const std::vector<size_t> &qubits, const std::shared_ptr<bool>& ps_ot, const std::shared_ptr<process>& ps) :
+quant::quant(const std::vector<size_t> &qubits, 
+             const std::vector<bool> &indirect_ref, 
+             const std::shared_ptr<bool>& ps_ot, 
+             const std::shared_ptr<process>& ps) :
     qubits{qubits},
+    indirect_ref{indirect_ref},
     process_on_top{ps_ot},
     ps{ps}
     {} 
 
 quant::quant(size_t size) :
     qubits{process_stack.top()->quant(size, false)},
+    indirect_ref{std::vector<bool>(size, false)},
     process_on_top{process_on_top_stack.top()},
     ps{process_stack.top()}
     {} 
     
 quant quant::dirty(size_t size) {
-    return quant{process_stack.top()->quant(size, true), process_on_top_stack.top(), process_stack.top()};
+    return quant{process_stack.top()->quant(size, true),
+                 std::vector<bool>(size, false),
+                 process_on_top_stack.top(),
+                 process_stack.top()};
 }
 
 quant quant::operator()(int idx) const {
@@ -48,7 +56,7 @@ quant quant::operator()(int idx) const {
     if (size_t(idx) >= len()) 
         throw std::out_of_range("qubit index out of bounds");
 
-    return quant{{{qubits[idx]}}, process_on_top, ps};
+    return quant{{{qubits[idx]}}, {{indirect_ref[idx]}}, process_on_top, ps};
 }
 
 quant quant::operator()(int start, int end, int step) const {
@@ -61,32 +69,44 @@ quant quant::operator()(int start, int end, int step) const {
         throw std::runtime_error("empty quant are not allowed");
 
     std::vector<size_t> ret_qubits;
-    for (int i = start; i < end; i += step) 
+    std::vector<bool> tmp_ref;
+    for (int i = start; i < end; i += step) {
         ret_qubits.push_back(qubits[i]);
+        tmp_ref.push_back(indirect_ref[i]);
+    }
+    return quant{ret_qubits, tmp_ref, process_on_top, ps};    
+}
 
-    return quant{ret_qubits, process_on_top, ps};    
+quant quant::operator()(const future &idx) const {
+    if (process_on_top != idx.process_on_top)
+        throw std::runtime_error("cannot index qubit with a future from a different process");
+    
+    for (bool i : indirect_ref) if (i) 
+        throw std::runtime_error("cascading indirect references is not allowed");
+
+    return quant{{idx.get_id()}, {{true}}, process_on_top, ps};
 }
 
 quant quant::operator|(const quant& other) const {
     if (ps != other.ps)
-        throw std::runtime_error("cannot concatenate quant of different process");
+        throw std::runtime_error("cannot concatenate quant from different process");
 
     auto tmp_qubits = qubits;
     for (auto i : other.qubits)
         tmp_qubits.push_back(i);
 
-    return quant{tmp_qubits, process_on_top, ps};
+    return quant{tmp_qubits, 
+                 std::vector<bool>(tmp_qubits.size(), false),
+                 process_on_top, ps};
 }
 
 quant quant::inverted() const {
     if (not *process_on_top) 
         throw std::runtime_error("process out of scope");
-
-    std::vector<size_t> tmp_qubits;
-    for (auto i = qubits.rbegin(); i != qubits.rend(); ++i) 
-        tmp_qubits.push_back(*i);
-    
-    return quant{tmp_qubits, process_on_top, ps};
+        
+    return quant{std::vector<size_t>(qubits.rbegin(), qubits.rend()),
+                 std::vector<bool>(indirect_ref.rbegin(), indirect_ref.rend()),
+                 process_on_top, ps};
 }
 
 size_t quant::len() const {

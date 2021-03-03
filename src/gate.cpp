@@ -29,8 +29,8 @@ using namespace ket;
 #define GATE(x) void ket::x(const quant& q) {\
     if (not *(q.process_on_top))\
         throw std::runtime_error("process out of scope");\
-    for (auto i : q.qubits)\
-        process_stack.top()->add_gate(process::x, i);\
+    for (size_t i = 0; i < q.qubits.size(); i++)\
+        process_stack.top()->add_gate(process::x, q.qubits[i], q.indirect_ref[i]);\
 }
 
 GATE(x)
@@ -46,23 +46,23 @@ void ket::u2(double phi, double lambda, const quant& q) {
     if (not *(q.process_on_top))
         throw std::runtime_error("process out of scope");
         
-    for (auto i : q.qubits)
-        process_stack.top()->add_gate(process::u2, i, {phi, lambda});
+    for (size_t i = 0; i < q.qubits.size(); i++)
+        process_stack.top()->add_gate(process::u2, q.qubits[i], q.indirect_ref[i], {phi, lambda});
 }
 
 void ket::u3(double theta, double phi, double lambda, const quant& q) {
     if (not *(q.process_on_top))
         throw std::runtime_error("process out of scope");
         
-    for (auto i : q.qubits)
-        process_stack.top()->add_gate(process::u3, i, {theta, phi, lambda});
+    for (size_t i = 0; i < q.qubits.size(); i++)
+        process_stack.top()->add_gate(process::u3, q.qubits[i], q.indirect_ref[i], {theta, phi, lambda});
 }
 
 #define GATER(r) void ket::r(double lambda, const quant& q) {\
     if (not *(q.process_on_top))\
         throw std::runtime_error("process out of scope");\
-    for (auto i : q.qubits)\
-        process_stack.top()->add_gate(process::r, i, {lambda});\
+    for (size_t i = 0; i < q.qubits.size(); i++)\
+        process_stack.top()->add_gate(process::r, q.qubits[i], q.indirect_ref[i], {lambda});\
 }
 
 GATER(u1)
