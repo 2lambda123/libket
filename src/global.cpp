@@ -78,3 +78,10 @@ future ket::measure(const quant& q) {
 
     return future{id, result, available};
 }
+
+void ket::plugin(const std::string& name, const quant& q, const std::string& args) {
+    if (not *(q.process_on_top))
+        throw std::runtime_error("process out of scope");
+    
+    process_stack.top()->add_plugin(name, q.qubits, args);
+}
