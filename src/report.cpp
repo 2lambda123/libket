@@ -107,7 +107,7 @@ size_t metrics::get_gates(std::string gate) {
 }
 
 size_t metrics::get_gates_sum() {
-    return ctrl_gates_sum;
+    return gates_sum;
 }
 
 size_t metrics::get_ctrl_gates(size_t number) {
