@@ -60,8 +60,14 @@ inline void set_to_adj(process::Gate &gate, std::vector<double> &args) {
         case process::s:
             gate = process::sd;
             break;
+        case process::sd:
+            gate = process::s;
+            break;
         case process::t:
             gate = process::td;
+            break;
+        case process::td:
+            gate = process::t;
             break;
         case process::u1:
         case process::ry:
