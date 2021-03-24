@@ -494,7 +494,8 @@ namespace ket {
      *          X\left|1\right> = & \left|0\right>
      *      \end{matrix}
      * \f]
-     *  
+     * 
+     * \param q input qubits
      */
     void x(const quant& q);
 
@@ -520,6 +521,8 @@ namespace ket {
      *      \end{matrix}
      * 
      * \f]
+     * 
+     * \param q input qubits
      */   
     void y(const quant& q);
     
@@ -544,6 +547,8 @@ namespace ket {
      *          Z\left|1\right> = & -\left|1\right>
      *      \end{matrix}
      * \f]
+     * 
+     * \param q input qubits
      */   
  
     void z(const quant& q);
@@ -571,6 +576,8 @@ namespace ket {
      *          H\left|-\right> = & \left|1\right> \\
      *      \end{matrix}
      * \f]
+     * 
+     * \param q input qubits
      */   
     void h(const quant& q);
     
@@ -595,6 +602,8 @@ namespace ket {
      *          S\left|1\right> = & i\left|1\right> 
      *      \end{matrix}
      * \f]
+     * 
+     * \param q input qubits
      */   
     void s(const quant& q);
     
@@ -619,6 +628,8 @@ namespace ket {
      *          S^\dagger\left|1\right> = & -i\left|1\right> 
      *      \end{matrix}
      * \f]
+     * 
+     * \param q input qubits
      */   
     void sd(const quant& q);
     
@@ -642,6 +653,8 @@ namespace ket {
      *          T\left|0\right> = & \left|0\right> \\
      *          T\left|1\right> = & \frac{1+i}{\sqrt{2}}\left|1\right> \end{matrix}
      * \f]
+     * 
+     * \param q input qubits
      */   
     void t(const quant& q);
     
@@ -665,6 +678,8 @@ namespace ket {
      *          T^\dagger\left|0\right> = & \left|0\right> \\
      *          T^\dagger\left|1\right> = & \frac{1-i}{\sqrt{2}}\left|1\right> \end{matrix}
      * \f]
+     * 
+     * \param q input qubits
      */   
     void td(const quant& q);
     
@@ -691,7 +706,8 @@ namespace ket {
      * 
      * \f]
      * 
-     *  \param lambda \f$\lambda\f$
+     * \param q input qubits
+     * \param lambda \f$\lambda\f$
      */   
     void u1(double lambda, const quant& q);
     
@@ -716,8 +732,9 @@ namespace ket {
      *      \end{matrix}
      * \f]
      * 
-     *  \param phi \f$\phi\f$
-     *  \param lambda \f$\lambda\f$
+     * \param q input qubits
+     * \param phi \f$\phi\f$
+     * \param lambda \f$\lambda\f$
      */   
     void u2(double phi, double lambda, const quant& q);
     
@@ -743,9 +760,10 @@ namespace ket {
      *      \end{matrix}
      * \f]
      * 
-     *  \param theta \f$\theta\f$
-     *  \param phi \f$\phi\f$
-     *  \param lambda \f$\lambda\f$
+     * \param q input qubits
+     * \param theta \f$\theta\f$
+     * \param phi \f$\phi\f$
+     * \param lambda \f$\lambda\f$
      */   
     void u3(double theta, double phi, double lambda, const quant& q);
       
@@ -771,7 +789,8 @@ namespace ket {
      *      \end{matrix}
      * \f]
      * 
-     *  \param theta \f$\theta\f$
+     * \param q input qubits
+     * \param theta \f$\theta\f$
      */   
     void rx(double theta, const quant& q);
 
@@ -797,7 +816,8 @@ namespace ket {
      *      \end{matrix}
      * \f]
      * 
-     *  \param theta \f$\theta\f$
+     * \param q input qubits
+     * \param theta \f$\theta\f$
      */   
     void ry(double theta, const quant& q);
 
@@ -823,7 +843,8 @@ namespace ket {
      *      \end{matrix}
      * \f]
      * 
-     *  \param theta \f$\theta\f$
+     * \param q input qubits
+     * \param theta \f$\theta\f$
      */   
     void rz(double theta, const quant& q);
     
