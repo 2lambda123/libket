@@ -159,11 +159,12 @@ void process::add_gate(Gate gate, size_t qubit, std::vector<double> args) {
         for (auto cc : ctrl_stack) {
             n_ctrl_qubits += cc.size();
             for (auto c : cc) {
-                if (qubit == c) {
+                if (qubit == c)
                     throw std::runtime_error("trying to operate with the control qubit q" + std::to_string(qubit));
-                } else {
+                else if (qubits_free.find(c) != qubits_free.end())
+                    throw std::runtime_error("trying to operate with the freed qubit q" + std::to_string(c));
+                else
                     tmp << 'q' << c << ' ';
-                }
             }      
         }
         
@@ -194,8 +195,12 @@ void process::add_plugin(const std::string& name, const std::vector<size_t>& qub
     std::stringstream tmp;
     if (not ctrl_stack.empty()) {
         tmp << "\tCTRL\t";
-        for (auto cc : ctrl_stack) for (auto c : cc)
-            tmp << 'q' << c << ' ';
+        for (auto cc : ctrl_stack) for (auto c : cc) {
+            if (qubits_free.find(c) != qubits_free.end())
+                throw std::runtime_error("trying to operate with the freed qubit q" + std::to_string(c));
+            else 
+                tmp << 'q' << c << ' ';
+        }
     }
 
     tmp << "\tPLUGIN";
