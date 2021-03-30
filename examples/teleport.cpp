@@ -20,11 +20,11 @@ quant teleport(quant a) {
     auto m0 = measure(a);
     auto m1 = measure(b(0));
 
-    qc_if(m1, [&]{
+    qc_if(m1 == 1, [&]{
         x(b(1));
     });
     
-    qc_if(m0, [&]{
+    qc_if(m0 == 1, [&]{
         z(b(1));
     });
 

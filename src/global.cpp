@@ -42,14 +42,14 @@ void ket::process_end() {
 void ket::jump(const label& label_name) {
     if (not *(label_name.process_on_top))
         throw std::runtime_error("process out of scope");
-    process_stack.top()->add_inst("\tJUMP\t@" + label_name.name); 
+    process_stack.top()->add_inst("JUMP\t@" + label_name.name); 
 }
 
 void ket::branch(const future& cond, const label& label_true, const label& label_false) {
     if (not *(cond.process_on_top) or not *(label_true.process_on_top) or not *(label_false.process_on_top))
         throw std::runtime_error("process out of scope");
     
-    process_stack.top()->add_inst("\tBR\ti" + std::to_string(cond.get_id()) + "\t@" + label_true.name + "\t@" + label_false.name); 
+    process_stack.top()->add_inst("BR\ti" + std::to_string(cond.get_id()) + "\t@" + label_true.name + "\t@" + label_false.name); 
 }
 
 void ket::ctrl_begin(const quant& q) {

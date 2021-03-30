@@ -40,5 +40,5 @@ void label::begin() {
 
     placed = true;
 
-    process_stack.top()->add_inst("LABEL @" + name);
+    process_stack.top()->add_label(name);
 }

@@ -107,7 +107,7 @@ void future::set(const future& other) {
     if (not *process_on_top or not *(other.process_on_top))
         throw std::runtime_error("process out of scope");
 
-    process_stack.top()->add_inst("\tSET\ti" + std::to_string(id) + "\ti" + std::to_string(other.id));
+    process_stack.top()->add_inst("SET\ti" + std::to_string(id) + "\ti" + std::to_string(other.id));
 }
 
 size_t future::get_id() const {

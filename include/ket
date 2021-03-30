@@ -145,6 +145,17 @@ namespace ket {
          */
         void add_inst(const std::string& inst);
 
+        /*! \brief Add a Label.
+         *  
+         *  \throw
+         *      std::runtime_error inside ctrl or adj scope.
+         * 
+         *  \warning
+         *      Place undefined instruction breaks the quantum execution.
+         */
+        void add_label(const std::string& label);
+
+
         //! \brief Add a quantum gate.
         void add_gate(Gate gate, size_t qubit, std::vector<double> args = {});
         

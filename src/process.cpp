@@ -47,12 +47,42 @@ process::process() :
 }
 
 
+inline std::string qubit_list_str(const std::vector<size_t>& qubits) {
+    std::stringstream tmp;
+    tmp << '[';
+    auto it = qubits.begin();
+    auto end = qubits.end();
+    if (it != end) tmp << 'q'<< *it++;
+    while (it != end) tmp << ", q" << *it++;
+    tmp << ']';
+    return tmp.str();    
+}
+
 void process::add_inst(const std::string& inst) {
     if (not ctrl_stack.empty() or not adj_stack.empty())
         throw std::runtime_error("The instruction \"" + inst + "\" cannot be used with adj or ctrl");
 
-    kqasm << inst << std::endl;
+    kqasm << '\t' << inst << std::endl;
 }
+
+void process::add_label(const std::string& label) {
+    if (not ctrl_stack.empty() or not adj_stack.empty())
+        throw std::runtime_error("The instruction \"LABEL @" + label + "\" cannot be used with adj or ctrl");
+
+    kqasm << "LABEL @" << label << std::endl;
+}
+
+inline std::string args_list_str(const std::vector<double>& args) {
+    std::stringstream tmp;
+    tmp << '(';
+    auto it = args.begin();
+    auto end = args.end();
+    if (it != end) tmp << *it++;
+    while (it != end) tmp << ", " << *it++;
+    tmp << ')';
+    return tmp.str();    
+}
+
 
 inline void set_to_adj(process::Gate &gate, std::vector<double> &args) {
     double theta, phi, lambda;
@@ -118,27 +148,27 @@ inline std::string gate_to_string(process::Gate gate, const std::vector<double>&
             return "TD";
         case process::u1:
             if (args.empty()) return "U1";        
-            tmp << "U1(" << args[0] << ")";
+            tmp << "U1" << args_list_str(args);
             return tmp.str();
         case process::u2:        
             if (args.empty()) return "U2";
-            tmp << "U2(" << args[0] << ' ' << args[1] << ')';
+            tmp << "U2" << args_list_str(args);
             return tmp.str();
         case process::u3:        
             if (args.empty()) return "U3";
-            tmp << "U3(" << args[0] << ' ' << args[1] << ' ' << args[2] <<  ')';
+            tmp << "U3"  << args_list_str(args);
             return tmp.str();
         case process::rx:
             if (args.empty()) return "RX";
-            tmp << "RX(" << args[0] << ')';
+            tmp << "RX" << args_list_str(args);
             return tmp.str();
         case process::ry:
             if (args.empty()) return "RY";
-            tmp << "RY(" << args[0] << ")";
+            tmp << "RY" << args_list_str(args);
             return tmp.str();
         case process::rz:
             if (args.empty()) return "RZ";
-            tmp << "RZ(" << args[0] << ")";
+            tmp << "RZ" << args_list_str(args);
             return tmp.str();
     }
     return "<GATE NOT DEFINED>";
@@ -152,22 +182,25 @@ void process::add_gate(Gate gate, size_t qubit, std::vector<double> args) {
     gates[gate_to_string(gate)] += 1;
 
     std::stringstream tmp;
+
+    tmp << '\t';
+
     if (not ctrl_stack.empty()) {
         auto n_ctrl_qubits = 0ul;
+        std::vector<size_t> ctrl_qubits;
 
-        tmp << "\tCTRL\t";
         for (auto cc : ctrl_stack) {
+            for (auto c : cc) if (qubit == c)
+                throw std::runtime_error("trying to operate with the control qubit q" + std::to_string(qubit));
+            else if (qubits_free.find(c) != qubits_free.end())
+                throw std::runtime_error("trying to operate with the freed qubit q" + std::to_string(c));
+            
             n_ctrl_qubits += cc.size();
-            for (auto c : cc) {
-                if (qubit == c)
-                    throw std::runtime_error("trying to operate with the control qubit q" + std::to_string(qubit));
-                else if (qubits_free.find(c) != qubits_free.end())
-                    throw std::runtime_error("trying to operate with the freed qubit q" + std::to_string(c));
-                else
-                    tmp << 'q' << c << ' ';
-            }      
+            ctrl_qubits.insert(ctrl_qubits.end(), cc.begin(), cc.end());
         }
         
+        tmp << "CTRL " << qubit_list_str(ctrl_qubits) << ",\t";
+
         ctrl_gates_sum += 1;
         ctrl_gates[n_ctrl_qubits] += 1;
     }
@@ -175,7 +208,7 @@ void process::add_gate(Gate gate, size_t qubit, std::vector<double> args) {
     if (not adj_stack.empty() and adj_stack.size() % 2) 
         set_to_adj(gate, args); 
     
-    tmp << '\t' << gate_to_string(gate, args) << "\tq" << qubit << std::endl;
+    tmp << gate_to_string(gate, args) << "\tq" << qubit << std::endl;
 
     if (not adj_stack.empty()) {
         adj_stack.top().push(tmp.str());
@@ -193,25 +226,27 @@ void process::add_plugin(const std::string& name, const std::vector<size_t>& qub
     plugins_sum += 1;
 
     std::stringstream tmp;
+    tmp << '\t';
+
     if (not ctrl_stack.empty()) {
-        tmp << "\tCTRL\t";
-        for (auto cc : ctrl_stack) for (auto c : cc) {
-            if (qubits_free.find(c) != qubits_free.end())
+        std::vector<size_t> ctrl_qubits;
+        for (auto cc : ctrl_stack) {
+            for (auto c : cc) if (qubits_free.find(c) != qubits_free.end())
                 throw std::runtime_error("trying to operate with the freed qubit q" + std::to_string(c));
-            else 
-                tmp << 'q' << c << ' ';
+            else for (auto q : qubits) if (q == c)
+                throw std::runtime_error("trying to operate with the control qubit q" + std::to_string(q));
+
+            ctrl_qubits.insert(ctrl_qubits.end(), cc.begin(), cc.end());
         }
+        tmp << "CTRL " << qubit_list_str(ctrl_qubits) << ",\t";
     }
 
-    tmp << "\tPLUGIN";
+    tmp << "PLUGIN";
 
     if (not adj_stack.empty() and adj_stack.size() % 2) 
         tmp << "!";
 
-    tmp << '\t' << name << '\t';
-
-    for (auto i : qubits) 
-        tmp << 'q' << i << ' ';
+    tmp << '\t' << name << '\t' << qubit_list_str(qubits);
 
     tmp << "\t\"" << args << '\"' << std::endl;
 
@@ -231,31 +266,23 @@ std::vector<size_t> process::quant(size_t size, bool dirty) {
     std::vector<size_t> qubits;
     for (auto i = qubit_count; i < qubit_count+size; i++) {
         qubits.push_back(i);
-        auto alloc = dirty? "\tALLOC DIRTY\tq" : "\tALLOC\tq";
+        auto alloc = dirty? "ALLOC DIRTY\tq" : "ALLOC\tq";
         add_inst(alloc + std::to_string(i));
     }
     qubit_count += size;
     return qubits;
 }
 
-
 std::tuple<size_t, std::shared_ptr<std::int64_t>, std::shared_ptr<bool>>
 process::measure(const std::vector<size_t>& qubits) {
+    for (auto i : qubits) if (qubits_free.find(i) != qubits_free.end()) 
+        throw std::runtime_error("trying to operate with the freed qubit q" + std::to_string(i));
 
     measurements += qubits.size();
 
     std::stringstream tmp;
-    tmp << "\tINT\ti" << future_count << "\tZE\t";
+    tmp << "MEASURE\ti" << future_count << "\t" << qubit_list_str(qubits);
 
-    for (auto i : qubits) {
-        if (qubits_free.find(i) != qubits_free.end()) 
-            throw std::runtime_error("trying to operate with the freed qubit q" + std::to_string(i));
-
-        add_inst("\tMEASURE\tq" + std::to_string(i));
-
-        tmp << 'c' << i << ' ';
-    }
-     
     add_inst(tmp.str());
 
     auto result = std::make_shared<std::int64_t>(0);
@@ -268,7 +295,7 @@ process::measure(const std::vector<size_t>& qubits) {
 
 std::tuple<size_t, std::shared_ptr<std::int64_t>, std::shared_ptr<bool>>
 process::new_int(std::int64_t value) {
-    add_inst("\tINT\ti" + std::to_string(future_count) + "\t" + std::to_string(value));
+    add_inst("INT\ti" + std::to_string(future_count) + "\t" + std::to_string(value));
     
     auto result = std::make_shared<std::int64_t>(0);
     auto available = std::make_shared<bool>(false);
@@ -284,7 +311,7 @@ void process::adj_begin() {
 
 std::tuple<size_t, std::shared_ptr<std::int64_t>, std::shared_ptr<bool>>
 process::op_int(size_t left, const std::string& op, size_t right) {
-    add_inst("\tINT\ti" + std::to_string(future_count) + "\ti" + std::to_string(left) + "\t" + op + "\ti" + std::to_string(right));
+    add_inst("INT\ti" + std::to_string(future_count) + "\ti" + std::to_string(left) + "\t" + op + "\ti" + std::to_string(right));
 
     auto result = std::make_shared<std::int64_t>(0);
     auto available = std::make_shared<bool>(false);
@@ -335,7 +362,7 @@ void process::free(size_t qubit, bool dirty) {
     allocated_qubits -= 1;
 
 
-    add_inst("\tFREE" + std::string{dirty? " DIRTY\tq" : "\tq"} + std::to_string(qubit));
+    add_inst("FREE" + std::string{dirty? " DIRTY\tq" : "\tq"} + std::to_string(qubit));
 
     qubits_free.insert(qubit);
 }
@@ -359,11 +386,9 @@ process::dump(const std::vector<size_t>& qubits) {
     
     std::stringstream inst;
 
-    inst << "\tDUMP\t";
-    for (auto i : qubits) inst << 'q' << i << ' ';
+    inst << "DUMP\t" << qubit_list_str(qubits);
+    add_inst(inst.str());
 
-    kqasm << inst.str() << std::endl;
-    
     return std::make_tuple(dump_count++, states, available);
 }
        
