@@ -74,6 +74,8 @@ void process::add_label(const std::string& label) {
 
 inline std::string args_list_str(const std::vector<double>& args) {
     std::stringstream tmp;
+    tmp << std::fixed;
+    tmp.precision(std::numeric_limits<double>::max_digits10);
     tmp << '(';
     auto it = args.begin();
     auto end = args.end();
@@ -127,8 +129,6 @@ inline void set_to_adj(process::Gate &gate, std::vector<double> &args) {
 
 inline std::string gate_to_string(process::Gate gate, const std::vector<double>& args = {}) {
     std::stringstream tmp;
-    tmp << std::fixed;
-    tmp.precision(std::numeric_limits<double>::max_digits10);
     switch (gate) {
         case process::x:        
             return "X";
