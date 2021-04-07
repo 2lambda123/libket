@@ -25,6 +25,7 @@
 #include "../include/ket"
 #include <algorithm>
 #include <iomanip>
+#include <gmp.h>
 
 using namespace ket;
 
@@ -39,18 +40,16 @@ dump::dump(const quant& q) :
     this->available = available;
 }
 
-std::vector<unsigned long long> dump::get_states() {
+std::vector<std::vector<unsigned long>> dump::get_states() {
     if (not *available) get();
 
-    std::vector<unsigned long long> states_key;
+    std::vector<std::vector<unsigned long>> states_key;
     for (auto &i : *states) states_key.push_back(i.first);
-
-    std::sort(states_key.begin(), states_key.end());
 
     return states_key;
 }
 
-std::vector<std::complex<double>> dump::amplitude(size_t idx) {
+std::vector<std::complex<double>> dump::amplitude(std::vector<unsigned long>& idx) {
     if (not *available) get();
 
     return states->at(idx);
@@ -65,7 +64,7 @@ void dump::get() {
     exec_quantum();
 }
 
-double dump::probability(size_t idx) {
+double dump::probability(std::vector<unsigned long>& idx) {
     double p = 0;
     for (auto i : amplitude(idx)) p += std::abs(i*i);
     return p;
@@ -103,13 +102,30 @@ std::string dump::show(std::string format) {
         auto begin = 0u;
         for (auto [binary, nbits_reg] : forms) {
             out << '|';
+
+            std::stringstream value;
+            for (auto j = begin; j < begin+nbits_reg; j++) {
+                auto index = nbits-j-1;
+                auto base_index = index/64;
+                auto bit_index = index%64;
+                value << (i[base_index] & 1ul << bit_index? '1' : '0');
+            }
+            begin += nbits_reg; 
+
+
             if (binary) {
-              for (auto j = begin; j < begin+nbits_reg; j++)
-                out << (i & 1ul << (nbits-j-1)? '1' : '0');
-               begin += nbits_reg; 
+                out << value.str();
             } else {
-                begin += nbits_reg; 
-                out << ((i >> (nbits-begin)) & ((1ul << nbits_reg)-1));
+                mpz_t bigint;
+                mpz_init(bigint);
+
+                mpz_set_str(bigint, value.str().c_str(), 2);
+                auto value_str = mpz_get_str(nullptr, 10, bigint);
+
+                out << value_str;
+                
+                free(value_str);
+                mpz_clear(bigint);
             }
             out << "⟩";
         }
@@ -149,14 +165,14 @@ bool dump::operator==(dump& other) {
 
     for (auto i = 0u; i < this_states.size(); i++) if (this_states[i] != other_states[i]) return false;
 
-    for (auto i : this_states) {
-        auto this_amp = amplitude(i);
-        auto other_amp = other.amplitude(i);
-
-        if (this_amp.size() != other_amp.size()) return false;
-
-        for (auto j = 0u; j < this_amp.size(); j ++) if (std::abs(this_amp[j]-other_amp[j]) > 1e-10) return false;
-    } 
+    //for (auto i : this_states) {
+    //    auto this_amp = amplitude(i);
+    //    auto other_amp = other.amplitude(i);
+    //
+    //    if (this_amp.size() != other_amp.size()) return false;
+    //
+    //    for (auto j = 0u; j < this_amp.size(); j ++) if (std::abs(this_amp[j]-other_amp[j]) > 1e-10) return false;
+    //} 
 
     return true;
 }

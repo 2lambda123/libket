@@ -22,7 +22,10 @@ if (NOT TARGET CONAN_PKG::boost)
                     BUILD missing)
 endif()
 
+set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake;${CMAKE_MODULE_PATH}")
+
 find_package(Threads REQUIRED)
+find_package(GMP REQUIRED)
 
 file(GLOB_RECURSE SOURCES src/*.cpp)
 
@@ -31,7 +34,7 @@ set_target_properties(ket PROPERTIES
                       PUBLIC_HEADER "include/ket"
                       CXX_STANDARD 17)
 
-target_link_libraries(ket CONAN_PKG::boost Threads::Threads)
+target_link_libraries(ket CONAN_PKG::boost Threads::Threads gmp)
 
 install(TARGETS ket) 
     
