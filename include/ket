@@ -873,10 +873,10 @@ namespace ket {
         std::vector<std::vector<unsigned long>> get_states();
 
         //! \brief Return a list of amplitudes of a state. 
-        std::vector<std::complex<double>> amplitude(std::vector<unsigned long>& idx);
+        std::vector<std::complex<double>> amplitude(std::vector<unsigned long> idx);
         
         //! \brief Return the probability of measure a state.
-        double probability(std::vector<unsigned long>& idx);
+        double probability(std::vector<unsigned long> idx);
         
         //! \brief Return a string to print the quantum state.
         std::string show(std::string format = "");

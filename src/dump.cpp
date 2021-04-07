@@ -49,7 +49,7 @@ std::vector<std::vector<unsigned long>> dump::get_states() {
     return states_key;
 }
 
-std::vector<std::complex<double>> dump::amplitude(std::vector<unsigned long>& idx) {
+std::vector<std::complex<double>> dump::amplitude(std::vector<unsigned long> idx) {
     if (not *available) get();
 
     return states->at(idx);
@@ -64,7 +64,7 @@ void dump::get() {
     exec_quantum();
 }
 
-double dump::probability(std::vector<unsigned long>& idx) {
+double dump::probability(std::vector<unsigned long> idx) {
     double p = 0;
     for (auto i : amplitude(idx)) p += std::abs(i*i);
     return p;
