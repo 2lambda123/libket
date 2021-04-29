@@ -64,22 +64,16 @@ void process::add_label(const std::string& label) {
     kqasm << "LABEL @" << label << std::endl;
 }
 
-inline std::string args_list_str(const std::vector<double>& args) {
+inline std::string gate_arg_to_str(const std::string& gate, double args) {
     std::stringstream tmp;
     tmp << std::fixed;
     tmp.precision(std::numeric_limits<double>::max_digits10);
-    tmp << '(';
-    auto it = args.begin();
-    auto end = args.end();
-    if (it != end) tmp << *it++;
-    while (it != end) tmp << ", " << *it++;
-    tmp << ')';
+    tmp << gate << '(' << args << ')';
     return tmp.str();    
 }
 
 
-inline void set_to_adj(process::Gate &gate, std::vector<double> &args) {
-    double theta, phi, lambda;
+inline void set_to_adj(process::Gate &gate, double &arg) {
     switch (gate) {
         case process::s:
             gate = process::sd;
@@ -93,33 +87,18 @@ inline void set_to_adj(process::Gate &gate, std::vector<double> &args) {
         case process::td:
             gate = process::t;
             break;
-        case process::u1:
+        case process::p:
         case process::rx:
         case process::ry:
         case process::rz:
-            lambda = -args[0];
-            args[0] = lambda;
-            break;
-        case process::u2:
-            phi = -args[1]-M_PI;
-            lambda = -args[0]+M_PI;
-            args[0] = phi;
-            args[1] = lambda;
-            break;
-        case process::u3:
-            theta = -args[0];
-            phi = -args[2];
-            lambda = -args[1];
-            args[0] = theta;
-            args[1] = phi;
-            args[2] = lambda;
+            arg = -arg;
             break;
         default:
             break;
     }
 }
 
-inline std::string gate_to_string(process::Gate gate, const std::vector<double>& args = {}) {
+inline std::string gate_to_str(process::Gate gate, double arg = NAN) {
     std::stringstream tmp;
     switch (gate) {
         case process::x:        
@@ -138,40 +117,28 @@ inline std::string gate_to_string(process::Gate gate, const std::vector<double>&
             return "T";
         case process::td:        
             return "TD";
-        case process::u1:
-            if (args.empty()) return "U1";        
-            tmp << "U1" << args_list_str(args);
-            return tmp.str();
-        case process::u2:        
-            if (args.empty()) return "U2";
-            tmp << "U2" << args_list_str(args);
-            return tmp.str();
-        case process::u3:        
-            if (args.empty()) return "U3";
-            tmp << "U3"  << args_list_str(args);
-            return tmp.str();
+        case process::p:
+            if (std::isnan(arg)) return "P";        
+            else return gate_arg_to_str("P", arg);
         case process::rx:
-            if (args.empty()) return "RX";
-            tmp << "RX" << args_list_str(args);
-            return tmp.str();
+            if (std::isnan(arg)) return "RX";
+            else return gate_arg_to_str("RX", arg);
         case process::ry:
-            if (args.empty()) return "RY";
-            tmp << "RY" << args_list_str(args);
-            return tmp.str();
+            if (std::isnan(arg)) return "RY";
+            else return gate_arg_to_str("RY", arg);
         case process::rz:
-            if (args.empty()) return "RZ";
-            tmp << "RZ" << args_list_str(args);
-            return tmp.str();
+            if (std::isnan(arg)) return "RZ";
+            else return gate_arg_to_str("RZ", arg);
     }
     return "<GATE NOT DEFINED>";
 }
 
-void process::add_gate(Gate gate, size_t qubit, std::vector<double> args) {
+void process::add_gate(Gate gate, size_t qubit, double arg) {
     if (qubits_free.find(qubit) != qubits_free.end()) 
         throw std::runtime_error("trying to operate with the freed qubit q" + std::to_string(qubit));
 
     gates_sum += 1;
-    gates[gate_to_string(gate)] += 1;
+    gates[gate_to_str(gate)] += 1;
 
     std::stringstream tmp;
 
@@ -198,9 +165,9 @@ void process::add_gate(Gate gate, size_t qubit, std::vector<double> args) {
     }
 
     if (not adj_stack.empty() and adj_stack.size() % 2) 
-        set_to_adj(gate, args); 
+        set_to_adj(gate, arg); 
     
-    tmp << gate_to_string(gate, args) << "\tq" << qubit << std::endl;
+    tmp << gate_to_str(gate, arg) << "\tq" << qubit << std::endl;
 
     if (not adj_stack.empty()) {
         adj_stack.top().push(tmp.str());

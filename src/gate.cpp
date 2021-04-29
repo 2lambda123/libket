@@ -34,30 +34,14 @@ GATE(sd)
 GATE(t)
 GATE(td)
 
-void ket::u2(double phi, double lambda, const quant& q) {
-    if (not *(q.process_on_top))
-        throw std::runtime_error("process out of scope");
-        
-    for (auto i : q.qubits)
-        process_stack.top()->add_gate(process::u2, i, {phi, lambda});
-}
-
-void ket::u3(double theta, double phi, double lambda, const quant& q) {
-    if (not *(q.process_on_top))
-        throw std::runtime_error("process out of scope");
-        
-    for (auto i : q.qubits)
-        process_stack.top()->add_gate(process::u3, i, {theta, phi, lambda});
-}
-
 #define GATER(r) void ket::r(double lambda, const quant& q) {\
     if (not *(q.process_on_top))\
         throw std::runtime_error("process out of scope");\
     for (auto i : q.qubits)\
-        process_stack.top()->add_gate(process::r, i, {lambda});\
+        process_stack.top()->add_gate(process::r, i, lambda);\
 }
 
-GATER(u1)
+GATER(p)
 GATER(rx)
 GATER(ry)
 GATER(rz)

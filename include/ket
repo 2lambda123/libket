@@ -105,10 +105,9 @@ namespace ket {
     class process {
     public:
     
-        enum Gate {x,  y,  z, h,
-                   s,  sd, t, td, 
-                   u1, u2, u3, 
-                   rx, ry, rz}; //!< Available quantum gates. 
+        enum Gate {x, y,  z,  h,
+                   s, sd, t,  td, 
+                   p, rx, ry, rz}; //!< Available quantum gates. 
 
         /*! \brief Contructor.
          *  
@@ -149,7 +148,7 @@ namespace ket {
 
 
         //! \brief Add a quantum gate.
-        void add_gate(Gate gate, size_t qubit, std::vector<double> args = {});
+        void add_gate(Gate gate, size_t qubit, double arg = NAN);
         
         //! \brief Add a Ket Bitwise plugin.
         void add_plugin(const std::string&         name, 
@@ -693,7 +692,7 @@ namespace ket {
      * **Matrix representation:**
      * 
      * \f[ 
-     *      U1(\lambda) = \begin{bmatrix}
+     *      P(\lambda) = \begin{bmatrix}
      *                      1 & 0 \\
      *                      0 & e^{i\lambda}
      *                    \end{bmatrix}
@@ -703,8 +702,8 @@ namespace ket {
      * 
      * \f[
      *      \begin{matrix}
-     *          U1\left|0\right> = & \left|0\right> \\
-     *          U1\left|1\right> =& e^{i\lambda}\left|1\right> 
+     *          P\left|0\right> = & \left|0\right> \\
+     *          P\left|1\right> =& e^{i\lambda}\left|1\right> 
      *      \end{matrix}
      * 
      * \f]
@@ -712,64 +711,8 @@ namespace ket {
      * \param q input qubits
      * \param lambda \f$\lambda\f$
      */   
-    void u1(double lambda, const quant& q);
-    
-    /*! \brief Generic rotation gate with 2 Euler angles
-     * 
-     * Apply a rotation about the X+Z axis on every qubit of q.
-     * 
-     * **Matrix representation:**
-     * 
-     *  \f[
-     *      U2(\phi, \lambda) =
-     *          \frac{1}{\sqrt{2}}\begin{bmatrix} 1 & -e^{i\lambda} \\
-     *                                    e^{i\phi} & e^{i(\lambda+\phi)} \end{bmatrix}
-     *  \f]
-     * 
-     * **Effect:**
-     * 
-     * \f[
-     *      \begin{matrix} 
-     *          U2\left|0\right> = & \frac{1}{\sqrt{2}}\left(\left|0\right> - e^{i\lambda}\left|1\right>\right) \\
-     *          U2\left|1\right> = & \frac{1}{\sqrt{2}}\left(e^{i\phi}\left|0\right> + e^{i(\lambda+\phi)}\left|1\right>\right) 
-     *      \end{matrix}
-     * \f]
-     * 
-     * \param q input qubits
-     * \param phi \f$\phi\f$
-     * \param lambda \f$\lambda\f$
-     */   
-    void u2(double phi, double lambda, const quant& q);
-    
-    /*! \brief Generic rotation gate with 3 Euler angles
-     * 
-     * Apply a generic rotation on every qubit of q.
-     * 
-     * **Matrix representation:**
-     * 
-     *  \f[
-     *      U3(\theta, \phi, \lambda) = \begin{bmatrix}
-     *               \cos{\frac{\theta}{2}} & -e^{i\lambda}\sin{\frac{\theta}{2}} \\
-     *      e^{i\phi}\sin{\frac{\theta}{2}} & e^{i(\lambda+\phi)}\cos{\frac{\theta}{2}}  
-     *                                  \end{bmatrix}
-     *  \f]
-     * 
-     * **Effect:**
-     * 
-     * \f[
-     *      \begin{matrix} 
-     *          U3\left|0\right> = & \cos{\theta\over2}\left|0\right> -e^{i\lambda}\sin{\theta\over2}\left|1\right> \\
-     *          U3\left|1\right> = & e^{i\phi}\sin{\theta\over2}\left|0\right> + e^{i(\lambda+\phi)}\cos{\theta\over2}\left|1\right> 
-     *      \end{matrix}
-     * \f]
-     * 
-     * \param q input qubits
-     * \param theta \f$\theta\f$
-     * \param phi \f$\phi\f$
-     * \param lambda \f$\lambda\f$
-     */   
-    void u3(double theta, double phi, double lambda, const quant& q);
-      
+    void p(double lambda, const quant& q);
+         
     /*! \brief X-axis rotation gate
      * 
      * Apply a rotation of \f$\theta\f$ about the X-axis on every qubit of q.
