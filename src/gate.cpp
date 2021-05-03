@@ -25,14 +25,14 @@ using namespace ket;
         process_stack.top()->add_gate(process::x, i);\
 }
 
-GATE(x)
-GATE(y)
-GATE(z)
-GATE(h)
-GATE(s)
-GATE(sd)
-GATE(t)
-GATE(td)
+GATE(X)
+GATE(Y)
+GATE(Z)
+GATE(H)
+GATE(S)
+GATE(SD)
+GATE(T)
+GATE(TD)
 
 #define GATER(r) void ket::r(double lambda, const quant& q) {\
     if (not *(q.process_on_top))\
@@ -41,8 +41,8 @@ GATE(td)
         process_stack.top()->add_gate(process::r, i, lambda);\
 }
 
-GATER(p)
-GATER(rx)
-GATER(ry)
-GATER(rz)
+GATER(phase)
+GATER(RX)
+GATER(RY)
+GATER(RZ)
 

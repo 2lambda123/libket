@@ -75,22 +75,22 @@ inline std::string gate_arg_to_str(const std::string& gate, double args) {
 
 inline void set_to_adj(process::Gate &gate, double &arg) {
     switch (gate) {
-        case process::s:
-            gate = process::sd;
+        case process::S:
+            gate = process::SD;
             break;
-        case process::sd:
-            gate = process::s;
+        case process::SD:
+            gate = process::S;
             break;
-        case process::t:
-            gate = process::td;
+        case process::T:
+            gate = process::TD;
             break;
-        case process::td:
-            gate = process::t;
+        case process::TD:
+            gate = process::T;
             break;
-        case process::p:
-        case process::rx:
-        case process::ry:
-        case process::rz:
+        case process::phase:
+        case process::RX:
+        case process::RY:
+        case process::RZ:
             arg = -arg;
             break;
         default:
@@ -101,32 +101,32 @@ inline void set_to_adj(process::Gate &gate, double &arg) {
 inline std::string gate_to_str(process::Gate gate, double arg = NAN) {
     std::stringstream tmp;
     switch (gate) {
-        case process::x:        
+        case process::X:        
             return "X";
-        case process::y:        
+        case process::Y:        
             return "Y";
-        case process::z:        
+        case process::Z:        
             return "Z";
-        case process::h:        
+        case process::H:        
             return "H";
-        case process::s:        
+        case process::S:        
             return "S";
-        case process::sd:        
+        case process::SD:        
             return "SD";
-        case process::t:        
+        case process::T:        
             return "T";
-        case process::td:        
+        case process::TD:        
             return "TD";
-        case process::p:
+        case process::phase:
             if (std::isnan(arg)) return "P";        
             else return gate_arg_to_str("P", arg);
-        case process::rx:
+        case process::RX:
             if (std::isnan(arg)) return "RX";
             else return gate_arg_to_str("RX", arg);
-        case process::ry:
+        case process::RY:
             if (std::isnan(arg)) return "RY";
             else return gate_arg_to_str("RY", arg);
-        case process::rz:
+        case process::RZ:
             if (std::isnan(arg)) return "RZ";
             else return gate_arg_to_str("RZ", arg);
     }

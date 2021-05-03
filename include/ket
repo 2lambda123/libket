@@ -105,9 +105,9 @@ namespace ket {
     class process {
     public:
     
-        enum Gate {x, y,  z,  h,
-                   s, sd, t,  td, 
-                   p, rx, ry, rz}; //!< Available quantum gates. 
+        enum Gate {X, Y,  Z,  H,
+                   S, SD, T,  TD, 
+                   phase, RX, RY, RZ}; //!< Available quantum gates. 
 
         /*! \brief Contructor.
          *  
@@ -499,7 +499,7 @@ namespace ket {
      * 
      * \param q input qubits
      */
-    void x(const quant& q);
+    void X(const quant& q);
 
     /*! \brief Pauli-Y gate (\f$\sigma_y\f$)
      *
@@ -526,7 +526,7 @@ namespace ket {
      * 
      * \param q input qubits
      */   
-    void y(const quant& q);
+    void Y(const quant& q);
     
     /*! \brief Pauli-Z gate (\f$\sigma_z\f$)
      *
@@ -553,7 +553,7 @@ namespace ket {
      * \param q input qubits
      */   
  
-    void z(const quant& q);
+    void Z(const quant& q);
     
     /*! \brief Hadamard gate
      * 
@@ -581,7 +581,7 @@ namespace ket {
      * 
      * \param q input qubits
      */   
-    void h(const quant& q);
+    void H(const quant& q);
     
     /*! \brief S gate (Phase)
      *
@@ -607,7 +607,7 @@ namespace ket {
      * 
      * \param q input qubits
      */   
-    void s(const quant& q);
+    void S(const quant& q);
     
     /*! \brief S-dagger gate (S\f$^\dagger\f$)
      *
@@ -633,7 +633,7 @@ namespace ket {
      * 
      * \param q input qubits
      */   
-    void sd(const quant& q);
+    void SD(const quant& q);
     
     /*! \brief T gate 
      *
@@ -658,7 +658,7 @@ namespace ket {
      * 
      * \param q input qubits
      */   
-    void t(const quant& q);
+    void T(const quant& q);
     
     /*! \brief T-dagger gate (T\f$^\dagger\f$)
      *
@@ -683,7 +683,7 @@ namespace ket {
      * 
      * \param q input qubits
      */   
-    void td(const quant& q);
+    void TD(const quant& q);
     
     /*! \brief Phase gate
      * 
@@ -711,7 +711,7 @@ namespace ket {
      * \param q input qubits
      * \param lambda \f$\lambda\f$
      */   
-    void p(double lambda, const quant& q);
+    void phase(double lambda, const quant& q);
          
     /*! \brief X-axis rotation gate
      * 
@@ -738,7 +738,7 @@ namespace ket {
      * \param q input qubits
      * \param theta \f$\theta\f$
      */   
-    void rx(double theta, const quant& q);
+    void RX(double theta, const quant& q);
 
     /*! \brief Y-axis rotation gate
      * 
@@ -765,7 +765,7 @@ namespace ket {
      * \param q input qubits
      * \param theta \f$\theta\f$
      */   
-    void ry(double theta, const quant& q);
+    void RY(double theta, const quant& q);
 
     /*! \brief Z-axis rotation gate
      * 
@@ -792,7 +792,7 @@ namespace ket {
      * \param q input qubits
      * \param theta \f$\theta\f$
      */   
-    void rz(double theta, const quant& q);
+    void RZ(double theta, const quant& q);
     
     /*! \brief Dump the states of the qubits of q, used for debuggin.
      *  \class dump

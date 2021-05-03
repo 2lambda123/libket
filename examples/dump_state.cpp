@@ -7,9 +7,9 @@ int main() {
     
     auto state0  = run([]{
         quant q{3};
-        h(q);
-        s(q(0));
-        t(q(1));
+        H(q);
+        S(q(0));
+        T(q(1));
         dump state{q};
         state.get();
         return state;
@@ -17,10 +17,10 @@ int main() {
 
     auto state1  = run([]{
         quant q{3};
-        h(q);
-        x(q);
-        t(q(1));
-        s(q(0));
+        H(q);
+        X(q);
+        T(q(1));
+        S(q(0));
         dump state{q};
         state.get();
         return state;

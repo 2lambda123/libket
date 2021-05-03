@@ -12,7 +12,7 @@ int main(int argc, char* argv[]) {
     
     quant q{n_bits};
     
-    h(q);
+    H(q);
 
     auto random_num = measure(q).get();
     std::cout << n_bits << " bits random number: " << random_num << std::endl;
