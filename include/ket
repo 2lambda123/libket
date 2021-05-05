@@ -229,6 +229,8 @@ namespace ket {
 
         metrics get_metrics() const;
 
+        bool has_executed() const;
+
     private:
         size_t qubit_count, future_count, label_count, dump_count; 
         
@@ -258,6 +260,8 @@ namespace ket {
 
         std::unordered_map<std::string, size_t> plugins;
         size_t plugins_sum;
+
+        bool executed;        
     };
 
     inline std::stack<std::shared_ptr<process>> process_stack;

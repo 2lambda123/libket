@@ -142,6 +142,8 @@ void process::exec() {
         *(i.second.first) =  0;
         *(i.second.second) = true;
     }
+
+    executed = true;
 }
 
 void ket::exec_quantum() {

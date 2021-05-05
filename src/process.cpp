@@ -33,7 +33,8 @@ process::process() :
     measurements{0},
     gates_sum{0},
     ctrl_gates_sum{0},
-    plugins_sum{0}
+    plugins_sum{0},
+    executed{false}
 {
     kqasm << "LABEL @entry" << std::endl;
 }
@@ -367,4 +368,8 @@ metrics process::get_metrics() const {
                    ctrl_gates_sum,
                    plugins,
                    plugins_sum};
+}
+
+bool process::has_executed() const {
+    return executed;
 }

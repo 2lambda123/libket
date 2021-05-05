@@ -98,9 +98,7 @@ void quant::free(bool dirty) const {
 }
 
 bool quant::is_free() const {
-    for (auto i : qubits)
-        if (not ps->is_free(i)) 
-            return false;
-    
+    if (ps->has_executed()) return true;
+    for (auto i : qubits) if (not ps->is_free(i)) return false;
     return true;
 }
