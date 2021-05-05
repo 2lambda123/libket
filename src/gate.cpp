@@ -18,11 +18,12 @@
 
 using namespace ket;
 
-#define GATE(x) void ket::x(const quant& q) {\
+#define GATE(x) quant ket::x(const quant& q) {\
     if (not *(q.process_on_top))\
         throw std::runtime_error("process out of scope");\
     for (auto i : q.qubits)\
         process_stack.top()->add_gate(process::x, i);\
+    return q;\
 }
 
 GATE(X)
@@ -34,11 +35,12 @@ GATE(SD)
 GATE(T)
 GATE(TD)
 
-#define GATER(r) void ket::r(double lambda, const quant& q) {\
+#define GATER(r) quant ket::r(double lambda, const quant& q) {\
     if (not *(q.process_on_top))\
         throw std::runtime_error("process out of scope");\
     for (auto i : q.qubits)\
         process_stack.top()->add_gate(process::r, i, lambda);\
+    return q;\
 }
 
 GATER(phase)

@@ -10,10 +10,6 @@ int main(int argc, char* argv[]) {
 
     size_t n_bits = std::atoi(argv[1]);
     
-    quant q{n_bits};
-    
-    H(q);
-
-    auto random_num = measure(q).get();
+    auto random_num = measure(H(quant{n_bits})).get();
     std::cout << n_bits << " bits random number: " << random_num << std::endl;
 }
