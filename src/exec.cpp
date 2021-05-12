@@ -73,7 +73,9 @@ void process::exec() {
         http::write(socket, req);
         
         boost::beast::flat_buffer buffer;
-        http::response<http::dynamic_body> res;
+        http::response_parser<http::dynamic_body> res;
+        res.body_limit(std::numeric_limits<std::uint64_t>::max());
+        
 
         http::read(socket, buffer, res);
 
@@ -84,7 +86,7 @@ void process::exec() {
             throw boost::system::system_error{ec};
 
         std::stringstream json_file;
-        json_file << boost::beast::make_printable(res.body().data());
+        json_file << boost::beast::make_printable(res.get().body().data());
 
         boost::property_tree::ptree pt;
         boost::property_tree::read_json(json_file, pt);
