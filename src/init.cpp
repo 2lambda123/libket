@@ -29,8 +29,8 @@ void ket::ket_init_new(int argc, char* argv[]) {
     desc.add_options()
         ("help,h", "Show this information")
         ("out,o", boost::program_options::value<std::string>(), "KQASM output file")
-        ("kbw,s", boost::program_options::value<std::string>()->default_value("::1"), "Quantum execution (KBW) address")
-        ("port,p", boost::program_options::value<int>()->default_value(4242), "Quantum execution (KBW) port address")
+        ("kbw,s", boost::program_options::value<std::string>()->default_value("127.0.0.1"), "Quantum execution (KBW) address")
+        ("port,p", boost::program_options::value<std::string>()->default_value("4242"), "Quantum execution (KBW) port")
         ("no-execute", "Does not execute quantum code, measurements return 0");
 
     boost::program_options::parsed_options parsed = boost::program_options::command_line_parser(argc, argv).options(desc).allow_unregistered().run();
@@ -43,7 +43,7 @@ void ket::ket_init_new(int argc, char* argv[]) {
     } 
 
     kbw_addr = vm["kbw"].as<std::string>();
-    kbw_port = vm["port"].as<int>();
+    kbw_port = vm["port"].as<std::string>();
 
     execute_kqasm = vm.count("no-execute")? false : true;
 

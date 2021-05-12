@@ -16,9 +16,20 @@
 
 #include "../include/ket"
 #include <algorithm>
+#include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/replace.hpp>
 #include <boost/archive/binary_iarchive.hpp>
+#include <boost/archive/iterators/base64_from_binary.hpp>
+#include <boost/archive/iterators/binary_from_base64.hpp>
+#include <boost/archive/iterators/transform_width.hpp>
 #include <boost/array.hpp>
 #include <boost/asio.hpp>
+#include <boost/asio/ip/tcp.hpp>
+#include <boost/beast/core.hpp>
+#include <boost/beast/http.hpp>
+#include <boost/beast/version.hpp>
+#include <boost/property_tree/json_parser.hpp>
+#include <boost/property_tree/ptree.hpp>
 #include <boost/serialization/complex.hpp>
 #include <boost/serialization/map.hpp>
 #include <boost/serialization/vector.hpp>
@@ -26,36 +37,8 @@
 #include <fstream>
 
 using namespace ket;
-
-template <class T>
-inline boost::array<char, sizeof(T)> to_char(T value) {
-    boost::array<char, sizeof(T)> buffer;
-    std::memcpy(&buffer[0], &value, sizeof(T));
-    return buffer;
-}
-
-template <class T>
-inline T from_char(boost::array<char, sizeof(T)> buffer) {
-    T value;
-    std::memcpy(&value, &buffer[0], sizeof(T));
-    return value;
-}
-
-inline auto conect(const std::string& addr, int port) {
-    boost::asio::io_service ios;
-    boost::asio::ip::tcp::endpoint server(boost::asio::ip::address::from_string(addr), port);
-    boost::asio::ip::tcp::socket socket(ios);
-
-    socket.connect(server);
-    
-    return socket;
-}
-
-inline auto buffer_str(const std::string& input) {
-    std::vector<char> buffer;
-    for (char i : input) buffer.push_back(i);
-    return buffer;
-}
+using tcp = boost::asio::ip::tcp;    
+namespace http = boost::beast::http; 
 
 void process::exec() {
     if (output_kqasm) {
@@ -68,76 +51,67 @@ void process::exec() {
 
     if (execute_kqasm) {
         
-        auto kqasm_buffer = buffer_str(kqasm.str());
-        auto kqasm_size = to_char<uint32_t>(kqasm_buffer.size());
+        auto kqasm_file = kqasm.str();
+        boost::replace_all(kqasm_file, " ",  "%20");
+        boost::replace_all(kqasm_file, "\t", "%09");
+        boost::replace_all(kqasm_file, "\n", "%0A");
+
+        boost::asio::io_context ioc;
+        tcp::resolver resolver{ioc};
+        tcp::socket socket{ioc};
+
+        auto const results = resolver.resolve(kbw_addr, kbw_port);
+        boost::asio::connect(socket, results.begin(), results.end());
+
+        std::stringstream param;
+        param << "/api/v1/run?kqasm=" << kqasm_file;
+
+        http::request<http::string_body> req{http::verb::get, param.str(), 11};
+        req.set(http::field::host, kbw_addr);
+        req.set(http::field::user_agent, BOOST_BEAST_VERSION_STRING);
+
+        http::write(socket, req);
         
-        char ack[1];
+        boost::beast::flat_buffer buffer;
+        http::response<http::dynamic_body> res;
 
-        auto socket = conect(kbw_addr, kbw_port);
+        http::read(socket, buffer, res);
 
-        // Send KQASM size
-        socket.send(boost::asio::buffer(kqasm_size));
-        socket.receive(boost::asio::buffer(ack));
+        boost::system::error_code ec;
+        socket.shutdown(tcp::socket::shutdown_both, ec);
+ 
+        if(ec && ec != boost::system::errc::not_connected)
+            throw boost::system::system_error{ec};
 
-        // Send KQASM
-        socket.send(boost::asio::buffer(kqasm_buffer));
-        socket.receive(boost::asio::buffer(ack));
-        
-        // Get results
-        auto get_command = to_char<char>(1);
-        for (auto &i : measure_map) {
-            socket.send(boost::asio::buffer(get_command));
-            socket.receive(boost::asio::buffer(ack));
-         
-            auto get_idx = to_char<uint64_t>(i.first);
-            socket.send(boost::asio::buffer(get_idx));
-            socket.receive(boost::asio::buffer(get_idx));
+        std::stringstream json_file;
+        json_file << boost::beast::make_printable(res.body().data());
 
-            *(i.second.first) = from_char<uint64_t>(get_idx);
-            
-            *(i.second.second) = true;
+        boost::property_tree::ptree pt;
+        boost::property_tree::read_json(json_file, pt);
+
+        for (auto result : pt.get_child("int")) {
+            auto i = std::stol(result.first);
+            *(measure_map[i].first) = std::stol(result.second.get_value<std::string>());
+            *(measure_map[i].second) = true;
         }
-        
-        // Get dumps
-        auto dump_command = to_char<char>(2);
-        boost::array<char, 8> buffer_dump_size;
-        for (auto &i : dump_map) {
-            // Send dump command
-            socket.send(boost::asio::buffer(dump_command));
-            socket.receive(boost::asio::buffer(ack));
 
-            auto get_idx = to_char<uint64_t>(i.first);
-            socket.send(boost::asio::buffer(get_idx));
+        for (auto result : pt.get_child("dump")) {
+            auto i = std::stol(result.first);
+            auto b64_bin = result.second.get_value<std::string>();
 
-            socket.receive(boost::asio::buffer(buffer_dump_size));
-
-            auto dump_size = from_char<uint64_t>(buffer_dump_size);
-
-            boost::array<char, 2048> buffer;
-            std::vector<char> dump_file;
-
-            size_t bytes_transferred;
-
-            do {
-                bytes_transferred = socket.receive(boost::asio::buffer(buffer));
-                dump_file.insert(dump_file.end(), buffer.begin(), buffer.begin()+bytes_transferred);
-            } while (dump_file.size() < dump_size);
-
+            using iter = boost::archive::iterators::transform_width<boost::archive::iterators::binary_from_base64<std::string::const_iterator>, 8, 6>;
+            auto bin = std::string(iter(b64_bin.begin()), iter(b64_bin.end()));
+            
             std::stringstream stream_out;
-            stream_out.write(dump_file.data(), dump_file.size());
-
+            stream_out.write(bin.c_str(), bin.size());
+            
             boost::archive::binary_iarchive iarchive{stream_out};
 
-            iarchive >> *i.second.first; 
+            iarchive >> *(dump_map[i].first); 
 
-            *i.second.second = true;
+            *(dump_map[i].second) = true;
         } 
 
-        auto exit_command = to_char<char>(0);
-        socket.send(boost::asio::buffer(exit_command));
-        socket.receive(boost::asio::buffer(ack));
-
-        socket.close();
     } else for (auto &i : measure_map) {
         *(i.second.first) =  0;
         *(i.second.second) = true;

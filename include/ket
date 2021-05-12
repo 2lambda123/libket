@@ -268,7 +268,7 @@ namespace ket {
     inline std::stack<std::shared_ptr<bool>> process_on_top_stack; 
 
     inline std::string kbw_addr;
-    inline int kbw_port;
+    inline std::string kbw_port;
     inline bool execute_kqasm;
 
     inline std::string kqasm_path;
