@@ -10,6 +10,7 @@ Build requirements
 * CMake 
 * Ninja
 * Conan 
+* GMP
 
 Runtime requirement
 
@@ -32,9 +33,6 @@ Available examples:
 
 * Quantum teleportation - [`teleport`](examples/teleport.cpp) 
 * Random number generation - [`random`](examples/random.cpp) 
-* Shor's algorithms - [`shor15`](examples/shor15.cpp)
-* Shor's algorithms with state dumping - [`shor15dump`](examples/shor15dump.cpp)
-* State dumping - [`dump_state`](examples/dump_state.cpp)
 
 With [KBW](https://gitlab.com/quantum-ket/kbw#installation) running, execute:
 ```console
@@ -49,12 +47,13 @@ Every program linked with Libket accept the follow options
 ```console
 $ ./bin/teleport -h
 Ket program options:
-  -h [ --help ]              Show this information
-  -o [ --out ]               KQASM output file
-  -s [ --kbw ]  (=127.0.1.1) Quantum execution (KBW) address
-  -p [ --port ]  (=4242)     Quantum execution (KBW) port address
-  --no-execute               Does not execute the quantum code, measuments 
-                             return 0
+  -h [ --help ]              Show this information.
+  -o [ --out ]               KQASM output file.
+  -s [ --kbw ]  (=127.0.0.1) Quantum execution (KBW) address.
+  -p [ --port ]  (=4242)     Quantum execution (KBW) port.
+  --seed                     Set RNG seed for quantum execution.
+  --no-execute               Does not execute KQASM, measurements return 0.
+  --dump-to-fs               Use the filesystem to transfer dump data.
 ```
 
 ## Installation
