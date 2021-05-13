@@ -18,6 +18,7 @@
 #include <boost/program_options.hpp>
 #include <iostream>
 #include <fstream>
+#include <random>
 
 using namespace ket;
 
@@ -27,12 +28,13 @@ void ket::ket_init_new(int argc, char* argv[]) {
 
     boost::program_options::options_description desc{"Ket program options"};
     desc.add_options()
-        ("help,h", "Show this information")
-        ("out,o", boost::program_options::value<std::string>(), "KQASM output file")
-        ("kbw,s", boost::program_options::value<std::string>()->default_value("127.0.0.1"), "Quantum execution (KBW) address")
-        ("port,p", boost::program_options::value<std::string>()->default_value("4242"), "Quantum execution (KBW) port")
-        ("no-execute", "Does not execute quantum code, measurements return 0")
-        ("dump-to-fs", "Use the filesystem to transfer dump data");
+        ("help,h", "Show this information.")
+        ("out,o", boost::program_options::value<std::string>(), "KQASM output file.")
+        ("kbw,s", boost::program_options::value<std::string>()->default_value("127.0.0.1"), "Quantum execution (KBW) address.")
+        ("port,p", boost::program_options::value<std::string>()->default_value("4242"), "Quantum execution (KBW) port.")
+        ("seed", boost::program_options::value<unsigned int>(), "Set RNG seed for quantum execution.")
+        ("no-execute", "Does not execute KQASM, measurements return 0.")
+        ("dump-to-fs", "Use the filesystem to transfer dump data.");
 
     boost::program_options::parsed_options parsed = boost::program_options::command_line_parser(argc, argv).options(desc).allow_unregistered().run();
     boost::program_options::variables_map vm;
@@ -58,4 +60,7 @@ void ket::ket_init_new(int argc, char* argv[]) {
         output_kqasm = false;
     }
     
+    send_seed = vm.count("seed");
+    if (send_seed) std::srand(vm["seed"].as<unsigned int>());
+
 }
