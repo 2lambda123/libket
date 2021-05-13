@@ -65,6 +65,7 @@ void process::exec() {
 
         std::stringstream param;
         param << "/api/v1/run?kqasm=" << kqasm_file;
+        if (dump_to_fs) param << "&dump2fs=1";
 
         http::request<http::string_body> req{http::verb::get, param.str(), 11};
         req.set(http::field::host, kbw_addr);
@@ -97,7 +98,20 @@ void process::exec() {
             *(measure_map[i].second) = true;
         }
 
-        for (auto result : pt.get_child("dump")) {
+        auto dump2fs = pt.get<std::string>("dump2fs") == "1";
+
+        if (dump2fs) for (auto result : pt.get_child("dump")) {
+            auto i = std::stol(result.first);
+            auto path = result.second.get_value<std::string>();
+
+            std::ifstream stream_out{path};
+            boost::archive::binary_iarchive iarchive{stream_out};
+
+            iarchive >> *(dump_map[i].first); 
+
+            *(dump_map[i].second) = true;
+
+        } else for (auto result : pt.get_child("dump")) {
             auto i = std::stol(result.first);
             auto b64_bin = result.second.get_value<std::string>();
 
@@ -112,6 +126,7 @@ void process::exec() {
             iarchive >> *(dump_map[i].first); 
 
             *(dump_map[i].second) = true;
+        
         } 
 
     } else for (auto &i : measure_map) {

@@ -31,7 +31,8 @@ void ket::ket_init_new(int argc, char* argv[]) {
         ("out,o", boost::program_options::value<std::string>(), "KQASM output file")
         ("kbw,s", boost::program_options::value<std::string>()->default_value("127.0.0.1"), "Quantum execution (KBW) address")
         ("port,p", boost::program_options::value<std::string>()->default_value("4242"), "Quantum execution (KBW) port")
-        ("no-execute", "Does not execute quantum code, measurements return 0");
+        ("no-execute", "Does not execute quantum code, measurements return 0")
+        ("dump-to-fs", "Use the filesystem to transfer dump data");
 
     boost::program_options::parsed_options parsed = boost::program_options::command_line_parser(argc, argv).options(desc).allow_unregistered().run();
     boost::program_options::variables_map vm;
@@ -45,7 +46,8 @@ void ket::ket_init_new(int argc, char* argv[]) {
     kbw_addr = vm["kbw"].as<std::string>();
     kbw_port = vm["port"].as<std::string>();
 
-    execute_kqasm = vm.count("no-execute")? false : true;
+    execute_kqasm = not vm.count("no-execute");
+    dump_to_fs = vm.count("dump-to-fs");
 
     if (vm.count("out")) {
         output_kqasm = true;

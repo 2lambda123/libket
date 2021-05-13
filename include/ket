@@ -270,6 +270,7 @@ namespace ket {
     inline std::string kbw_addr;
     inline std::string kbw_port;
     inline bool execute_kqasm;
+    inline bool dump_to_fs;
 
     inline std::string kqasm_path;
     inline bool output_kqasm;
