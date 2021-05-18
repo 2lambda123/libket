@@ -33,6 +33,7 @@ void ket::ket_init_new(int argc, char* argv[]) {
         ("kbw,s", boost::program_options::value<std::string>()->default_value("127.0.0.1"), "Quantum execution (KBW) address.")
         ("port,p", boost::program_options::value<std::string>()->default_value("4242"), "Quantum execution (KBW) port.")
         ("seed", boost::program_options::value<unsigned int>(), "Set RNG seed for quantum execution.")
+        ("api-args", boost::program_options::value<std::string>(), "Additional parameters for quantum execution.")
         ("no-execute", "Does not execute KQASM, measurements return 0.")
         ("dump-to-fs", "Use the filesystem to transfer dump data.");
 
@@ -62,5 +63,7 @@ void ket::ket_init_new(int argc, char* argv[]) {
     
     send_seed = vm.count("seed");
     if (send_seed) std::srand(vm["seed"].as<unsigned int>());
+
+    api_args = vm.count("api-args")? "&"+vm["api-args"].as<std::string>() : "";
 
 }

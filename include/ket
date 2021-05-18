@@ -15,6 +15,7 @@
  */
 
 #pragma once
+#include <any>
 #include <complex>
 #include <iostream> // std::cout needs to be initialized before ket::ket_init_new
 #include <map>
@@ -231,6 +232,8 @@ namespace ket {
 
         bool has_executed() const;
 
+        std::string get_result_str() const;
+
     private:
         size_t qubit_count, future_count, label_count, dump_count; 
         
@@ -261,7 +264,9 @@ namespace ket {
         std::unordered_map<std::string, size_t> plugins;
         size_t plugins_sum;
 
-        bool executed;        
+        bool executed;      
+
+        std::string result;  
     };
 
     inline std::stack<std::shared_ptr<process>> process_stack;
@@ -272,11 +277,28 @@ namespace ket {
     inline bool execute_kqasm;
     inline bool dump_to_fs;
     inline bool send_seed;
+    
+    inline std::string api_args;
 
     inline std::string kqasm_path;
     inline bool output_kqasm;
     extern "C" void ket_init_new(int argc, char* argv[]) __attribute__((constructor));
     #endif
+
+    struct context {
+
+        context();
+
+        bool has_executed() const;
+        bool in_scope() const;
+        std::string get_return(const std::string& arg) const;
+        std::string get_json() const;
+
+        #ifndef SWIG
+        const std::shared_ptr<bool> process_on_top;
+        const std::shared_ptr<process> ps;
+        #endif
+    };
 
     /*! \brief Array of qubits references.
      *  \class quant

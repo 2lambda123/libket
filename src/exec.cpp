@@ -67,6 +67,7 @@ void process::exec() {
         param << "/api/v1/run?kqasm=" << kqasm_file;
         if (dump_to_fs) param << "&dump2fs=1";
         if (send_seed) param << "&seed=" << std::rand();
+        param << api_args;
 
         http::request<http::string_body> req{http::verb::get, param.str(), 11};
         req.set(http::field::host, kbw_addr);
@@ -89,6 +90,7 @@ void process::exec() {
 
         std::stringstream json_file;
         json_file << boost::beast::make_printable(res.get().body().data());
+        result = json_file.str();
 
         boost::property_tree::ptree pt;
         boost::property_tree::read_json(json_file, pt);

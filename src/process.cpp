@@ -373,3 +373,7 @@ metrics process::get_metrics() const {
 bool process::has_executed() const {
     return executed;
 }
+
+std::string process::get_result_str() const {
+    return result;
+}
