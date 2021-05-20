@@ -64,7 +64,7 @@ void process::exec() {
         boost::asio::connect(socket, results.begin(), results.end());
 
         std::stringstream param;
-        param << "/api/v1/run?kqasm=" << kqasm_file;
+        param << "/api/v1/run?";
         if (dump_to_fs) param << "&dump2fs=1";
         if (send_seed) param << "&seed=" << std::rand();
         param << api_args;
@@ -72,7 +72,10 @@ void process::exec() {
         http::request<http::string_body> req{http::verb::get, param.str(), 11};
         req.set(http::field::host, kbw_addr);
         req.set(http::field::user_agent, BOOST_BEAST_VERSION_STRING);
-
+        req.set(http::field::content_type, "application/x-www-form-urlencoded");
+        req.body() = "kqasm=" + kqasm_file;
+        req.prepare_payload();
+        
         http::write(socket, req);
         
         boost::beast::flat_buffer buffer;
