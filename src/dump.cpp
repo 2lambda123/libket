@@ -125,7 +125,13 @@ std::string dump::show(std::string format) {
         
         for (auto j : amplitude(i)) {
             std::stringstream cx;
-            cx << j.real() << (j.imag() < 0? " " : " +") << j.imag() << "i";
+            if (std::abs(j.real()) > 1e-10) {
+                cx << j.real();
+                if (std::abs(j.imag()) > 1e-10) 
+                    cx << (j.imag() < 0? " " : " +") << j.imag() << "i";
+            } else if (std::abs(j.imag()) > 1e-10) {
+                cx << j.imag() << "i";
+            }
             out << std::left << std::setw(25) << std::setfill(' ') << cx.str() << "≅ ";   
             auto real = std::abs(j.real()) < 1e-10? 0 : sqrt_apx(j.real());
             auto imag = std::abs(j.imag()) < 1e-10? 0 : sqrt_apx(j.imag());
