@@ -285,6 +285,8 @@ namespace ket {
     extern "C" void ket_init_new(int argc, char* argv[]) __attribute__((constructor));
     #endif
 
+    void config(std::string param, std::string value);
+
     struct context {
 
         context();

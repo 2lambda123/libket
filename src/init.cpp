@@ -67,3 +67,19 @@ void ket::ket_init_new(int argc, char* argv[]) {
     api_args = vm.count("api-args")? "&"+vm["api-args"].as<std::string>() : "";
 
 }
+
+void ket::config(std::string param, std::string value) {
+    if (param == "server") {
+        kbw_addr = value;
+    } else if (param == "port") {
+        kbw_port = value;
+    } else if (param == "seed") {
+        std::srand(std::stoi(value));
+        send_seed = true;
+    } else if (param == "kqasm") {
+        kqasm_path = value;
+        output_kqasm = true;
+    } else {
+        api_args += "&"+param+"="+value;
+    }
+}
