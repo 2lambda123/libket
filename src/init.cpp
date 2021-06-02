@@ -80,6 +80,6 @@ void ket::config(std::string param, std::string value) {
         kqasm_path = value;
         output_kqasm = true;
     } else {
-        api_args += "&"+param+"="+value;
+        api_args_map[param] = value;
     }
 }

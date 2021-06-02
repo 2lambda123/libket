@@ -284,6 +284,7 @@ namespace ket {
     inline bool send_seed;
     
     inline std::string api_args;
+    inline std::unordered_map<std::string, std::string> api_args_map;
 
     inline std::string kqasm_path;
     inline bool output_kqasm;

@@ -68,6 +68,7 @@ void process::exec() {
         if (dump_to_fs) param << "&dump2fs=1";
         if (send_seed) param << "&seed=" << std::rand();
         param << api_args;
+        for (auto arg : api_args_map) param << "&" << arg.first << "=" << arg.second;
 
         http::request<http::string_body> req{http::verb::get, param.str(), 11};
         req.set(http::field::host, kbw_addr);
