@@ -73,7 +73,18 @@ void process::exec() {
         req.set(http::field::host, kbw_addr);
         req.set(http::field::user_agent, BOOST_BEAST_VERSION_STRING);
         req.set(http::field::content_type, "application/x-www-form-urlencoded");
-        req.body() = "kqasm=" + kqasm_file;
+
+        std::stringstream body;
+
+        body << "kqasm=" << kqasm_file
+             << "&n_blocks=" << n_blocks
+             << "&n_qubits=" << used_qubits
+             << "&has_plugins=" << (plugins_sum == 0? 0 : 1)
+             << "&has_free=" << (free_qubits == 0? 0 : 1)
+             << "&has_dump=" << (n_dumps == 0? 0 : 1)
+             << "&has_set=" << (n_set_inst == 0? 0 : 1); 
+
+        req.body() = body.str();
         req.prepare_payload();
         
         http::write(socket, req);

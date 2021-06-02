@@ -254,6 +254,9 @@ namespace ket {
         size_t max_allocated_qubits;
 
         size_t measurements;
+        size_t n_dumps;
+
+        size_t n_set_inst;
 
         std::unordered_map<std::string, size_t> gates;
         size_t gates_sum;
@@ -263,6 +266,8 @@ namespace ket {
 
         std::unordered_map<std::string, size_t> plugins;
         size_t plugins_sum;
+
+        size_t n_blocks;
 
         bool executed;      
 

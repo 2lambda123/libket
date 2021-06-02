@@ -31,9 +31,12 @@ process::process() :
     allocated_qubits{0},
     max_allocated_qubits{0},
     measurements{0},
+    n_dumps{0},
+    n_set_inst{0},
     gates_sum{0},
     ctrl_gates_sum{0},
     plugins_sum{0},
+    n_blocks{1},
     executed{false}
 {
     kqasm << "LABEL @entry" << std::endl;
@@ -55,6 +58,8 @@ void process::add_inst(const std::string& inst) {
     if (not ctrl_stack.empty() or not adj_stack.empty())
         throw std::runtime_error("The instruction \"" + inst + "\" cannot be used with adj or ctrl");
 
+    if (inst.substr(0, 3) == "SET") n_set_inst += 1;
+
     kqasm << '\t' << inst << std::endl;
 }
 
@@ -63,6 +68,8 @@ void process::add_label(const std::string& label) {
         throw std::runtime_error("The instruction \"LABEL @" + label + "\" cannot be used with adj or ctrl");
 
     kqasm << "LABEL @" << label << std::endl;
+
+    n_blocks += 1;
 }
 
 inline std::string gate_arg_to_str(const std::string& gate, double args) {
@@ -338,6 +345,7 @@ process::dump(const std::vector<size_t>& qubits) {
         if (qubits_free.find(i) != qubits_free.end()) 
             throw std::runtime_error("trying to operate with the freed qubit q" + std::to_string(i));
 
+    n_dumps += 1;
 
     auto states = std::make_shared<std::map<std::vector<std::uint64_t>, std::vector<std::complex<double>>>>();    
     auto available = std::make_shared<bool>(false);
