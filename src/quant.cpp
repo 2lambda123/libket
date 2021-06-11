@@ -15,6 +15,7 @@
  */
 
 #include "../include/ket"
+#include <boost/unordered_set.hpp>
 
 using namespace ket;
 
@@ -63,10 +64,15 @@ quant quant::operator|(const quant& other) const {
     if (ps != other.ps)
         throw std::runtime_error("cannot concatenate quant of different process");
 
-    auto tmp_qubits = qubits;
-    for (auto i : other.qubits)
-        tmp_qubits.push_back(i);
+    boost::unordered_set<size_t> qubits_set{qubits.begin(), qubits.end()}; 
 
+    auto tmp_qubits = qubits;
+    for (auto i : other.qubits) {
+        if (qubits_set.find(i) != qubits_set.end())
+                throw std::runtime_error("quant with two references to the same qubit are not allowed");
+        tmp_qubits.push_back(i);
+    }
+        
     return quant{tmp_qubits, process_on_top, ps};
 }
 
