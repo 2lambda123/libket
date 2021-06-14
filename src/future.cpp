@@ -67,24 +67,6 @@ FUTURE_OP(&, "and")
 FUTURE_OP(^, "xor")
 FUTURE_OP(|, "or")
 
-#define FUTURE_ROP(op, name) future future::op(std::int64_t other) const {\
-    if (not *process_on_top)\
-        throw std::runtime_error("process out of scope");\
-    auto [other_id, other_result, other_available] = process_stack.top()->new_int(other);\
-    auto [_id, _result, _available] = process_stack.top()->op_int(other_id, name, id);\
-    return future{_id, _result, _available};\
-}
-
-FUTURE_ROP(__radd__, "+")
-FUTURE_ROP(__rsub__, "-")
-FUTURE_ROP(__rmul__, "*")
-FUTURE_ROP(__rtruediv__, "/")
-FUTURE_ROP(__rlshift__, "<<")
-FUTURE_ROP(__rrshift__, ">>")
-FUTURE_ROP(__rand__, "and")
-FUTURE_ROP(__rxor__, "xor")
-FUTURE_ROP(__ror__, "or")
-
 std::int64_t future::get() {
     if (*available) return *result;
     if (not *process_on_top)

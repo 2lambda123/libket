@@ -429,16 +429,6 @@ namespace ket {
         future operator^(std::int64_t other) const;
         future operator|(std::int64_t other) const;
 
-        future __radd__(std::int64_t other) const;
-        future __rsub__(std::int64_t other) const;
-        future __rmul__(std::int64_t other) const;
-        future __rtruediv__(std::int64_t other) const;
-        future __rlshift__(std::int64_t other) const;
-        future __rrshift__(std::int64_t other) const;
-        future __rand__(std::int64_t other) const;
-        future __rxor__(std::int64_t other) const;
-        future __ror__(std::int64_t other) const;
-
         /*! \brief Get the integer from the quantum computer.
          *  
          *  \note
@@ -849,7 +839,7 @@ namespace ket {
         double probability(std::vector<unsigned long> idx);
         
         //! \brief Return a string to print the quantum state.
-        std::string show(std::string format = "");
+        std::string show(std::string format);
 
         //! \brief Triggers the quantum execution to get the dump.
         void get();
