@@ -33,12 +33,34 @@
 #include <boost/serialization/complex.hpp>
 #include <boost/serialization/map.hpp>
 #include <boost/serialization/vector.hpp>
+#include <boost/container/map.hpp>
 #include <cmath>
 #include <fstream>
 
 using namespace ket;
 using tcp = boost::asio::ip::tcp;    
 namespace http = boost::beast::http; 
+
+inline std::string urlencode(std::string str) {
+    const boost::container::map<std::string, std::string> replace_map = {
+	    {" ",  "%20"},
+	    {"\t", "%09"},
+	    {"\n", "%0A"},
+	    {"=" , "%3D"},
+	    {"!" , "%21"},
+	    {">" , "%3E"},
+	    {"<" , "%3C"},
+	    {"+" , "%2B"},
+	    {"*" , "%2A"},
+	    {"/" , "%2F"},
+	    {"@" , "%40"},
+	    {"(" , "%28"},
+	    {")" , "%29"},
+    };
+
+    for (auto pair : replace_map) boost::replace_all(str,  pair.first, pair.second);
+    return str;
+}
 
 void process::exec() {
     if (output_kqasm) {
@@ -51,10 +73,7 @@ void process::exec() {
 
     if (execute_kqasm) {
         
-        auto kqasm_file = kqasm.str();
-        boost::replace_all(kqasm_file, " ",  "%20");
-        boost::replace_all(kqasm_file, "\t", "%09");
-        boost::replace_all(kqasm_file, "\n", "%0A");
+        auto kqasm_file = urlencode(kqasm.str());
 
         boost::asio::io_context ioc;
         tcp::resolver resolver{ioc};
@@ -68,7 +87,7 @@ void process::exec() {
         if (dump_to_fs) param << "&dump2fs=1";
         if (send_seed) param << "&seed=" << std::rand();
         param << api_args;
-        for (auto arg : api_args_map) param << "&" << arg.first << "=" << arg.second;
+        for (auto arg : api_args_map) param << "&" << arg.first << "=" << urlencode(arg.second);
 
         http::request<http::string_body> req{http::verb::get, param.str(), 11};
         req.set(http::field::host, kbw_addr);
