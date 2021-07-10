@@ -65,7 +65,7 @@ inline std::string urlencode(std::string str) {
 void process::exec() {
     if (output_kqasm) {
         std::ofstream out{kqasm_path, std::ofstream::app};
-        out << kqasm.str() 
+        out << kqasm 
             << "=========================" 
             << std::endl;
         out.close();
@@ -73,7 +73,7 @@ void process::exec() {
 
     if (execute_kqasm) {
         
-        auto kqasm_file = urlencode(kqasm.str());
+        auto kqasm_file = urlencode(kqasm);
 
         boost::asio::io_context ioc;
         tcp::resolver resolver{ioc};
@@ -82,29 +82,28 @@ void process::exec() {
         auto const results = resolver.resolve(kbw_addr, kbw_port);
         boost::asio::connect(socket, results.begin(), results.end());
 
-        std::stringstream param;
-        param << "/api/v1/run?";
-        if (dump_to_fs) param << "&dump2fs=1";
-        if (send_seed) param << "&seed=" << std::rand();
-        param << api_args;
-        for (auto arg : api_args_map) param << "&" << arg.first << "=" << urlencode(arg.second);
+        std::string param{"/api/v1/run?"};
+        if (dump_to_fs) param += "&dump2fs=1";
+        if (send_seed) param += "&seed=" + std::to_string(std::rand());
+        param += api_args;
+        for (auto arg : api_args_map) param += "&" + arg.first + "=" + urlencode(arg.second);
 
-        http::request<http::string_body> req{http::verb::get, param.str(), 11};
+        http::request<http::string_body> req{http::verb::get, param, 11};
         req.set(http::field::host, kbw_addr);
         req.set(http::field::user_agent, BOOST_BEAST_VERSION_STRING);
         req.set(http::field::content_type, "application/x-www-form-urlencoded");
 
-        std::stringstream body;
+        std::string body{};
 
-        body << "kqasm=" << kqasm_file
-             << "&n_blocks=" << n_blocks
-             << "&n_qubits=" << used_qubits
-             << "&has_plugins=" << (plugins_sum == 0? 0 : 1)
-             << "&has_free=" << (free_qubits == 0? 0 : 1)
-             << "&has_dump=" << (n_dumps == 0? 0 : 1)
-             << "&has_set=" << (n_set_inst == 0? 0 : 1); 
+        body += "kqasm="        + kqasm_file
+             +  "&n_blocks="    + std::to_string(n_blocks)
+             +  "&n_qubits="    + std::to_string(used_qubits)
+             +  "&has_plugins=" + std::to_string((plugins_sum == 0? 0 : 1))
+             +  "&has_free="    + std::to_string((free_qubits == 0? 0 : 1))
+             +  "&has_dump="    + std::to_string((n_dumps == 0? 0 : 1))
+             +  "&has_set="     + std::to_string((n_set_inst == 0? 0 : 1));
 
-        req.body() = body.str();
+        req.body() = body;
         req.prepare_payload();
         
         http::write(socket, req);

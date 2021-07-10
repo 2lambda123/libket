@@ -18,6 +18,7 @@
 #include <limits>
 #include <cmath>
 #include <queue>
+#include <boost/lexical_cast.hpp>
 
 using namespace ket;
 
@@ -26,6 +27,7 @@ process::process() :
     future_count{0},
     label_count{0},
     dump_count{0},
+    kqasm{"LABEL @entry\n"},
     used_qubits{0},
     free_qubits{0},
     allocated_qubits{0},
@@ -38,20 +40,17 @@ process::process() :
     plugins_sum{0},
     n_blocks{1},
     executed{false}
-{
-    kqasm << "LABEL @entry" << std::endl;
-}
+{}
 
 
 inline std::string qubit_list_str(const std::vector<size_t>& qubits) {
-    std::stringstream tmp;
-    tmp << '[';
+    std::string tmp{"["};
     auto it = qubits.begin();
     auto end = qubits.end();
-    if (it != end) tmp << 'q'<< *it++;
-    while (it != end) tmp << ", q" << *it++;
-    tmp << ']';
-    return tmp.str();    
+    if (it != end) tmp += "q" + std::to_string(*it++);
+    while (it != end) tmp += ", q" + std::to_string(*it++);
+    tmp += "]";
+    return tmp;    
 }
 
 void process::add_inst(const std::string& inst) {
@@ -60,24 +59,22 @@ void process::add_inst(const std::string& inst) {
 
     if (inst.substr(0, 3) == "SET") n_set_inst += 1;
 
-    kqasm << '\t' << inst << std::endl;
+    kqasm += '\t' + inst + "\n";
 }
 
 void process::add_label(const std::string& label) {
     if (not ctrl_stack.empty() or not adj_stack.empty())
         throw std::runtime_error("The instruction \"LABEL @" + label + "\" cannot be used with adj or ctrl");
 
-    kqasm << "LABEL @" << label << std::endl;
-
+    kqasm += "LABEL @" + label + "\n";
+    
     n_blocks += 1;
 }
 
 inline std::string gate_arg_to_str(const std::string& gate, double args) {
-    std::stringstream tmp;
-    tmp << std::fixed;
-    tmp.precision(std::numeric_limits<double>::max_digits10);
-    tmp << gate << '(' << args << ')';
-    return tmp.str();    
+    std::string tmp{gate};
+    tmp += "(" + boost::lexical_cast<std::string>(args) + ")";
+    return tmp;    
 }
 
 
@@ -107,7 +104,6 @@ inline void set_to_adj(process::Gate &gate, double &arg) {
 }
 
 inline std::string gate_to_str(process::Gate gate, double arg = NAN) {
-    std::stringstream tmp;
     switch (gate) {
         case process::X:        
             return "X";
@@ -148,9 +144,7 @@ void process::add_gate(Gate gate, size_t qubit, double arg) {
     gates_sum += 1;
     gates[gate_to_str(gate)] += 1;
 
-    std::stringstream tmp;
-
-    tmp << '\t';
+    std::string tmp{"\t"} ;
 
     if (not ctrl_stack.empty()) {
         auto n_ctrl_qubits = 0ul;
@@ -166,7 +160,7 @@ void process::add_gate(Gate gate, size_t qubit, double arg) {
             ctrl_qubits.insert(ctrl_qubits.end(), cc.begin(), cc.end());
         }
         
-        tmp << "CTRL " << qubit_list_str(ctrl_qubits) << ",\t";
+        tmp += "CTRL " + qubit_list_str(ctrl_qubits) + ",\t";
 
         ctrl_gates_sum += 1;
         ctrl_gates[n_ctrl_qubits] += 1;
@@ -175,12 +169,12 @@ void process::add_gate(Gate gate, size_t qubit, double arg) {
     if (not adj_stack.empty() and adj_stack.size() % 2) 
         set_to_adj(gate, arg); 
     
-    tmp << gate_to_str(gate, arg) << "\tq" << qubit << std::endl;
+    tmp += gate_to_str(gate, arg) + "\tq" + std::to_string(qubit) + "\n";
 
     if (not adj_stack.empty()) {
-        adj_stack.top().push(tmp.str());
+        adj_stack.top().push(tmp);
     } else {
-        kqasm << tmp.str();
+        kqasm += tmp;
     }
 }
 
@@ -192,8 +186,7 @@ void process::add_plugin(const std::string& name, const std::vector<size_t>& qub
     plugins[name] += 1;
     plugins_sum += 1;
 
-    std::stringstream tmp;
-    tmp << '\t';
+    std::string tmp{"\t"};
 
     if (not ctrl_stack.empty()) {
         std::vector<size_t> ctrl_qubits;
@@ -205,22 +198,22 @@ void process::add_plugin(const std::string& name, const std::vector<size_t>& qub
 
             ctrl_qubits.insert(ctrl_qubits.end(), cc.begin(), cc.end());
         }
-        tmp << "CTRL " << qubit_list_str(ctrl_qubits) << ",\t";
+        tmp += "CTRL " + qubit_list_str(ctrl_qubits) + ",\t";
     }
 
-    tmp << "PLUGIN";
+    tmp += "PLUGIN";
 
     if (not adj_stack.empty() and adj_stack.size() % 2) 
-        tmp << "!";
+        tmp += "!";
 
-    tmp << '\t' << name << '\t' << qubit_list_str(qubits);
+    tmp += '\t' + name + '\t' + qubit_list_str(qubits);
 
-    tmp << "\t\"" << args << '\"' << std::endl;
-
+    tmp += "\t\"" + args + "\"\n";
+    
     if (not adj_stack.empty()) {
-        adj_stack.top().push(tmp.str());
+        adj_stack.top().push(tmp);
     } else {
-        kqasm << tmp.str();
+        kqasm += tmp;
     }
 }
 
@@ -247,10 +240,10 @@ process::measure(const std::vector<size_t>& qubits) {
 
     measurements += qubits.size();
 
-    std::stringstream tmp;
-    tmp << "MEASURE\ti" << future_count << "\t" << qubit_list_str(qubits);
+    std::string tmp{"MEASURE\ti"};
+    tmp += std::to_string(future_count) + "\t" + qubit_list_str(qubits);
 
-    add_inst(tmp.str());
+    add_inst(tmp);
 
     auto result = std::make_shared<std::int64_t>(0);
     auto available = std::make_shared<bool>(false);
@@ -305,7 +298,7 @@ void process::adj_end() {
         adj_stack.top().push(tmp.front());
         tmp.pop();
     } else while (not tmp.empty()) {
-        kqasm << tmp.front();
+        kqasm += tmp.front();
         tmp.pop();
     }
 }
@@ -352,10 +345,9 @@ process::dump(const std::vector<size_t>& qubits) {
     
     dump_map[dump_count] = std::make_pair(states, available);
     
-    std::stringstream inst;
-
-    inst << "DUMP\t" << qubit_list_str(qubits);
-    add_inst(inst.str());
+    std::string inst{"DUMP\t"};
+    inst += qubit_list_str(qubits);
+    add_inst(inst);
 
     return std::make_tuple(dump_count++, states, available);
 }

@@ -15,12 +15,10 @@
  */
 
 #pragma once
-#include <any>
 #include <complex>
 #include <iostream> // std::cout needs to be initialized before ket::ket_init_new
 #include <map>
 #include <memory>
-#include <sstream>
 #include <stack>
 #include <unordered_map>
 #include <unordered_set>
@@ -245,7 +243,7 @@ namespace ket {
         std::stack<std::stack<std::string>> adj_stack; 
         std::vector<std::vector<size_t>> ctrl_stack;  
 
-        std::stringstream kqasm;
+        std::string kqasm;
 
         /* Metrics */
         size_t used_qubits;
