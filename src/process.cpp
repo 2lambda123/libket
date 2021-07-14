@@ -18,7 +18,7 @@
 #include <limits>
 #include <cmath>
 #include <queue>
-#include <boost/format.hpp>
+#include <stdarg.h>
 
 using namespace ket;
 
@@ -73,7 +73,9 @@ void process::add_label(const std::string& label) {
 
 inline std::string gate_arg_to_str(const std::string& gate, double args) {
     std::string tmp{gate};
-    tmp += "(" + (boost::format("%1.20f") % args).str() + ")";
+    const auto n = std::numeric_limits<double>::max_exponent10+20;
+    auto a = __gnu_cxx::__to_xstring<std::string>(&std::vsnprintf, n, "%.19f", args);
+    tmp += "(" + a + ")";
     return tmp;    
 }
 
