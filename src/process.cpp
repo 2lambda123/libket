@@ -71,11 +71,19 @@ void process::add_label(const std::string& label) {
     n_blocks += 1;
 }
 
+inline std::string dtos(const char* format, ...) {
+    va_list args;
+    va_start(args, format);
+    const auto n = std::numeric_limits<double>::max_exponent10+22;
+    char buffer[n];
+    auto len = std::vsnprintf(buffer, n, format, args);
+    std::string ret{buffer, buffer+len};
+    return ret;
+}
+
 inline std::string gate_arg_to_str(const std::string& gate, double args) {
     std::string tmp{gate};
-    const auto n = std::numeric_limits<double>::max_exponent10+20;
-    auto a = __gnu_cxx::__to_xstring<std::string>(&std::vsnprintf, n, "%.19f", args);
-    tmp += "(" + a + ")";
+    tmp += "(" + dtos("%.20f", args) + ")";
     return tmp;    
 }
 
