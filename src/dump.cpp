@@ -25,6 +25,9 @@ dump::dump(const quant& q) :
     nbits{q.len()},
     process_on_top{process_on_top_stack.top()}
 {
+    if (not *(q.process_on_top))
+        throw std::runtime_error("process out of scope");
+
     auto [id, states, available] = process_stack.top()->dump(q.qubits);
     
     this->id = id;
