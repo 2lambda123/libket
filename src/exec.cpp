@@ -95,13 +95,14 @@ void process::exec() {
 
         std::string body{};
 
-        body += "kqasm="        + kqasm_file
-             +  "&n_blocks="    + std::to_string(n_blocks)
-             +  "&n_qubits="    + std::to_string(used_qubits)
-             +  "&has_plugins=" + std::to_string((plugins_sum == 0? 0 : 1))
-             +  "&has_free="    + std::to_string((free_qubits == 0? 0 : 1))
-             +  "&has_dump="    + std::to_string((n_dumps == 0? 0 : 1))
-             +  "&has_set="     + std::to_string((n_set_inst == 0? 0 : 1));
+        body += "kqasm="             + kqasm_file
+             +  "&n_blocks="         + std::to_string(n_blocks)
+             +  "&n_qubits="         + std::to_string(used_qubits)
+             +  "&max_alloc_qubits=" + std::to_string(max_allocated_qubits)
+             +  "&has_plugins="      + std::to_string((plugins_sum == 0? 0 : 1))
+             +  "&has_free="         + std::to_string((free_qubits == 0? 0 : 1))
+             +  "&has_dump="         + std::to_string((n_dumps == 0? 0 : 1))
+             +  "&has_set="          + std::to_string((n_set_inst == 0? 0 : 1));
 
         req.body() = body;
         req.prepare_payload();
