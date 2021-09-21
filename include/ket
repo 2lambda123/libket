@@ -16,7 +16,6 @@
 
 #pragma once
 #include <complex>
-#include <iostream> // std::cout needs to be initialized before ket::ket_init_new
 #include <map>
 #include <memory>
 #include <stack>
@@ -272,21 +271,20 @@ namespace ket {
         std::string result;  
     };
 
-    inline std::stack<std::shared_ptr<process>> process_stack;
-    inline std::stack<std::shared_ptr<bool>> process_on_top_stack; 
+    inline std::stack<std::shared_ptr<process>> process_stack{{std::make_shared<process>()}};
+    inline std::stack<std::shared_ptr<bool>> process_on_top_stack{{std::make_shared<bool>(true)}}; 
 
-    inline std::string kbw_addr;
-    inline std::string kbw_port;
-    inline bool execute_kqasm;
-    inline bool dump_to_fs;
-    inline bool send_seed;
+    inline std::string kbw_addr{"127.0.0.1"};
+    inline std::string kbw_port{"4242"};
+    inline bool execute_kqasm{true};
+    inline bool dump_to_fs{false};
+    inline bool send_seed{false};
     
-    inline std::string api_args;
+    inline std::string api_args{""};
     inline std::unordered_map<std::string, std::string> api_args_map;
 
-    inline std::string kqasm_path;
-    inline bool output_kqasm;
-    extern "C" void ket_init_new(int argc, char* argv[]) __attribute__((constructor));
+    inline std::string kqasm_path{""};
+    inline bool output_kqasm{false};
     #endif
 
     void config(std::string param, std::string value);
