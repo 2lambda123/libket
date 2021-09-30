@@ -276,6 +276,9 @@ namespace ket {
 
     inline std::string kbw_addr{"127.0.0.1"};
     inline std::string kbw_port{"4242"};
+    inline std::string ssh_user;
+    inline int ssh_port{22};
+    inline bool use_ssh{false};
     inline bool execute_kqasm{true};
     inline bool dump_to_fs{false};
     inline bool send_seed{false};

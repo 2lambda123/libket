@@ -28,14 +28,19 @@
 #include <boost/beast/core.hpp>
 #include <boost/beast/http.hpp>
 #include <boost/beast/version.hpp>
+#include <boost/container/map.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/serialization/complex.hpp>
 #include <boost/serialization/map.hpp>
 #include <boost/serialization/vector.hpp>
-#include <boost/container/map.hpp>
 #include <cmath>
 #include <fstream>
+#include <libssh/libsshpp.hpp>
+#include <poll.h>
+#include <sys/socket.h>
+#include <thread>
+#include <unistd.h>
 
 using namespace ket;
 using tcp = boost::asio::ip::tcp;    
@@ -62,6 +67,88 @@ inline std::string urlencode(std::string str) {
     return str;
 }
 
+void begin_session(ssh::Session& session, const char* user, const char* host, int ssh_port) {
+    session.setOption(SSH_OPTIONS_HOST, host);
+    session.setOption(SSH_OPTIONS_USER, user);
+    session.setOption(SSH_OPTIONS_PORT, ssh_port);
+
+    session.connect();
+    session.userauthPublickeyAuto();
+}
+
+auto create_server_socket() {
+    auto server = socket(AF_INET, SOCK_STREAM, 0);
+    if (server == -1) {
+        throw std::runtime_error("Cannot create server socket");
+    }
+
+    sockaddr_in addr{
+        .sin_family = AF_INET,
+        .sin_port = 0,
+        .sin_addr{INADDR_ANY}
+    };
+
+    socklen_t sizeof_addr = sizeof(addr);
+    
+    if (int opt = 1; setsockopt(server, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt)))
+        throw std::runtime_error("Error setting server socket options");
+    
+    if (bind(server, reinterpret_cast<sockaddr*>(&addr), sizeof_addr) == -1) 
+        throw std::runtime_error("Cannot bind server socket");
+
+    if (getsockname(server, reinterpret_cast<sockaddr*>(&addr), &sizeof_addr) == -1) 
+        throw std::runtime_error("Cannot get socket port");
+
+    if (listen(server, 1) == -1) 
+        throw std::runtime_error("Error listen server socket");
+
+    return std::make_pair(server, addr);
+}
+
+void start_listen(ssh::Channel* channel, int server, sockaddr_in addr, const char* host, int host_port) {
+    channel->openForward(host, host_port, "127.0.0.1", ntohs(addr.sin_port));
+
+    pollfd fd{
+        .fd = server,
+        .events = POLLIN,
+    };
+    while (poll(&fd, 1, 1000) == 0) if (not channel->isOpen() or channel->isEof()) return;
+    
+    socklen_t sizeof_addr = sizeof(addr);
+    auto connection = accept(server, reinterpret_cast<sockaddr*>(&addr), &sizeof_addr);
+    if (connection == -1) {
+        throw std::runtime_error("Connection error on server socket");
+    }
+
+    char buffer[4096];
+    int read_size, send_size;
+
+    while (channel->isOpen() and not channel->isEof()) {
+        read_size = recv(connection, buffer, sizeof(buffer), MSG_DONTWAIT);
+        if (read_size > 0) {
+            send_size = 0;
+            while (send_size < read_size) {
+                send_size += channel->write(buffer+send_size, read_size-send_size);
+            }
+        } else if (read_size == -1 and not (errno == EAGAIN or errno == EWOULDBLOCK)) {
+            throw std::runtime_error("Cannot read from local socket");
+        }
+
+        read_size = channel->readNonblocking(buffer, sizeof(buffer), false);
+        send_size = 0;
+        while (send_size < read_size) {
+            auto send_size_ = send(connection, buffer+send_size, read_size-send_size, 0);
+            if (send_size_ == -1) {
+                throw std::runtime_error("Cannot send from local socket");
+            } 
+            send_size += send_size_;
+        }        
+    }
+
+    close(connection);
+    close(server);  
+}
+
 void process::exec() {
     if (output_kqasm) {
         std::ofstream out{kqasm_path, std::ofstream::app};
@@ -72,14 +159,28 @@ void process::exec() {
     }
 
     if (execute_kqasm) {
-        
+        auto use_kbw_port = kbw_port;
+        auto use_kbw_addr = kbw_addr;
+        ssh::Session session;
+        ssh::Channel* channel;
+        std::thread server_thd;
+
+        if (use_ssh) {
+            begin_session(session, ssh_user.c_str(), use_kbw_addr.c_str(), ssh_port);
+            use_kbw_addr = "127.0.0.1";
+            auto [socket, addr] = create_server_socket();
+            use_kbw_port = std::to_string(ntohs(addr.sin_port));
+            channel = new ssh::Channel{session};
+            server_thd = std::thread{start_listen, channel, socket, addr, kbw_addr.c_str(), std::atoi(kbw_port.c_str())};    
+        }
+
         auto kqasm_file = urlencode(kqasm);
 
         boost::asio::io_context ioc;
         tcp::resolver resolver{ioc};
         tcp::socket socket{ioc};
 
-        auto const results = resolver.resolve(kbw_addr, kbw_port);
+        auto const results = resolver.resolve(use_kbw_addr, use_kbw_port);
         boost::asio::connect(socket, results.begin(), results.end());
 
         std::string param{"/api/v1/run?"};
@@ -89,7 +190,7 @@ void process::exec() {
         for (auto arg : api_args_map) param += "&" + arg.first + "=" + urlencode(arg.second);
 
         http::request<http::string_body> req{http::verb::get, param, 11};
-        req.set(http::field::host, kbw_addr);
+        req.set(http::field::host, use_kbw_addr);
         req.set(http::field::user_agent, BOOST_BEAST_VERSION_STRING);
         req.set(http::field::content_type, "application/x-www-form-urlencoded");
 
@@ -165,7 +266,14 @@ void process::exec() {
             *(dump_map[i].second) = true;
         
         } 
+        
+        if (use_ssh) {
+            channel->sendEof();
+            channel->close();
 
+            server_thd.join();
+            delete channel;
+        }
     } else for (auto &i : measure_map) {
         *(i.second.first) =  0;
         *(i.second.second) = true;

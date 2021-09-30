@@ -37,8 +37,15 @@ void ket::config(std::string param, std::string value) {
     } else if (param == "kqasm") {
         kqasm_path = value;
         output_kqasm = true;
-    } else if (param == "api-args") {
+    } else if (param == "api_args") {
         api_args = value;
+    } else if (param == "user") {
+        ssh_user = value;
+        use_ssh = true;
+    } else if (param == "use_ssh") {
+        use_ssh = boost::lexical_cast<bool>(value);
+    } else if (param == "ssh_port") {
+        ssh_port = std::atoi(value.c_str());
     } else {
         api_args_map[param] = value;
     }

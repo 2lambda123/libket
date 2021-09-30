@@ -34,7 +34,7 @@ set_target_properties(ket PROPERTIES
                       PUBLIC_HEADER "include/ket"
                       CXX_STANDARD 17)
 
-target_link_libraries(ket CONAN_PKG::boost Threads::Threads gmp)
+target_link_libraries(ket CONAN_PKG::boost Threads::Threads gmp ssh)
 
 install(TARGETS ket) 
     
