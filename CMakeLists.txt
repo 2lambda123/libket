@@ -9,32 +9,32 @@ endif()
 add_compile_options(-Wall -Wextra -pedantic)
 
 if(NOT EXISTS "${CMAKE_BINARY_DIR}/conan.cmake")
-    message(STATUS "Downloading conan.cmake from https://github.com/conan-io/cmake-conan")
-    file(DOWNLOAD "https://github.com/conan-io/cmake-conan/raw/v0.15/conan.cmake"
-                  "${CMAKE_BINARY_DIR}/conan.cmake")
+  message(STATUS "Downloading conan.cmake from https://github.com/conan-io/cmake-conan")
+  file(DOWNLOAD "https://raw.githubusercontent.com/conan-io/cmake-conan/v0.16.1/conan.cmake"
+                "${CMAKE_BINARY_DIR}/conan.cmake"
+                EXPECTED_HASH SHA256=396e16d0f5eabdc6a14afddbcfff62a54a7ee75c6da23f32f7a31bc85db23484
+                TLS_VERIFY ON)
 endif()
 
 include(${CMAKE_BINARY_DIR}/conan.cmake)
 
 if (NOT TARGET CONAN_PKG::boost)
     conan_cmake_run(REQUIRES boost/1.71.0
+                    gmp/6.2.1
                     BASIC_SETUP CMAKE_TARGETS
                     BUILD missing)
 endif()
 
-set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake;${CMAKE_MODULE_PATH}")
-
 find_package(Threads REQUIRED)
-find_package(GMP REQUIRED)
 
 file(GLOB_RECURSE SOURCES src/*.cpp)
 
 add_library(ket SHARED ${SOURCES})
 set_target_properties(ket PROPERTIES 
                       PUBLIC_HEADER "include/ket"
-                      CXX_STANDARD 17)
+                      CXX_STANDARD 20)
 
-target_link_libraries(ket CONAN_PKG::boost Threads::Threads gmp ssh)
+target_link_libraries(ket CONAN_PKG::boost Threads::Threads CONAN_PKG::gmp ssh)
 
 install(TARGETS ket) 
     

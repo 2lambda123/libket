@@ -73,14 +73,13 @@ void begin_session(ssh::Session& session, const char* user, const char* host, in
     session.setOption(SSH_OPTIONS_PORT, ssh_port);
 
     session.connect();
-    session.userauthPublickeyAuto();
+    if(session.userauthPublickeyAuto() != SSH_AUTH_SUCCESS)
+        throw std::runtime_error(std::string{"Libket could not establish SSH connection to "}+user+"@"+host+" on port "+std::to_string(ssh_port));
 }
 
 auto create_server_socket() {
     auto server = socket(AF_INET, SOCK_STREAM, 0);
-    if (server == -1) {
-        throw std::runtime_error("Cannot create server socket");
-    }
+    if (server == -1) throw std::runtime_error("Libket could not create socket for SSH forwarding");
 
     sockaddr_in addr{
         .sin_family = AF_INET,
@@ -91,22 +90,26 @@ auto create_server_socket() {
     socklen_t sizeof_addr = sizeof(addr);
     
     if (int opt = 1; setsockopt(server, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt)))
-        throw std::runtime_error("Error setting server socket options");
+        throw std::runtime_error("Libket: error setting SSH forwarding socket options");
     
     if (bind(server, reinterpret_cast<sockaddr*>(&addr), sizeof_addr) == -1) 
-        throw std::runtime_error("Cannot bind server socket");
+        throw std::runtime_error("Libket could not bind SSH forwarding socket");
 
     if (getsockname(server, reinterpret_cast<sockaddr*>(&addr), &sizeof_addr) == -1) 
-        throw std::runtime_error("Cannot get socket port");
+        throw std::runtime_error("Libket could not get SSH forwarding socket port");
 
     if (listen(server, 1) == -1) 
-        throw std::runtime_error("Error listen server socket");
+        throw std::runtime_error("Libket: error listen SSH forwarding socket");
 
     return std::make_pair(server, addr);
 }
 
-void start_listen(ssh::Channel* channel, int server, sockaddr_in addr, const char* host, int host_port) {
-    channel->openForward(host, host_port, "127.0.0.1", ntohs(addr.sin_port));
+void start_listen(ssh::Channel* channel, int server, sockaddr_in addr, int host_port) {
+    try {
+        channel->openForward("127.0.0.1", host_port, "127.0.0.1", ntohs(addr.sin_port));
+    } catch (ssh::SshException) {
+        throw std::runtime_error{"Libket could not open the SSH forwarding chanel "+std::to_string(ntohs(addr.sin_port))+":127.0.0.1:"+std::to_string(host_port)};
+    }
 
     pollfd fd{
         .fd = server,
@@ -117,7 +120,7 @@ void start_listen(ssh::Channel* channel, int server, sockaddr_in addr, const cha
     socklen_t sizeof_addr = sizeof(addr);
     auto connection = accept(server, reinterpret_cast<sockaddr*>(&addr), &sizeof_addr);
     if (connection == -1) {
-        throw std::runtime_error("Connection error on server socket");
+        throw std::runtime_error("Libket: connection error on SSH forwarding socket");
     }
 
     char buffer[4096];
@@ -131,7 +134,7 @@ void start_listen(ssh::Channel* channel, int server, sockaddr_in addr, const cha
                 send_size += channel->write(buffer+send_size, read_size-send_size);
             }
         } else if (read_size == -1 and not (errno == EAGAIN or errno == EWOULDBLOCK)) {
-            throw std::runtime_error("Cannot read from local socket");
+            throw std::runtime_error("Libket could not read from SSH forwarding socket");
         }
 
         read_size = channel->readNonblocking(buffer, sizeof(buffer), false);
@@ -139,7 +142,7 @@ void start_listen(ssh::Channel* channel, int server, sockaddr_in addr, const cha
         while (send_size < read_size) {
             auto send_size_ = send(connection, buffer+send_size, read_size-send_size, 0);
             if (send_size_ == -1) {
-                throw std::runtime_error("Cannot send from local socket");
+                throw std::runtime_error("Libket could not send from SSH forwarding socket");
             } 
             send_size += send_size_;
         }        
@@ -171,7 +174,7 @@ void process::exec() {
             auto [socket, addr] = create_server_socket();
             use_kbw_port = std::to_string(ntohs(addr.sin_port));
             channel = new ssh::Channel{session};
-            server_thd = std::thread{start_listen, channel, socket, addr, kbw_addr.c_str(), std::atoi(kbw_port.c_str())};    
+            server_thd = std::thread{start_listen, channel, socket, addr, std::atoi(kbw_port.c_str())};    
         }
 
         auto kqasm_file = urlencode(kqasm);
@@ -180,8 +183,12 @@ void process::exec() {
         tcp::resolver resolver{ioc};
         tcp::socket socket{ioc};
 
-        auto const results = resolver.resolve(use_kbw_addr, use_kbw_port);
-        boost::asio::connect(socket, results.begin(), results.end());
+        try {
+            auto const results = resolver.resolve(use_kbw_addr, use_kbw_port);
+            boost::asio::connect(socket, results.begin(), results.end());
+        } catch (const boost::system::system_error&) {
+            throw std::runtime_error{"Libket could not connect to "+use_kbw_addr+":"+use_kbw_port};
+        }
 
         std::string param{"/api/v1/run?"};
         if (dump_to_fs) param += "&dump2fs=1";
@@ -214,8 +221,11 @@ void process::exec() {
         http::response_parser<http::dynamic_body> res;
         res.body_limit(std::numeric_limits<std::uint64_t>::max());
         
-
-        http::read(socket, buffer, res);
+        try {
+            http::read(socket, buffer, res);
+        } catch (const boost::system::system_error&) {
+            throw std::runtime_error{"Libket: the server closed during the execution"};
+        }
 
         boost::system::error_code ec;
         socket.shutdown(tcp::socket::shutdown_both, ec);
@@ -229,6 +239,10 @@ void process::exec() {
 
         boost::property_tree::ptree pt;
         boost::property_tree::read_json(json_file, pt);
+
+        if (pt.count("error")) {
+            throw std::runtime_error("Liket: the execution server returned with the error: \""+pt.get<std::string>("error")+"\"");
+        } 
 
         for (auto result : pt.get_child("int")) {
             auto i = std::stol(result.first);
