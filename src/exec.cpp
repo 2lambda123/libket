@@ -35,6 +35,7 @@
 #include <boost/serialization/map.hpp>
 #include <boost/serialization/vector.hpp>
 #include <cmath>
+#include <exception>
 #include <fstream>
 #include <libssh/libsshpp.hpp>
 #include <poll.h>
@@ -161,24 +162,8 @@ void process::exec() {
         out.close();
     }
 
-    if (execute_kqasm) {
-        auto use_kbw_port = kbw_port;
-        auto use_kbw_addr = kbw_addr;
-        ssh::Session session;
-        ssh::Channel* channel;
-        std::thread server_thd;
-
-        if (use_ssh) {
-            begin_session(session, ssh_user.c_str(), use_kbw_addr.c_str(), ssh_port);
-            use_kbw_addr = "127.0.0.1";
-            auto [socket, addr] = create_server_socket();
-            use_kbw_port = std::to_string(ntohs(addr.sin_port));
-            channel = new ssh::Channel{session};
-            server_thd = std::thread{start_listen, channel, socket, addr, std::atoi(kbw_port.c_str())};    
-        }
-
+    auto execute = [&](std::string use_kbw_addr, std::string use_kbw_port) {
         auto kqasm_file = urlencode(kqasm);
-
         boost::asio::io_context ioc;
         tcp::resolver resolver{ioc};
         tcp::socket socket{ioc};
@@ -280,13 +265,32 @@ void process::exec() {
             *(dump_map[i].second) = true;
         
         } 
-        
+    };
+
+    if (execute_kqasm) {
         if (use_ssh) {
+            ssh::Session session;
+            std::unique_ptr<ssh::Channel> channel;
+            std::thread server_thd;
+
+            begin_session(session, ssh_user.c_str(), kbw_addr.c_str(), ssh_port);
+            auto [socket, addr] = create_server_socket();
+            channel = std::make_unique<ssh::Channel>(session);
+            server_thd = std::thread{start_listen, channel.get(), socket, addr, std::atoi(kbw_port.c_str())};    
+
+            std::exception_ptr eptr;
+            try {
+                execute("127.0.0.1", std::to_string(ntohs(addr.sin_port)));
+            } catch (...) {
+                eptr = std::current_exception();
+            }
             channel->sendEof();
             channel->close();
-
             server_thd.join();
-            delete channel;
+
+            if (eptr) std::rethrow_exception(eptr);            
+        } else {
+            execute(kbw_addr, kbw_port);
         }
     } else for (auto &i : measure_map) {
         *(i.second.first) =  0;
