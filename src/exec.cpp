@@ -301,7 +301,12 @@ void process::exec() {
 }
 
 void ket::exec_quantum() {
-    process_stack.top()->exec();
+    std::exception_ptr eptr;
+    try {
+        process_stack.top()->exec();
+    } catch (...) {
+        eptr = std::current_exception();
+    }
 
     process_stack.pop();
 
@@ -310,4 +315,6 @@ void ket::exec_quantum() {
 
     process_stack.push(std::make_shared<process>());
     process_on_top_stack.push(std::make_shared<bool>(true));
+
+    if (eptr) std::rethrow_exception(eptr);
 }
