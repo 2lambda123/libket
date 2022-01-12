@@ -1,12 +1,7 @@
 cmake_minimum_required(VERSION 3.15)
-
 project(libket)
 
-if(NOT CMAKE_BUILD_TYPE) 
-    set(CMAKE_BUILD_TYPE Debug)
-endif()
-
-add_compile_options(-Wall -Wextra -pedantic)
+include_directories(${CMAKE_SOURCE_DIR})
 
 if(NOT EXISTS "${CMAKE_BINARY_DIR}/conan.cmake")
   message(STATUS "Downloading conan.cmake from https://github.com/conan-io/cmake-conan")
@@ -18,24 +13,33 @@ endif()
 
 include(${CMAKE_BINARY_DIR}/conan.cmake)
 
-if (NOT TARGET CONAN_PKG::boost)
-    conan_cmake_run(REQUIRES boost/1.71.0
-                    gmp/6.2.1
-                    BASIC_SETUP CMAKE_TARGETS
-                    BUILD missing)
-endif()
+conan_cmake_run(
+  REQUIRES 
+  boost/1.77.0
+  BASIC_SETUP 
+  CMAKE_TARGETS
+  BUILD missing
+)
+
+include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+conan_basic_setup()
+
+set(Boost_INSTALL_DIR ${CONAN_BOOST_ROOT})
+set(Boost_USE_STATIC_LIBS ON)
+
+find_package(Boost
+  1.77.0 EXACT
+  REQUIRED
+  COMPONENTS
+  serialization
+  filesystem
+  python
+)     
 
 find_package(Threads REQUIRED)
 
-file(GLOB_RECURSE SOURCES src/*.cpp)
-
-add_library(ket SHARED ${SOURCES})
-set_target_properties(ket PROPERTIES 
-                      PUBLIC_HEADER "include/ket"
-                      CXX_STANDARD 20)
-
-target_link_libraries(ket CONAN_PKG::boost Threads::Threads CONAN_PKG::gmp ssh)
-
-install(TARGETS ket) 
-    
-add_subdirectory(examples)
+include(cmake/libket.cmake)
+include(cmake/python.cmake)
+include(cmake/executor.cmake)
+include(cmake/kbw.cmake)
+include(cmake/examples.cmake)

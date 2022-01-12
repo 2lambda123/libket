@@ -1,6 +1,2 @@
-.vscode
-**.old
-**build
-**html
-**latex
-**xml
+build/.ninja_deps
+build
