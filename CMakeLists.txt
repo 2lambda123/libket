@@ -33,13 +33,11 @@ find_package(Boost
   COMPONENTS
   serialization
   filesystem
-  python
 )     
 
 find_package(Threads REQUIRED)
 
 include(cmake/libket.cmake)
-include(cmake/python.cmake)
 include(cmake/executor.cmake)
 include(cmake/kbw.cmake)
 include(cmake/examples.cmake)

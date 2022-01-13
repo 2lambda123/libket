@@ -32,3 +32,26 @@ target_compile_options(
     libket
     PRIVATE -Wall -Wextra -Wpedantic -Werror -Wno-abi
 )
+
+add_library(
+    libketc
+    SHARED
+    src/libket/c_wrapper.cpp
+)
+
+set_target_properties(
+    libketc
+    PROPERTIES 
+    PREFIX ""
+)
+
+target_link_libraries(
+    libketc
+    PUBLIC
+    libket
+)
+
+target_compile_options(
+    libketc
+    PRIVATE -Wall -Wextra -Wpedantic -Werror -Wno-abi
+)
