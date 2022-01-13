@@ -23,7 +23,6 @@ namespace ket::libket {
     };
 
     using qubit_list_t = std::vector<qubit_t>;
-    using future_list_t = std::vector<future_t>;
     using quantum_code::features_t;
 
     class process_t {
@@ -58,7 +57,7 @@ namespace ket::libket {
         void run();
 
         index_t process_id() const;
-        future_t int_op(int_op_t, future_list_t);
+        future_t int_op(int_op_t, future_t, future_t);
 
     private:
         void int_set(future_t dest, future_t src);

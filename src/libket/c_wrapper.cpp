@@ -2,9 +2,10 @@
  * Licensed under the Apache License, Version 2.0;
  * Copyright 2022 Evandro Chagas Ribeiro da Rosa
  */
-#include <ket/libket/process.hpp>
-#include <ket/libket.h>
 #include <boost/exception/diagnostic_information.hpp> 
+#include <ket/libket.h>
+#include <ket/libket/future_op.hpp>
+#include <ket/libket/process.hpp>
 #include <stdarg.h>
 
 using namespace ket::libket;
@@ -15,10 +16,10 @@ template<class F>
 int ket_error_wrapper(F func) {
     try {
         func();
-        return KER_SUCCESS;
+        return KET_SUCCESS;
     } catch (...)  {
         ket_error_str = boost::current_exception_diagnostic_information();
-        return KER_ERROR;
+        return KET_ERROR;
     }
 }
 
@@ -87,7 +88,7 @@ int ket_process_gate(ket_process_t process, ket_gate_t _gate, ket_qubit_t qubit,
         break;
     default:
         ket_error_str = "undefined quantum gate";
-        return KER_ERROR;
+        return KET_ERROR;
     }
     return ket_error_wrapper([&](){
         ((process_t*)process)->gate(gate, *((qubit_t*)qubit), param);
@@ -105,6 +106,23 @@ int ket_process_measure(ket_process_t process, ket_future_t future, int num, ...
     });
 }
 
+int ket_process_new_int(ket_process_t process, ket_future_t future, long value) {
+    return ket_error_wrapper([&](){
+        *((future_t*)future) = ((process_t*)process)->new_int(value);
+    });
+}
+
+int ket_process_plugin(ket_process_t process, char* name, char* args, int num, ...) {
+    unpack_args(ket_qubit_t, qubits); 
+    return ket_error_wrapper([&](){
+        qubit_list_t qubit_list;
+        for (int i = 0; i < num; i++) {
+            qubit_list.push_back(*((qubit_t*)qubits[i]));
+        }
+        ((process_t*)process)->plugin(name, qubit_list, args);
+    });
+}
+
 int ket_process_ctrl_push(ket_process_t process, int num, ...) {
     unpack_args(ket_qubit_t, qubits); 
     return ket_error_wrapper([&](){
@@ -119,6 +137,60 @@ int ket_process_ctrl_push(ket_process_t process, int num, ...) {
 int ket_process_ctrl_pop(ket_process_t process) {
     return ket_error_wrapper([&](){
         ((process_t*)process)->ctrl_pop();
+    }); 
+}
+
+int ket_process_adj_begin(ket_process_t process) {
+    return ket_error_wrapper([&](){
+        ((process_t*)process)->adj_begin();
+    }); 
+}
+
+int ket_process_adj_end(ket_process_t process) {
+    return ket_error_wrapper([&](){
+        ((process_t*)process)->adj_end();
+    });
+}
+
+int ket_process_get_label(ket_process_t process, ket_label_t label) {
+    return ket_error_wrapper([&](){
+        *((label_t*)label) = ((process_t*)process)->get_label();
+    });
+}
+
+int ket_process_open_block(ket_process_t process, ket_label_t label) {
+    return ket_error_wrapper([&](){
+        ((process_t*)process)->open_block(*((label_t*)label));
+    });
+}
+
+int ket_process_jump(ket_process_t process, ket_label_t label) {
+    return ket_error_wrapper([&](){
+        ((process_t*)process)->jump(*((label_t*)label));
+    });
+}
+
+int ket_process_breach(ket_process_t process, ket_future_t future, ket_label_t then, ket_label_t otherwise) {
+    return ket_error_wrapper([&](){
+        ((process_t*)process)->breach(*((future_t*)future), *((label_t*)then), *((label_t*)otherwise));
+    });
+}
+
+int ket_process_run(ket_process_t process) {
+    return ket_error_wrapper([&](){
+        ((process_t*)process)->run();
+    });
+}
+
+int ket_process_exec_time(ket_process_t process, double* exec_time) {
+    return ket_error_wrapper([&](){
+        *exec_time = ((process_t*)process)->exec_time();
+    }); 
+}
+
+int ket_process_id(ket_process_t process, unsigned* pid) {
+    return ket_error_wrapper([&](){
+        *pid = ((process_t*)process)->process_id();
     }); 
 }
 
@@ -142,6 +214,30 @@ int ket_qubit_new(ket_qubit_t* qubit) {
 int ket_qubit_delete(ket_qubit_t qubit) {
     return ket_error_wrapper([&](){
         delete (qubit_t*) qubit;
+    }); 
+}
+
+int ket_qubit_index(ket_qubit_t qubit, unsigned* index) {
+    return ket_error_wrapper([&](){
+        *index = ((qubit_t*)qubit)->index();
+    }); 
+}
+
+int ket_qubit_measured(ket_qubit_t qubit, _Bool* measured) {
+    return ket_error_wrapper([&](){
+        *measured = ((qubit_t*)qubit)->measured();
+    }); 
+}
+
+int ket_qubit_allocated(ket_qubit_t qubit, _Bool* allocated) {
+    return ket_error_wrapper([&](){
+        *allocated = ((qubit_t*)qubit)->allocated();
+    }); 
+}
+
+int ket_qubit_process_id(ket_qubit_t qubit, unsigned* pid) {
+    return ket_error_wrapper([&](){
+        *pid = ((qubit_t*)qubit)->process_id();
     }); 
 }
 
@@ -169,6 +265,77 @@ int ket_future_set(ket_future_t future, ket_future_t value) {
     }); 
 }
 
+int ket_future_available(ket_future_t future, _Bool* available) {
+    return ket_error_wrapper([&](){
+        *available = ((future_t*)future)->available();
+    });
+}
+
+int ket_future_index(ket_future_t future, unsigned* index) {
+    return ket_error_wrapper([&](){
+        *index = ((future_t*)future)->index();
+    });
+}
+
+int ket_future_process_id(ket_future_t future, unsigned* pid) {
+    return ket_error_wrapper([&](){
+        *pid = ((future_t*)future)->process_id();
+    });
+}
+
+int ket_future_op(ket_future_t result, ket_int_op_t int_op, ket_future_t left, ket_future_t right) {
+    return ket_error_wrapper([&](){
+        switch (int_op) {
+        case KET_INT_EQ:
+            *((future_t*)result) = *((future_t*)left) == *((future_t*)right);
+            break;
+        case KET_INT_NEQ:
+            *((future_t*)result) = *((future_t*)left) != *((future_t*)right);
+            break;
+        case KET_INT_GT:
+            *((future_t*)result) = *((future_t*)left) > *((future_t*)right);
+            break;
+        case KET_INT_GEQ:
+            *((future_t*)result) = *((future_t*)left) >= *((future_t*)right);
+            break;
+        case KET_INT_LT:
+            *((future_t*)result) = *((future_t*)left) < *((future_t*)right);
+            break;
+        case KET_INT_LEQ:
+            *((future_t*)result) = *((future_t*)left) <= *((future_t*)right);
+            break;
+        case KET_INT_ADD:
+            *((future_t*)result) = *((future_t*)left) + *((future_t*)right);
+            break;
+        case KET_INT_SUB:
+            *((future_t*)result) = *((future_t*)left) - *((future_t*)right);
+            break;
+        case KET_INT_MUL:
+            *((future_t*)result) = *((future_t*)left) * *((future_t*)right);
+            break;
+        case KET_INT_DIV:
+            *((future_t*)result) = *((future_t*)left) / *((future_t*)right);
+            break;
+        case KET_INT_SLL:
+            *((future_t*)result) = *((future_t*)left) << *((future_t*)right);
+            break;
+        case KET_INT_SRL:
+            *((future_t*)result) = *((future_t*)left) >> *((future_t*)right);
+            break;
+        case KET_INT_AND:
+            *((future_t*)result) = *((future_t*)left) & *((future_t*)right);
+            break;
+        case KET_INT_OR:
+            *((future_t*)result) = *((future_t*)left) | *((future_t*)right);
+            break;
+        case KET_INT_XOR:
+            *((future_t*)result) = *((future_t*)left) ^ *((future_t*)right);
+            break;
+        default:
+            throw std::runtime_error{"undefined int (future_t) operation"};
+        }
+    });
+}
 
 int ket_label_new(ket_label_t* label) {
     return ket_error_wrapper([&](){
@@ -180,6 +347,18 @@ int ket_label_delete(ket_label_t label) {
     return ket_error_wrapper([&](){
         delete (label_t*) label;
     }); 
+}
+
+int ket_label_index(ket_label_t label, unsigned* index) {
+    return ket_error_wrapper([&](){
+        *index = ((label_t*)label)->index();
+    });
+}
+
+int ket_label_process_id(ket_label_t label, unsigned* pid) {
+    return ket_error_wrapper([&](){
+        *pid = ((label_t*)label)->process_id();
+    });
 }
 
 int ket_dump_new(ket_dump_t* dump) {
@@ -206,6 +385,27 @@ int ket_dump_amplitides(ket_dump_t dump, ket_dump_amplitides_t* amplitides, size
         *amplitides =  (ket_dump_amplitides_t) &((dump_t*)dump)->amplitides();
         *size = ((dump_t*)dump)->amplitides().size();
     }); 
+}
+
+int ket_dump_available(ket_dump_t dump, _Bool* available) {
+    return ket_error_wrapper([&](){
+        *available =  ((dump_t*)dump)->available();        
+    }); 
+
+}
+
+int ket_dump_index(ket_dump_t dump, unsigned* index) {
+    return ket_error_wrapper([&](){
+        *index =  ((dump_t*)dump)->index();
+    }); 
+
+}
+
+int ket_dump_process_id(ket_dump_t dump, unsigned* pid) {
+    return ket_error_wrapper([&](){
+        *pid =  ((dump_t*)dump)->process_id();
+    }); 
+
 }
 
 int ket_dump_state_at(ket_dump_states_t states, ket_dump_state_t* state, size_t* size, unsigned long index) {

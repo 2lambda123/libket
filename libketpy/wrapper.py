@@ -25,8 +25,8 @@ class libket_error(Exception):
         self.message = message
         super().__init__(self.message)
 
-KER_SUCCESS    = 0
-KER_ERROR      = 1
+KET_SUCCESS    = 0
+KET_ERROR      = 1
 KET_PAULI_X    = 2 
 KET_PAULI_Y    = 3   
 KET_PAULI_Z    = 4
@@ -35,6 +35,21 @@ KET_ROTATION_Y = 6
 KET_ROTATION_Z = 7
 KET_HADAMARD   = 8
 KET_PHASE      = 9
+KET_INT_EQ     = 10
+KET_INT_NEQ    = 11
+KET_INT_GT     = 12
+KET_INT_GEQ    = 13
+KET_INT_LT     = 14
+KET_INT_LEQ    = 15
+KET_INT_ADD    = 16
+KET_INT_SUB    = 17
+KET_INT_MUL    = 18
+KET_INT_DIV    = 19
+KET_INT_SLL    = 20
+KET_INT_SRL    = 21
+KET_INT_AND    = 22
+KET_INT_OR     = 23
+KET_INT_XOR    = 24
 
 set_kbw_path()
 
@@ -44,7 +59,7 @@ ket_error_message.argtypes = []
 ket_error_message.restype = c_char_p
 
 def ket_error_warpper(error : c_int):
-    if error == KER_ERROR:
+    if error == KET_ERROR:
         raise libket_error(str(ket_error_message().decode()))
 
 class qubit_t:
@@ -53,6 +68,18 @@ class qubit_t:
 
     ket_qubit_delete = libketc.ket_qubit_delete
     ket_qubit_delete.argtypes = [c_void_p]
+
+    ket_qubit_index = libketc.ket_qubit_index
+    ket_qubit_index.argtypes = [c_void_p, POINTER(c_uint)]
+
+    ket_qubit_measured = libketc.ket_qubit_measured
+    ket_qubit_measured.argtypes = [c_void_p, POINTER(c_bool)]
+
+    ket_qubit_allocated = libketc.ket_qubit_allocated
+    ket_qubit_allocated.argtypes = [c_void_p, POINTER(c_bool)]
+
+    ket_qubit_process_id = libketc.ket_qubit_process_id
+    ket_qubit_process_id.argtypes = [c_void_p, POINTER(c_uint)]
 
     def __init__(self):
         self._as_parameter_ = c_void_p()
@@ -64,6 +91,38 @@ class qubit_t:
         ket_error_warpper(
             self.ket_qubit_delete(self)
         )
+
+    @property
+    def index(self):
+        c_value = c_uint()
+        ket_error_warpper(
+            self.ket_qubit_index(self, c_value)
+        )
+        return c_value.value
+
+    @property
+    def measured(self):
+        c_value = c_bool()
+        ket_error_warpper(
+            self.ket_qubit_measured(self, c_value)
+        )
+        return c_value.value
+
+    @property
+    def allocated(self):
+        c_value = c_bool()
+        ket_error_warpper(
+            self.ket_qubit_allocated(self, c_value)
+        )
+        return c_value.value
+
+    @property
+    def process_id(self):
+        c_value = c_uint()
+        ket_error_warpper(
+            self.ket_qubit_process_id(self, c_value)
+        )
+        return c_value.value
 
 class dump_t:
     ket_dump_new = libketc.ket_dump_new
@@ -86,6 +145,15 @@ class dump_t:
 
     ket_dump_amp = libketc.ket_dump_amp
     ket_dump_amp.argtypes = [c_void_p, POINTER(c_double), POINTER(c_double), c_ulong]
+
+    ket_dump_available = libketc.ket_dump_available
+    ket_dump_available.argtypes = [c_void_p, POINTER(c_bool)]
+
+    ket_dump_index = libketc.ket_dump_index
+    ket_dump_index.argtypes = [c_void_p, POINTER(c_uint)]
+
+    ket_dump_process_id = libketc.ket_dump_process_id
+    ket_dump_process_id.argtypes = [c_void_p, POINTER(c_uint)]
 
     def __init__(self):
         self._as_parameter_ = c_void_p()
@@ -135,6 +203,30 @@ class dump_t:
             
             yield amplitide if len(amplitide) != 1 else amplitide[0]
 
+    @property
+    def available(self):
+        c_value = c_bool()()
+        ket_error_warpper(
+            self.ket_dump_available(self, c_value)
+        )
+        return c_value.value
+
+    @property
+    def index(self):
+        c_value = c_uint()
+        ket_error_warpper(
+            self.ket_dump_index(self, c_value)
+        )
+        return c_value.value
+
+    @property
+    def process_id(self):
+        c_value = c_uint()
+        ket_error_warpper(
+            self.ket_dump_process_id(self, c_value)
+        )
+        return c_value.value
+
 class future_t:
     ket_future_new = libketc.ket_future_new
     ket_future_new.argtypes = [POINTER(c_void_p)]
@@ -147,6 +239,18 @@ class future_t:
 
     ket_future_set = libketc.ket_future_set
     ket_future_set = [c_void_p, c_void_p]
+
+    ket_future_available = libketc.ket_future_available
+    ket_future_available.argtypes = [c_void_p, POINTER(c_bool)]
+
+    ket_future_index = libketc.ket_future_index
+    ket_future_index.argtypes = [c_void_p, POINTER(c_uint)]
+
+    ket_future_process_id = libketc.ket_future_process_id
+    ket_future_process_id.argtypes = [c_void_p, POINTER(c_uint)]
+
+    ket_future_op = libketc.ket_future_op
+    ket_future_op.argtypes = [c_void_p, c_int, c_void_p, c_void_p]
 
     def __init__(self):
         self._as_parameter_ = c_void_p()
@@ -175,6 +279,31 @@ class future_t:
             )
         else:
             super().__setattr__(name, value)
+
+    @property
+    def available(self):
+        c_value = c_bool()()
+        ket_error_warpper(
+            self.ket_future_available(self, c_value)
+        )
+        return c_value.value
+
+    @property
+    def index(self):
+        c_value = c_uint()
+        ket_error_warpper(
+            self.ket_future_index(self, c_value)
+        )
+        return c_value.value
+
+    @property
+    def process_id(self):
+        c_value = c_uint()
+        ket_error_warpper(
+            self.ket_future_process_id(self, c_value)
+        )
+        return c_value.value
+
 
 class process_t:
     ket_process_new = libketc.ket_process_new
@@ -248,11 +377,11 @@ class process_t:
         )
         return dump_
 
-
 if __name__ == '__main__':
     ps = process_t(12)
+    p1 = process_t(2)
     q0 = ps.alloc()   
-    q1 = ps.alloc()
+    q1 = p1.alloc()
     ps.gate(KET_HADAMARD, q0)
     ps.ctrl_push(q0)
     ps.gate(KET_PAULI_X, q1)

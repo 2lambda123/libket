@@ -394,19 +394,24 @@ dump_t process_t::dump(qubit_list_t qubit_list) {
     return dump_map[dump_count++];
 }
 
-future_t process_t::int_op(int_op_t int_op, future_list_t future_list) {
-    check_not_adj_ctrl();
-    
-    for (auto &future : future_list) {
-        check_process_id(future);
+future_t process_t::int_op(int_op_t int_op, future_t left, future_t right) {
+    check_not_adj_ctrl();   
+    check_process_id(left);
+    check_process_id(right);
 
-        block_map[current_block].add_instruction(
-            quantum_code::intruction_t{
-                quantum_code::op_code_t::push_int,
-                future.index()
-            }
-        );
-    }
+    block_map[current_block].add_instruction(
+        quantum_code::intruction_t{
+            quantum_code::op_code_t::push_int,
+            left.index()
+        }
+    );
+
+    block_map[current_block].add_instruction(
+        quantum_code::intruction_t{
+            quantum_code::op_code_t::push_int,
+            right.index()
+        }
+    );
 
     add_feature(features_t::int_operations);
     switch (int_op) {
