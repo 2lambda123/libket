@@ -283,58 +283,85 @@ int ket_future_process_id(ket_future_t future, unsigned* pid) {
     });
 }
 
-int ket_future_op(ket_future_t result, ket_int_op_t int_op, ket_future_t left, ket_future_t right) {
+template< class L, class R, class c_L, class c_R>
+int ket_future_op(ket_future_t result, ket_int_op_t int_op, c_L left, c_R right) {
     return ket_error_wrapper([&](){
         switch (int_op) {
         case KET_INT_EQ:
-            *((future_t*)result) = *((future_t*)left) == *((future_t*)right);
+            *((future_t*)result) = *((L*)left) == *((R*)right);
             break;
         case KET_INT_NEQ:
-            *((future_t*)result) = *((future_t*)left) != *((future_t*)right);
+            *((future_t*)result) = *((L*)left) != *((R*)right);
             break;
         case KET_INT_GT:
-            *((future_t*)result) = *((future_t*)left) > *((future_t*)right);
+            *((future_t*)result) = *((L*)left) > *((R*)right);
             break;
         case KET_INT_GEQ:
-            *((future_t*)result) = *((future_t*)left) >= *((future_t*)right);
+            *((future_t*)result) = *((L*)left) >= *((R*)right);
             break;
         case KET_INT_LT:
-            *((future_t*)result) = *((future_t*)left) < *((future_t*)right);
+            *((future_t*)result) = *((L*)left) < *((R*)right);
             break;
         case KET_INT_LEQ:
-            *((future_t*)result) = *((future_t*)left) <= *((future_t*)right);
+            *((future_t*)result) = *((L*)left) <= *((R*)right);
             break;
         case KET_INT_ADD:
-            *((future_t*)result) = *((future_t*)left) + *((future_t*)right);
+            *((future_t*)result) = *((L*)left) + *((R*)right);
             break;
         case KET_INT_SUB:
-            *((future_t*)result) = *((future_t*)left) - *((future_t*)right);
+            *((future_t*)result) = *((L*)left) - *((R*)right);
             break;
         case KET_INT_MUL:
-            *((future_t*)result) = *((future_t*)left) * *((future_t*)right);
+            *((future_t*)result) = *((L*)left) * *((R*)right);
             break;
         case KET_INT_DIV:
-            *((future_t*)result) = *((future_t*)left) / *((future_t*)right);
+            *((future_t*)result) = *((L*)left) / *((R*)right);
             break;
         case KET_INT_SLL:
-            *((future_t*)result) = *((future_t*)left) << *((future_t*)right);
+            *((future_t*)result) = *((L*)left) << *((R*)right);
             break;
         case KET_INT_SRL:
-            *((future_t*)result) = *((future_t*)left) >> *((future_t*)right);
+            *((future_t*)result) = *((L*)left) >> *((R*)right);
             break;
         case KET_INT_AND:
-            *((future_t*)result) = *((future_t*)left) & *((future_t*)right);
+            *((future_t*)result) = *((L*)left) & *((R*)right);
             break;
         case KET_INT_OR:
-            *((future_t*)result) = *((future_t*)left) | *((future_t*)right);
+            *((future_t*)result) = *((L*)left) | *((R*)right);
             break;
         case KET_INT_XOR:
-            *((future_t*)result) = *((future_t*)left) ^ *((future_t*)right);
+            *((future_t*)result) = *((L*)left) ^ *((R*)right);
             break;
         default:
             throw std::runtime_error{"undefined int (future_t) operation"};
         }
     });
+}
+
+int ket_future_op(ket_future_t result, ket_int_op_t int_op, ket_int_op_tt_t tt, ...) {
+    ket_future_t fl, fr;
+    long *il, *ir;
+    va_list valist;
+    va_start(valist, tt);
+
+    switch (tt) {
+    case KET_INT_FF:
+        fl =  va_arg(valist, ket_future_t);
+        fr =  va_arg(valist, ket_future_t);
+        return ket_future_op<future_t, future_t>(result, int_op, fl, fr);
+        break;
+    case KET_INT_FI:
+        fl =  va_arg(valist, ket_future_t);
+        ir =  va_arg(valist, long*);
+        return ket_future_op<future_t, long>(result, int_op, fl, ir);
+    case KET_INT_IF:
+        il =  va_arg(valist, long*);
+        fr =  va_arg(valist, ket_future_t);
+        return ket_future_op<long, future_t>(result, int_op, il, fr);
+    default:
+        ket_error_str = "ket_future_op (libketc) invalid arguments";
+        return KET_ERROR;
+    }
 }
 
 int ket_label_new(ket_label_t* label) {

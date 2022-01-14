@@ -655,7 +655,34 @@ class process_t:
     ket_process_ctrl_pop = libketc.ket_process_ctrl_pop
     ket_process_ctrl_pop.argtypes = [c_void_p]
 
+    ket_process_adj_begin = libketc.ket_process_adj_begin
+    ket_process_adj_begin.argtypes = [c_void_p]
+
+    ket_process_adj_end = libketc.ket_process_adj_end
+    ket_process_adj_end.argtypes = [c_void_p]
+
+    ket_process_get_label = libketc.ket_process_get_label
+    ket_process_get_label.argtypes = [c_void_p, c_void_p]
+
+    ket_process_open_block = libketc.ket_process_open_block
+    ket_process_open_block.argtypes = [c_void_p, c_void_p]
+
+    ket_process_jump = libketc.ket_process_jump
+    ket_process_jump.argtypes = [c_void_p, c_void_p]
+
+    ket_process_breach = libketc.ket_process_breach
+    ket_process_breach.argtypes = [c_void_p, c_void_p, c_void_p]
+
     ket_process_dump = libketc.ket_process_dump
+
+    ket_process_run = libketc.ket_process_run
+    ket_process_run.argtypes = [c_void_p]
+
+    ket_process_exec_time = libketc.ket_process_exec_time
+    ket_process_exec_time.argtypes = [c_void_p, POINTER(c_double)]
+
+    ket_process_id = libketc.ket_process_id
+    ket_process_id.argtypes = [c_void_p, POINTER(c_uint)]
 
     def __init__(self, process_id : int):
         self._as_parameter_ = c_void_p()
@@ -698,6 +725,59 @@ class process_t:
         ket_error_warpper(
             self.ket_process_ctrl_pop(self)
         )
+
+    def adj_begin(self):
+        ket_error_warpper(
+            self.ket_process_adj_begin(self)
+        )
+
+    def adj_end(self):
+        ket_error_warpper(
+            self.ket_process_adj_end(self)
+        )
+
+    def get_label(self):
+        label = label_t()
+        ket_error_warpper(
+            self.ket_process_get_label(self, label)
+        )
+        return label
+
+    def open_block(self, label : label_t):
+        ket_error_warpper(
+            self.ket_process_open_block(self, label)
+        )
+
+    def jump(self, label : label_t):
+        ket_error_warpper(
+            self.ket_process_jump(self, label)
+        )
+
+    def breach(self, test : future_t, then : label_t, otherwise : label_t):
+        ket_error_warpper(
+            self.ket_process_breach(self, test, then, otherwise)
+        )
+
+    def run(self):
+        ket_error_warpper(
+            self.ket_process_run(self)
+        )
+
+    @property
+    def exec_time(self):
+        value = c_double()
+        ket_error_warpper(
+            self.ket_process_exec_time(self, value)
+        )
+        return value.value
+
+    @property
+    def id(self):
+        value = c_uint()
+        ket_error_warpper(
+            self.ket_process_id(self, value)
+        )
+        return value.value    
     
     def dump(self, *qubits):
         self.ket_process_dump.argtypes = [c_void_p, c_void_p, c_int] + [c_void_p for _ in range(len(qubits))]
@@ -707,17 +787,4 @@ class process_t:
         )
         return dump_
 
-if __name__ == '__main__':
-    ps = process_t(12)
-    p1 = process_t(2)
-    q0 = ps.alloc()   
-    q1 = p1.alloc()
-    ps.gate(KET_HADAMARD, q0)
-    ps.ctrl_push(q0)
-    ps.gate(KET_PAULI_X, q1)
-    ps.ctrl_pop()
-    d0 = ps.dump(q0, q1)
-    m0 = ps.measure(q0, q1)
-    print(m0.value)
-    print(list(zip(d0.states(), d0.amplitides())))
     
