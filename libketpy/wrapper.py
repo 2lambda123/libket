@@ -50,6 +50,9 @@ KET_INT_SRL    = 21
 KET_INT_AND    = 22
 KET_INT_OR     = 23
 KET_INT_XOR    = 24
+KET_INT_FF     = 25
+KET_INT_FI     = 26
+KET_INT_IF     = 27
 
 set_kbw_path()
 
@@ -250,7 +253,6 @@ class future_t:
     ket_future_process_id.argtypes = [c_void_p, POINTER(c_uint)]
 
     ket_future_op = libketc.ket_future_op
-    ket_future_op.argtypes = [c_void_p, c_int, c_void_p, c_void_p]
 
     def __init__(self):
         self._as_parameter_ = c_void_p()
@@ -304,6 +306,334 @@ class future_t:
         )
         return c_value.value
 
+    def __add__(self, other):
+        result = future_t()
+        if isinstance(other, future_t):
+            self.ket_future_op.argtypes = [c_void_p, c_int, c_int, c_void_p, c_void_p]
+            ket_error_warpper(
+                self.ket_future_op(result, KET_INT_ADD, KET_INT_FF, self, other)
+            )
+        else:
+            self.ket_future_op.argtypes = [c_void_p, c_int, c_int, c_void_p, c_long]
+            ket_error_warpper(
+                self.ket_future_op(result, KET_INT_ADD, KET_INT_FI, self, int(other))
+            )
+        return result
+
+    def __sub__(self, other):
+        result = future_t()
+        if isinstance(other, future_t):
+            self.ket_future_op.argtypes = [c_void_p, c_int, c_int, c_void_p, c_void_p]
+            ket_error_warpper(
+                self.ket_future_op(result, KET_INT_ADD, KET_INT_FF, self, other)
+            )
+        else:
+            self.ket_future_op.argtypes = [c_void_p, c_int, c_int, c_void_p, c_long]
+            ket_error_warpper(
+                self.ket_future_op(result, KET_INT_ADD, KET_INT_FI, self, int(other))
+            )
+        return result
+
+    def __mul__(self, other):
+        result = future_t()
+        if isinstance(other, future_t):
+            self.ket_future_op.argtypes = [c_void_p, c_int, c_int, c_void_p, c_void_p]
+            ket_error_warpper(
+                self.ket_future_op(result, KET_INT_MUL, KET_INT_FF, self, other)
+            )
+        else:
+            self.ket_future_op.argtypes = [c_void_p, c_int, c_int, c_void_p, c_long]
+            ket_error_warpper(
+                self.ket_future_op(result, KET_INT_MUL, KET_INT_FI, self, int(other))
+            )
+        return result
+
+    def __truediv__(self, other):
+        result = future_t()
+        if isinstance(other, future_t):
+            self.ket_future_op.argtypes = [c_void_p, c_int, c_int, c_void_p, c_void_p]
+            ket_error_warpper(
+                self.ket_future_op(result, KET_INT_DIV, KET_INT_FF, self, other)
+            )
+        else:
+            self.ket_future_op.argtypes = [c_void_p, c_int, c_int, c_void_p, c_long]
+            ket_error_warpper(
+                self.ket_future_op(result, KET_INT_DIV, KET_INT_FI, self, int(other))
+            )
+        return result
+
+    def __floordiv__(self, other):
+        return self.__truediv__(other)
+
+    def __lshift__(self, other):
+        result = future_t()
+        if isinstance(other, future_t):
+            self.ket_future_op.argtypes = [c_void_p, c_int, c_int, c_void_p, c_void_p]
+            ket_error_warpper(
+                self.ket_future_op(result, KET_INT_SLL, KET_INT_FF, self, other)
+            )
+        else:
+            self.ket_future_op.argtypes = [c_void_p, c_int, c_int, c_void_p, c_long]
+            ket_error_warpper(
+                self.ket_future_op(result, KET_INT_SLL, KET_INT_FI, self, int(other))
+            )
+        return result
+
+    def __rshift__(self, other):
+        result = future_t()
+        if isinstance(other, future_t):
+            self.ket_future_op.argtypes = [c_void_p, c_int, c_int, c_void_p, c_void_p]
+            ket_error_warpper(
+                self.ket_future_op(result, KET_INT_SRL, KET_INT_FF, self, other)
+            )
+        else:
+            self.ket_future_op.argtypes = [c_void_p, c_int, c_int, c_void_p, c_long]
+            ket_error_warpper(
+                self.ket_future_op(result, KET_INT_SRL, KET_INT_FI, self, int(other))
+            )
+        return result
+
+    def __and__(self, other):
+        result = future_t()
+        if isinstance(other, future_t):
+            self.ket_future_op.argtypes = [c_void_p, c_int, c_int, c_void_p, c_void_p]
+            ket_error_warpper(
+                self.ket_future_op(result, KET_INT_AND, KET_INT_FF, self, other)
+            )
+        else:
+            self.ket_future_op.argtypes = [c_void_p, c_int, c_int, c_void_p, c_long]
+            ket_error_warpper(
+                self.ket_future_op(result, KET_INT_AND, KET_INT_FI, self, int(other))
+            )
+        return result
+
+    def __xor__(self, other):
+        result = future_t()
+        if isinstance(other, future_t):
+            self.ket_future_op.argtypes = [c_void_p, c_int, c_int, c_void_p, c_void_p]
+            ket_error_warpper(
+                self.ket_future_op(result, KET_INT_XOR, KET_INT_FF, self, other)
+            )
+        else:
+            self.ket_future_op.argtypes = [c_void_p, c_int, c_int, c_void_p, c_long]
+            ket_error_warpper(
+                self.ket_future_op(result, KET_INT_XOR, KET_INT_FI, self, int(other))
+            )
+        return result
+
+    def __or__(self, other):
+        result = future_t()
+        if isinstance(other, future_t):
+            self.ket_future_op.argtypes = [c_void_p, c_int, c_int, c_void_p, c_void_p]
+            ket_error_warpper(
+                self.ket_future_op(result, KET_INT_OR, KET_INT_FF, self, other)
+            )
+        else:
+            self.ket_future_op.argtypes = [c_void_p, c_int, c_int, c_void_p, c_long]
+            ket_error_warpper(
+                self.ket_future_op(result, KET_INT_OR, KET_INT_FI, self, int(other))
+            )
+        return result
+
+    def __radd__(self, other):
+        self.ket_future_op.argtypes = [c_void_p, c_int, c_int, c_long, c_void_p]
+        result = future_t()
+        ket_error_warpper(
+            self.ket_future_op(result, KET_INT_ADD, KET_INT_IF, int(other), self)
+        )
+        return result
+
+    def __rsub__(self, other):
+        self.ket_future_op.argtypes = [c_void_p, c_int, c_int, c_long, c_void_p]
+        result = future_t()
+        ket_error_warpper(
+            self.ket_future_op(result, KET_INT_SUB, KET_INT_IF, int(other), self)
+        )
+        return result
+
+    def __rmul__(self, other):
+        self.ket_future_op.argtypes = [c_void_p, c_int, c_int, c_long, c_void_p]
+        result = future_t()
+        ket_error_warpper(
+            self.ket_future_op(result, KET_INT_MUL, KET_INT_IF, int(other), self)
+        )
+        return result
+
+    def __rtruediv__(self, other):
+        self.ket_future_op.argtypes = [c_void_p, c_int, c_int, c_long, c_void_p]
+        result = future_t()
+        ket_error_warpper(
+            self.ket_future_op(result, KET_INT_DIV, KET_INT_IF, int(other), self)
+        )
+        return result
+
+    def __rfloordiv__(self, other):
+        return self.__rtruediv__(other)
+
+    def __rlshift__(self, other):
+        self.ket_future_op.argtypes = [c_void_p, c_int, c_int, c_long, c_void_p]
+        result = future_t()
+        ket_error_warpper(
+            self.ket_future_op(result, KET_INT_SLL, KET_INT_IF, int(other), self)
+        )
+        return result
+
+    def __rrshift__(self, other):
+        self.ket_future_op.argtypes = [c_void_p, c_int, c_int, c_long, c_void_p]
+        result = future_t()
+        ket_error_warpper(
+            self.ket_future_op(result, KET_INT_SRL, KET_INT_IF, int(other), self)
+        )
+        return result
+
+    def __rand__(self, other):
+        self.ket_future_op.argtypes = [c_void_p, c_int, c_int, c_long, c_void_p]
+        result = future_t()
+        ket_error_warpper(
+            self.ket_future_op(result, KET_INT_AND, KET_INT_IF, int(other), self)
+        )
+        return result
+
+    def __rxor__(self, other):
+        self.ket_future_op.argtypes = [c_void_p, c_int, c_int, c_long, c_void_p]
+        result = future_t()
+        ket_error_warpper(
+            self.ket_future_op(result, KET_INT_XOR, KET_INT_IF, int(other), self)
+        )
+        return result
+
+    def __ror__(self, other):
+        self.ket_future_op.argtypes = [c_void_p, c_int, c_int, c_long, c_void_p]
+        result = future_t()
+        ket_error_warpper(
+            self.ket_future_op(result, KET_INT_OR, KET_INT_IF, int(other), self)
+        )
+        return result
+
+    def __lt__(self, other):
+        result = future_t()
+        if isinstance(other, future_t):
+            self.ket_future_op.argtypes = [c_void_p, c_int, c_int, c_void_p, c_void_p]
+            ket_error_warpper(
+                self.ket_future_op(result, KET_INT_LT, KET_INT_FF, self, other)
+            )
+        else:
+            self.ket_future_op.argtypes = [c_void_p, c_int, c_int, c_void_p, c_long]
+            ket_error_warpper(
+                self.ket_future_op(result, KET_INT_LT, KET_INT_FF, self, int(other))
+            )
+        return result
+
+    def __le__(self, other):
+        result = future_t()
+        if isinstance(other, future_t):
+            self.ket_future_op.argtypes = [c_void_p, c_int, c_int, c_void_p, c_void_p]
+            ket_error_warpper(
+                self.ket_future_op(result, KET_INT_LEQ, KET_INT_FF, self, other)
+            )
+        else:
+            self.ket_future_op.argtypes = [c_void_p, c_int, c_int, c_void_p, c_long]
+            ket_error_warpper(
+                self.ket_future_op(result, KET_INT_LEQ, KET_INT_FF, self, int(other))
+            )
+        return result
+
+    def __eq__(self, other):
+        result = future_t()
+        if isinstance(other, future_t):
+            self.ket_future_op.argtypes = [c_void_p, c_int, c_int, c_void_p, c_void_p]
+            ket_error_warpper(
+                self.ket_future_op(result, KET_INT_EQ, KET_INT_FF, self, other)
+            )
+        else:
+            self.ket_future_op.argtypes = [c_void_p, c_int, c_int, c_void_p, c_long]
+            ket_error_warpper(
+                self.ket_future_op(result, KET_INT_EQ, KET_INT_FF, self, int(other))
+            )
+        return result
+
+    def __ne__(self, other):
+        result = future_t()
+        if isinstance(other, future_t):
+            self.ket_future_op.argtypes = [c_void_p, c_int, c_int, c_void_p, c_void_p]
+            ket_error_warpper(
+                self.ket_future_op(result, KET_INT_NEQ, KET_INT_FF, self, other)
+            )
+        else:
+            self.ket_future_op.argtypes = [c_void_p, c_int, c_int, c_void_p, c_long]
+            ket_error_warpper(
+                self.ket_future_op(result, KET_INT_NEQ, KET_INT_FF, self, int(other))
+            )
+        return result
+
+    def __gt__(self, other):
+        result = future_t()
+        if isinstance(other, future_t):
+            self.ket_future_op.argtypes = [c_void_p, c_int, c_int, c_void_p, c_void_p]
+            ket_error_warpper(
+                self.ket_future_op(result, KET_INT_GT, KET_INT_FF, self, other)
+            )
+        else:
+            self.ket_future_op.argtypes = [c_void_p, c_int, c_int, c_void_p, c_long]
+            ket_error_warpper(
+                self.ket_future_op(result, KET_INT_GT, KET_INT_FF, self, int(other))
+            )
+        return result
+
+    def __ge__(self, other):
+        result = future_t()
+        if isinstance(other, future_t):
+            self.ket_future_op.argtypes = [c_void_p, c_int, c_int, c_void_p, c_void_p]
+            ket_error_warpper(
+                self.ket_future_op(result, KET_INT_GEQ, KET_INT_FF, self, other)
+            )
+        else:
+            self.ket_future_op.argtypes = [c_void_p, c_int, c_int, c_void_p, c_long]
+            ket_error_warpper(
+                self.ket_future_op(result, KET_INT_GEQ, KET_INT_FF, self, int(other))
+            )
+        return result
+
+
+class label_t:
+    ket_label_new = libketc.ket_label_new
+    ket_label_new.argtypes = [POINTER(c_void_p)]
+
+    ket_label_delete = libketc.ket_label_delete
+    ket_label_delete.argtypes = [c_void_p]
+
+    ket_label_index = libketc.ket_label_index
+    ket_label_index.argtypes = [c_void_p, POINTER(c_uint)]
+
+    ket_label_process_id = libketc.ket_label_process_id
+    ket_label_process_id.argtypes = [c_void_p, POINTER(c_uint)]
+
+    def __init__(self):
+        self._as_parameter_ = c_void_p()
+        ket_error_warpper(
+            self.ket_label_new(byref(self._as_parameter_))
+        )
+
+    def __del__(self):
+        ket_error_warpper(
+            self.ket_label_delete(self)
+        )
+
+    @property
+    def index(self):
+        c_value = c_uint()
+        ket_error_warpper(
+            self.ket_label_index(self, c_value)
+        )
+        return c_value.value
+
+    @property
+    def process_id(self):
+        c_value = c_uint()
+        ket_error_warpper(
+            self.ket_label_process_id(self, c_value)
+        )
+        return c_value.value
 
 class process_t:
     ket_process_new = libketc.ket_process_new

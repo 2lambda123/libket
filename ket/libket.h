@@ -34,6 +34,9 @@ extern "C" {
 #define KET_INT_AND    22
 #define KET_INT_OR     23
 #define KET_INT_XOR    24
+#define KET_INT_FF     25
+#define KET_INT_FI     26
+#define KET_INT_IF     27
 
 typedef void*          ket_process_t;
 typedef void*          ket_qubit_t;
@@ -46,6 +49,7 @@ typedef void*          ket_dump_amplitide_t;
 typedef unsigned long* ket_dump_state_t;
 typedef int            ket_gate_t;
 typedef int            ket_int_op_t;
+typedef int            ket_int_op_tt_t;
 
 const char* ket_error_message();
 
@@ -85,7 +89,7 @@ int ket_future_available(ket_future_t, _Bool*);
 int ket_future_index(ket_future_t, unsigned*);
 int ket_future_process_id(ket_future_t, unsigned*);
 
-int ket_future_op(ket_future_t, ket_int_op_t, ket_future_t, ket_future_t);
+int ket_future_op(ket_future_t, ket_int_op_t, ket_int_op_tt_t, ...);
 
 int ket_label_new(ket_label_t*);
 int ket_label_delete(ket_label_t);
