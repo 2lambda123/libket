@@ -18,7 +18,7 @@ def set_kbw_path():
     from os.path import dirname
 
     if "KET_QUANTUM_EXECUTOR" not in environ:
-        environ["KET_QUANTUM_EXECUTOR"] = dirname(__file__)+"/kbw.kqe"
+        environ["KET_QUANTUM_EXECUTOR"] = dirname(__file__)+"/kbw.so"
 
 class libket_error(Exception):
     def __init__(self, message):

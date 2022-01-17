@@ -17,4 +17,10 @@ namespace ket::quantum_code {
         virtual const char* what() const noexcept;
     };
 
+    class qubit_number_error : public std::exception {
+    public:
+        virtual const char* what() const noexcept;
+    };
+
+
 } // ket::quantum_code

@@ -85,6 +85,17 @@ void process_t::gate(gate_t gate_, qubit_t qubit, double param) {
         }
     };
     
+    if (not block_map[current_block].adj() and 
+        (gate_ == gate_t::phase or 
+         gate_ == gate_t::rotation_x or 
+         gate_ == gate_t::rotation_y or 
+         gate_ == gate_t::rotation_z)) {
+        block_map[current_block].add_instruction({
+            quantum_code::op_code_t::set_param,
+            param
+        });
+    }
+
     switch (gate_) {
     case gate_t::pauli_x:
         block_map[current_block].add_instruction({
@@ -132,11 +143,6 @@ void process_t::gate(gate_t gate_, qubit_t qubit, double param) {
         break;
     case gate_t::phase:
         block_map[current_block].add_instruction({
-            quantum_code::op_code_t::set_param,
-            block_map[current_block].adj()?
-            -param : param
-        });
-        block_map[current_block].add_instruction({
             quantum_code::op_code_t::gate_phase,
             qubit.index()
         });
@@ -147,11 +153,6 @@ void process_t::gate(gate_t gate_, qubit_t qubit, double param) {
         ));
         break;
     case gate_t::rotation_x:
-        block_map[current_block].add_instruction({
-            quantum_code::op_code_t::set_param,
-            block_map[current_block].adj()?
-            -param : param
-        });
         block_map[current_block].add_instruction({
             quantum_code::op_code_t::gate_rotation_x,
             qubit.index()
@@ -164,11 +165,6 @@ void process_t::gate(gate_t gate_, qubit_t qubit, double param) {
         break;
     case gate_t::rotation_y:
         block_map[current_block].add_instruction({
-            quantum_code::op_code_t::set_param,
-            block_map[current_block].adj()?
-            -param : param
-        });
-        block_map[current_block].add_instruction({
             quantum_code::op_code_t::gate_pauli_y,
             qubit.index()
         });
@@ -180,11 +176,6 @@ void process_t::gate(gate_t gate_, qubit_t qubit, double param) {
         break;
     case gate_t::rotation_z:
         block_map[current_block].add_instruction({
-            quantum_code::op_code_t::set_param,
-            block_map[current_block].adj()?
-            -param : param
-        });
-        block_map[current_block].add_instruction({
             quantum_code::op_code_t::gate_pauli_z,
             qubit.index()
         });
@@ -194,6 +185,17 @@ void process_t::gate(gate_t gate_, qubit_t qubit, double param) {
             features_t::gate_mult_ctrl_rotation_z
         ));
         break;
+    }
+
+    if (block_map[current_block].adj() and 
+        (gate_ == gate_t::phase or 
+         gate_ == gate_t::rotation_x or 
+         gate_ == gate_t::rotation_y or 
+         gate_ == gate_t::rotation_z)) {
+        block_map[current_block].add_instruction({
+            quantum_code::op_code_t::set_param,
+            -param
+        });
     }
 }
 
@@ -244,7 +246,6 @@ future_t process_t::new_int(int_t value) {
 
 
 void process_t::plugin(std::string name, qubit_list_t qubit_list, std::string args) {
-
     for (auto qubit : qubit_list) {
         check_not_free(qubit);
         check_process_id(qubit);
@@ -263,7 +264,7 @@ void process_t::plugin(std::string name, qubit_list_t qubit_list, std::string ar
     });
 
     block_map[current_block].add_instruction({
-        quantum_code::op_code_t::get_plugin_args,
+        quantum_code::op_code_t::plugin,
         block_map[current_block].add_string(block_map[current_block].adj()? "!"+name : name)
     });
 

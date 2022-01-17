@@ -85,6 +85,7 @@
         "*.rh": "cpp"
     },
     "cSpell.words": [
-        "iarchive"
+        "iarchive",
+        "libketc"
     ]
 }

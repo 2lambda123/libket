@@ -39,12 +39,21 @@ void executor_t::run() {
         );
     };
     
+    
     auto exec_time_future = std::async(std::launch::async, [&]() {
         auto start = std::chrono::high_resolution_clock::now();
         while (not_halt and keep_running) {
             auto current_block = code.block+next_block;
             auto pc = get_addr(current_block->code_begin);
             auto end = pc+current_block->num_intructions;
+
+            auto get_str = [&](auto offset) {
+                return reinterpret_cast<decltype(offset)>(
+                    reinterpret_cast<size_t>(quantum_code.get()) +
+                    reinterpret_cast<size_t>(current_block->args_begin) +
+                    reinterpret_cast<size_t>(offset)
+                );
+            };
             
             for (; pc < end; pc++) if (keep_running) {
                 switch (pc->op_code) {
@@ -101,10 +110,10 @@ void executor_t::run() {
                     qubit_list.clear();
                     break;
                 case op_code_t::get_plugin_args:
-                    plugin_args = get_addr(std::get<char*>(pc->arg));
+                    plugin_args = get_str(std::get<char*>(pc->arg));
                     break;
                 case op_code_t::plugin:
-                    plugin(get_addr(std::get<char*>(pc->arg)), qubit_list, plugin_args, ctrl_list);
+                    plugin(get_str(std::get<char*>(pc->arg)), qubit_list, plugin_args, ctrl_list);
                     qubit_list.clear();
                     break;
                 case op_code_t::set_then:

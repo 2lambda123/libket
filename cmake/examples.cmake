@@ -21,3 +21,15 @@ target_link_libraries(
     PUBLIC
     libket
 )
+
+add_executable(
+    shor 
+    EXCLUDE_FROM_ALL
+    examples/shor.cpp
+)
+
+target_link_libraries(
+    shor
+    PUBLIC
+    libket
+)

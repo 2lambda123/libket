@@ -13,3 +13,8 @@ const char* feature_not_available_error::what() const noexcept {
 const char* quantum_execution_timeout::what() const noexcept {
     return "quantum execution timeout";
 }
+
+
+const char* qubit_number_error::what() const noexcept {
+    return "quantum execution exceeded the maximun number of qubits";
+}

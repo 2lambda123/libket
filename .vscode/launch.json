@@ -3,7 +3,14 @@
     // Hover to view descriptions of existing attributes.
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
-    "configurations": [    
+    "configurations": [
+        {
+            "name": "Python: Current File",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal"
+        },
         {
             "name": "Teleport",
             "type": "cppdbg",
@@ -15,10 +22,10 @@
             "environment": [
                 {
                     "name": "KET_QUANTUM_EXECUTOR",
-                    "value": "${workspaceFolder}/build/lib/kbw.kqe"
+                    "value": "${workspaceFolder}/build/lib/kbw.so"
                 },
                 {
-                    "name": "KBW_SEED",
+                    "name": "KQE_SEED",
                     "value": "1"
                 }
             ],
@@ -43,11 +50,43 @@
             "environment": [
                 {
                     "name": "KET_QUANTUM_EXECUTOR",
-                    "value": "${workspaceFolder}/build/lib/kbw.kqe"
+                    "value": "${workspaceFolder}/build/lib/kbw.so"
                 },
                 {
-                    "name": "KBW_SEED",
+                    "name": "KQE_SEED",
                     "value": "113"
+                }
+            ],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
+        }
+        {
+            "name": "Shor",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/bin/shor",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${fileDirname}",
+            "environment": [
+                {
+                    "name": "KET_QUANTUM_EXECUTOR",
+                    "value": "${workspaceFolder}/build/lib/kbw.so"
+                },
+                {
+                    "name": "KQE_SEED",
+                    "value": "113"
+                },
+                {
+                    "name": "KQE_PLUGIN_PATH",
+                    "value": "${workspaceFolder}/build/lib"
                 }
             ],
             "externalConsole": false,

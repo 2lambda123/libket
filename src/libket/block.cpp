@@ -19,7 +19,7 @@ void block_t::add_instruction(intruction_t intruction) {
 
 char* block_t::add_string(std::string str) {
     auto pos = reinterpret_cast<char*>(args.size());
-    args += str + "\0";
+    args += str + '\0';
     return pos;
 }
 
