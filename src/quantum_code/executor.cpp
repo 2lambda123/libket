@@ -5,6 +5,7 @@
 #include <ket/quantum_code/executor.hpp>
 #include <ket/quantum_code/execution_exception.hpp>
 #include <boost/container/map.hpp>
+#include <boost/container/vector.hpp>
 #include <boost/serialization/vector.hpp>
 #include <boost/serialization/utility.hpp>
 #include <boost/serialization/complex.hpp>
@@ -76,7 +77,15 @@ void executor_t::rotation_z(double theta, index_t qubit, ctrl_list_t ctrl_list) 
 }
 
 ket::int_t executor_t::measure(qubit_list_t qubit_list) {
-    return _measure(map_qubits(qubit_list));
+    qubit_list = map_qubits(qubit_list);
+
+    int_t result = 0;
+    auto size = qubit_list.size();
+    for (auto i = 0u; i < size; i++) {
+        result |= _measure(qubit_list[i]) << (size-i-1);
+    }
+
+    return result;
 }
 
 void executor_t::plugin(char* name, qubit_list_t qubit_list, char* args, ctrl_list_t ctrl_list) {

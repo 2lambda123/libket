@@ -442,17 +442,9 @@ int ket_dump_state_at(ket_dump_states_t states, ket_dump_state_t* state, size_t*
     });
 }
 
-int ket_dump_amp_at(ket_dump_amplitides_t amplitides, ket_dump_amplitide_t* amplitide, size_t* size, unsigned long index) {
+int ket_dump_amp_at(ket_dump_amplitides_t amplitides, double* real, double* imag, unsigned long index) {
     return ket_error_wrapper([&](){
-        *amplitide = (ket_dump_amplitide_t*) &((ket::dump::amplitudes_t*)amplitides)->at(index);
-        *size = ((ket::dump::amplitudes_t*)amplitides)->at(index).size();
+        *real = ((ket::dump::amplitudes_t*)amplitides)->at(index).real();
+        *imag = ((ket::dump::amplitudes_t*)amplitides)->at(index).imag();
     }); 
-}
-
-int ket_dump_amp(ket_dump_amplitide_t amplitide, double* real, double* imag, unsigned long index) {
-    return ket_error_wrapper([&](){
-        auto amp = ((ket::dump::prob_amp_t*)amplitide)->at(index);
-        *real = amp.real();
-        *imag = amp.imag();
-    });
 }

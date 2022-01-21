@@ -60,5 +60,4 @@ void ket::bitwise::pown(quantum_space_t* space, qubit_list_t qubit_list, char* a
     }
     quantum_space.swap(new_space);
 
-
 }

@@ -3,7 +3,7 @@
  * Copyright 2022 Evandro Chagas Ribeiro da Rosa
  */
 #pragma once
-#include <boost/container/vector.hpp>
+#include <vector>
 #include <boost/smart_ptr.hpp>
 #include <boost/container/map.hpp>
 #include <boost/unordered_map.hpp>
@@ -14,7 +14,7 @@
 
 namespace ket::quantum_code {
     using dump::dump_t;
-    using ctrl_list_t = boost::container::vector<index_t>;
+    using ctrl_list_t = std::vector<index_t>;
     using qubit_list_t = ctrl_list_t;
 
     using int_map_t = boost::unordered_map<index_t,int_t>;
@@ -58,7 +58,7 @@ namespace ket::quantum_code {
         virtual void _rotation_x(double, index_t, ctrl_list_t) = 0;
         virtual void _rotation_y(double, index_t, ctrl_list_t) = 0;
         virtual void _rotation_z(double, index_t, ctrl_list_t) = 0;
-        virtual int_t _measure(qubit_list_t) = 0;
+        virtual bool _measure(index_t) = 0;
         virtual void _plugin(char* name, qubit_list_t, char* args, ctrl_list_t, bool ajd) = 0;
         virtual dump_t _dump(qubit_list_t) = 0;
 

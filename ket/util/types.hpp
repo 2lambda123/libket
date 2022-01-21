@@ -14,11 +14,10 @@
 namespace ket {
     namespace dump {
         using complex_t    = std::complex<double>;
-        using prob_amp_t   = std::vector<complex_t>;
         using state_base_t = std::uint64_t;
         using state_t      = std::vector<state_base_t>;
         using states_t     = std::vector<state_t>;
-        using amplitudes_t = std::vector<prob_amp_t>;
+        using amplitudes_t = std::vector<complex_t>;
         using dump_t       = std::pair<states_t,amplitudes_t>;
         using dump_ptr     = boost::shared_ptr<dump_t>;
     }

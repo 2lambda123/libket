@@ -45,7 +45,6 @@ typedef void*          ket_label_t;
 typedef void*          ket_dump_t;
 typedef void*          ket_dump_states_t;
 typedef void*          ket_dump_amplitides_t;
-typedef void*          ket_dump_amplitide_t;
 typedef unsigned long* ket_dump_state_t;
 typedef int            ket_gate_t;
 typedef int            ket_int_op_t;
@@ -106,8 +105,7 @@ int ket_dump_process_id(ket_dump_t, unsigned*);
 
 int ket_dump_state_at(ket_dump_states_t, ket_dump_state_t*, size_t*, unsigned long);
 
-int ket_dump_amp_at(ket_dump_amplitides_t, ket_dump_amplitide_t*, size_t*, unsigned long);
-int ket_dump_amp(ket_dump_amplitide_t, double*, double*, unsigned long);
+int ket_dump_amp_at(ket_dump_amplitides_t, double*, double*, unsigned long);
 
 #ifdef __cplusplus
 }

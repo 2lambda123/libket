@@ -25,7 +25,7 @@ namespace ket::bitwise {
         virtual void _rotation_x(double, index_t, ctrl_list_t);
         virtual void _rotation_y(double, index_t, ctrl_list_t);
         virtual void _rotation_z(double, index_t, ctrl_list_t);
-        virtual int_t _measure(qubit_list_t);
+        virtual bool _measure(index_t);
         virtual void _plugin(char* name, qubit_list_t, char* args, ctrl_list_t, bool adj);
         virtual dump_t _dump(qubit_list_t);
 

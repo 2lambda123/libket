@@ -144,10 +144,7 @@ class dump_t:
     ket_dump_amplitides.argtypes = [c_void_p, POINTER(c_void_p), POINTER(c_size_t)]
     
     ket_dump_amp_at = libketc.ket_dump_amp_at
-    ket_dump_amp_at.argtypes = [c_void_p, POINTER(c_void_p), POINTER(c_size_t), c_ulong]
-
-    ket_dump_amp = libketc.ket_dump_amp
-    ket_dump_amp.argtypes = [c_void_p, POINTER(c_double), POINTER(c_double), c_ulong]
+    ket_dump_amp_at.argtypes = [c_void_p, POINTER(c_double), POINTER(c_double), c_ulong]
 
     ket_dump_available = libketc.ket_dump_available
     ket_dump_available.argtypes = [c_void_p, POINTER(c_bool)]
@@ -190,22 +187,13 @@ class dump_t:
             self.ket_dump_amplitides(self, c_amplitides, c_size)
         )
         for i in range(c_size.value):
-            c_amplitide = c_void_p()
-            c_amplitide_size = c_size_t()
+            c_real = c_double()
+            c_imag = c_double()
             ket_error_warpper(
-                self.ket_dump_amp_at(c_amplitides, c_amplitide, c_amplitide_size, i)
+                self.ket_dump_amp_at(c_amplitides, c_real, c_imag, i)
             )
-            amplitide = []
-            for j in range(c_amplitide_size.value):
-                c_real = c_double()
-                c_imag = c_double()
-                ket_error_warpper(
-                    self.ket_dump_amp(c_amplitide, c_real, c_imag, j)
-                )
-                amplitide.append(c_real.value+c_imag.value*1j)
+            yield c_real.value+c_imag.value*1j
             
-            yield amplitide if len(amplitide) != 1 else amplitide[0]
-
     @property
     def available(self):
         c_value = c_bool()()

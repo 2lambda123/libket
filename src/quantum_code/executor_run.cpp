@@ -4,6 +4,7 @@
  */
 #include <ket/quantum_code/executor.hpp>
 #include <ket/quantum_code/execution_exception.hpp>
+#include <boost/container/vector.hpp>
 #include <chrono>
 #include <future>
 

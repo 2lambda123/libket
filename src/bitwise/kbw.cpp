@@ -178,38 +178,28 @@ void kbw_t::_rotation_z(double theta, index_t qubit, ctrl_list_t ctrl_list) {
     }
 }
 
-int_t kbw_t::_measure(qubit_list_t qubit_list) {
-    auto measure_qubit = [&](auto qubit) {
-        double p1 = 0.0;
-        for (auto &state : quantum_space) {
-            if (state.first[qubit/qubits_number_base] & (1ul << (qubit%qubits_number_base))) {
-                auto abs_amp = std::abs(state.second);
-                p1 += abs_amp*abs_amp;
-            }
+bool kbw_t::_measure(index_t qubit) {
+    double p1 = 0.0;
+    for (auto &state : quantum_space) {
+        if (state.first[qubit/qubits_number_base] & (1ul << (qubit%qubits_number_base))) {
+            auto abs_amp = std::abs(state.second);
+            p1 += abs_amp*abs_amp;
         }
-        
-        auto result = (double)std::rand()/RAND_MAX <= p1 and p1 > 1e-10? 1u : 0u;
-        auto p = std::sqrt(result? p1 : 1.0-p1);
+    }
+    
+    auto result = (double)std::rand()/RAND_MAX <= p1 and p1 > 1e-10? true : false;
+    auto p = std::sqrt(result? p1 : 1.0-p1);
 
-        quantum_space_t new_space;
+    quantum_space_t new_space;
 
-        for (auto &state : quantum_space) {
-            if (not ((bool)(state.first[qubit/qubits_number_base] & (1ul << (qubit%qubits_number_base))) xor (bool)result)) {
-                new_space[state.first] = state.second/p;
-            } 
-        }
-
-        quantum_space.swap(new_space);
-        
-        return result;
-    };
-
-    int_t result = 0;
-    auto size = qubit_list.size();
-    for (auto i = 0u; i < size; i++) {
-        result |= measure_qubit(qubit_list[i]) << (size-i-1);
+    for (auto &state : quantum_space) {
+        if (not ((bool)(state.first[qubit/qubits_number_base] & (1ul << (qubit%qubits_number_base))) xor result)) {
+            new_space[state.first] = state.second/p;
+        } 
     }
 
+    quantum_space.swap(new_space);
+    
     return result;
 }
 
@@ -226,8 +216,6 @@ dump_t kbw_t::_dump(qubit_list_t qubit_list) {
     states.resize(quantum_space.size());
     amplitudes.resize(quantum_space.size());
 
-    boost::unordered_map<dump::state_t,index_t> index_map;
-
     auto num_qubits = qubit_list.size();
     auto num_bases = (num_qubits+qubits_number_base)/qubits_number_base;
 
@@ -241,14 +229,8 @@ dump_t kbw_t::_dump(qubit_list_t qubit_list) {
                 new_state[index/qubits_number_base] ^= (1ul << (index%qubits_number_base));
             }
         }
-        if (index_map.find(new_state) == index_map.end()) {
-            states[states_index] = new_state;
-            amplitudes[states_index++].push_back(state.second);
-        } else {
-            auto state_index = index_map[new_state];
-            states[state_index] = new_state;
-            amplitudes[state_index].push_back(state.second);
-        }
+        states[states_index] = new_state;
+        amplitudes[states_index++] = state.second;
     }
 
     return dump_t{states, amplitudes}; 
