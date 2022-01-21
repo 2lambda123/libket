@@ -633,6 +633,9 @@ class process_t:
     ket_process_alloc = libketc.ket_process_alloc
     ket_process_alloc.argtypes = [c_void_p, c_void_p, c_bool]
 
+    ket_process_free = libketc.ket_process_alloc
+    ket_process_free.argtypes = [c_void_p, c_void_p, c_bool]
+
     ket_process_gate = libketc.ket_process_gate
     ket_process_gate.argtypes = [c_void_p, c_int, c_void_p, c_double]
 
@@ -689,6 +692,11 @@ class process_t:
             self.ket_process_alloc(self, qubit, dirty)
         )
         return qubit    
+
+    def free(self, qubit : qubit_t, dirty = False):
+        ket_error_warpper(
+            self.ket_process_alloc(self, qubit, dirty)
+        )
 
     def gate(self, gate : int, qubit : qubit_t, param : float = 0):
         ket_error_warpper(
