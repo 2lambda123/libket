@@ -67,7 +67,7 @@ int ket_process_adj_end(ket_process_t);
 int ket_process_get_label(ket_process_t, ket_label_t);
 int ket_process_open_block(ket_process_t, ket_label_t);
 int ket_process_jump(ket_process_t, ket_label_t);
-int ket_process_breach(ket_process_t, ket_future_t, ket_label_t, ket_label_t);
+int ket_process_branch(ket_process_t, ket_future_t, ket_label_t, ket_label_t);
 int ket_process_dump(ket_process_t, ket_dump_t, int, ...);
 int ket_process_run(ket_process_t);
 int ket_process_exec_time(ket_process_t, double*);

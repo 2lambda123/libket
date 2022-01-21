@@ -30,7 +30,7 @@ int main() {
     auto if_ = [&ps](auto test, auto then) {
         auto then_label = ps.get_label();
         auto end_label = ps.get_label();
-        ps.breach(test, then_label, end_label);
+        ps.branch(test, then_label, end_label);
         ps.open_block(then_label);
         then();
         ps.jump(end_label);

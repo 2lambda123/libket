@@ -351,7 +351,7 @@ void process_t::jump(label_t label) {
     block_map[current_block].end();
 }
 
-void process_t::breach(future_t test, label_t then, label_t otherwise) {
+void process_t::branch(future_t test, label_t then, label_t otherwise) {
     check_process_id(test);
     check_process_id(then);
     check_process_id(otherwise);

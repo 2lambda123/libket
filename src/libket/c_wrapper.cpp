@@ -170,9 +170,9 @@ int ket_process_jump(ket_process_t process, ket_label_t label) {
     });
 }
 
-int ket_process_breach(ket_process_t process, ket_future_t future, ket_label_t then, ket_label_t otherwise) {
+int ket_process_branch(ket_process_t process, ket_future_t future, ket_label_t then, ket_label_t otherwise) {
     return ket_error_wrapper([&](){
-        ((process_t*)process)->breach(*((future_t*)future), *((label_t*)then), *((label_t*)otherwise));
+        ((process_t*)process)->branch(*((future_t*)future), *((label_t*)then), *((label_t*)otherwise));
     });
 }
 

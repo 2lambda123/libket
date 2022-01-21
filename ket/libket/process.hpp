@@ -49,7 +49,7 @@ namespace ket::libket {
         label_t  get_label();
         void     open_block(label_t);
         void     jump(label_t);
-        void     breach(future_t, label_t then, label_t otherwise);
+        void     branch(future_t, label_t then, label_t otherwise);
         dump_t   dump(qubit_list_t);
 
         double exec_time() const;
