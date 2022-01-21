@@ -661,8 +661,8 @@ class process_t:
     ket_process_jump = libketc.ket_process_jump
     ket_process_jump.argtypes = [c_void_p, c_void_p]
 
-    ket_process_breach = libketc.ket_process_breach
-    ket_process_breach.argtypes = [c_void_p, c_void_p, c_void_p]
+    ket_process_branch = libketc.ket_process_branch
+    ket_process_branch.argtypes = [c_void_p, c_void_p, c_void_p]
 
     ket_process_dump = libketc.ket_process_dump
 
@@ -749,9 +749,9 @@ class process_t:
             self.ket_process_jump(self, label)
         )
 
-    def breach(self, test : future_t, then : label_t, otherwise : label_t):
+    def branch(self, test : future_t, then : label_t, otherwise : label_t):
         ket_error_warpper(
-            self.ket_process_breach(self, test, then, otherwise)
+            self.ket_process_branch(self, test, then, otherwise)
         )
 
     def run(self):
