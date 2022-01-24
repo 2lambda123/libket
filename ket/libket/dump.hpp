@@ -14,7 +14,7 @@ namespace ket::libket {
         dump_t();
         
         const dump::states_t& states() ;
-        const dump::amplitudes_t& amplitides();
+        const dump::amplitudes_t& amplitudes();
 
         index_t index()      const;
         index_t process_id() const;

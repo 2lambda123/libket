@@ -407,10 +407,10 @@ int ket_dump_states(ket_dump_t dump, ket_dump_states_t* states, size_t* size) {
     }); 
 }
 
-int ket_dump_amplitides(ket_dump_t dump, ket_dump_amplitides_t* amplitides, size_t* size) {
+int ket_dump_amplitudes(ket_dump_t dump, ket_dump_amplitudes_t* amplitudes, size_t* size) {
     return ket_error_wrapper([&](){
-        *amplitides =  (ket_dump_amplitides_t) &((dump_t*)dump)->amplitides();
-        *size = ((dump_t*)dump)->amplitides().size();
+        *amplitudes =  (ket_dump_amplitudes_t) &((dump_t*)dump)->amplitudes();
+        *size = ((dump_t*)dump)->amplitudes().size();
     }); 
 }
 
@@ -442,9 +442,9 @@ int ket_dump_state_at(ket_dump_states_t states, ket_dump_state_t* state, size_t*
     });
 }
 
-int ket_dump_amp_at(ket_dump_amplitides_t amplitides, double* real, double* imag, unsigned long index) {
+int ket_dump_amp_at(ket_dump_amplitudes_t amplitudes, double* real, double* imag, unsigned long index) {
     return ket_error_wrapper([&](){
-        *real = ((ket::dump::amplitudes_t*)amplitides)->at(index).real();
-        *imag = ((ket::dump::amplitudes_t*)amplitides)->at(index).imag();
+        *real = ((ket::dump::amplitudes_t*)amplitudes)->at(index).real();
+        *imag = ((ket::dump::amplitudes_t*)amplitudes)->at(index).imag();
     }); 
 }

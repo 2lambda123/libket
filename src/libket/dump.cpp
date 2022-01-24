@@ -35,7 +35,7 @@ const dump::states_t& dump_t::states() {
     return data->first;
 }
 
-const dump::amplitudes_t& dump_t::amplitides() {
+const dump::amplitudes_t& dump_t::amplitudes() {
     if (not available()) run();
     return data->second;
 }
