@@ -10,6 +10,7 @@
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/smart_ptr/make_shared.hpp>
 #include <ket/quantum_code/quantum_result.hpp>
+#include <fstream>
 
 using namespace ket::libket;
 
@@ -17,6 +18,16 @@ void process_t::run() {
     block_map[current_block].add_instruction({
         quantum_code::op_code_t::halt, 0.0
     });
+
+    try {
+        auto kqasm_path = load_var<std::string>("KQASM_OUTPUT");
+        std::ofstream kqasm{kqasm_path, std::ios::app};
+        for (auto &block : block_map) {
+            kqasm << "l" << block.first << ":" << std::endl;
+            kqasm << block.second.str() << std::endl;
+        }
+        kqasm << "===========================" << std::endl;
+    } catch (...) {}
 
     auto block_num = block_map.size();
     auto header_code_size = sizeof(quantum_code::header_t)+

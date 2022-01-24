@@ -165,7 +165,7 @@ void process_t::gate(gate_t gate_, qubit_t qubit, double param) {
         break;
     case gate_t::rotation_y:
         block_map[current_block].add_instruction({
-            quantum_code::op_code_t::gate_pauli_y,
+            quantum_code::op_code_t::gate_rotation_y,
             qubit.index()
         });
         add_feature(feature_select(
@@ -176,7 +176,7 @@ void process_t::gate(gate_t gate_, qubit_t qubit, double param) {
         break;
     case gate_t::rotation_z:
         block_map[current_block].add_instruction({
-            quantum_code::op_code_t::gate_pauli_z,
+            quantum_code::op_code_t::gate_rotation_z,
             qubit.index()
         });
         add_feature(feature_select(

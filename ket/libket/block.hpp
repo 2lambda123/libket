@@ -32,6 +32,8 @@ namespace ket::libket {
         size_t size() const;
         size_t write(quantum_code::block_t* header, char* begin, char* pos) const;
 
+        std::string str() const;
+
     private:
         void check_ended() const;
 
