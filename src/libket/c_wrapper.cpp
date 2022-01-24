@@ -340,7 +340,7 @@ int ket_future_op(ket_future_t result, ket_int_op_t int_op, c_L left, c_R right)
 
 int ket_future_op(ket_future_t result, ket_int_op_t int_op, ket_int_op_tt_t tt, ...) {
     ket_future_t fl, fr;
-    long *il, *ir;
+    long il, ir;
     va_list valist;
     va_start(valist, tt);
 
@@ -352,12 +352,12 @@ int ket_future_op(ket_future_t result, ket_int_op_t int_op, ket_int_op_tt_t tt, 
         break;
     case KET_INT_FI:
         fl =  va_arg(valist, ket_future_t);
-        ir =  va_arg(valist, long*);
-        return ket_future_op<future_t, long>(result, int_op, fl, ir);
+        ir =  va_arg(valist, long);
+        return ket_future_op<future_t, long>(result, int_op, fl, &ir);
     case KET_INT_IF:
-        il =  va_arg(valist, long*);
+        il =  va_arg(valist, long);
         fr =  va_arg(valist, ket_future_t);
-        return ket_future_op<long, future_t>(result, int_op, il, fr);
+        return ket_future_op<long, future_t>(result, int_op, &il, fr);
     default:
         ket_error_str = "ket_future_op (libketc) invalid arguments";
         return KET_ERROR;

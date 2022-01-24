@@ -84,130 +84,130 @@ std::string block_t::str() const {
         stream << "\t";
         switch (inst.op_code) {
         case quantum_code::op_code_t::alloc:
-            stream << "ALLOC" << "\tq" << std::get<index_t>(inst.arg);
+            stream << "ALLOC       q" << std::get<index_t>(inst.arg);
             break;
         case quantum_code::op_code_t::alloc_dirty:
-            stream << "ALLOC DIRTY" << "\tq" << std::get<index_t>(inst.arg);
+            stream << "ALLOC DIRTY q" << std::get<index_t>(inst.arg);
             break;
         case quantum_code::op_code_t::free:
-            stream << "FREE" << "\tq" << std::get<index_t>(inst.arg);
+            stream << "FREE        q" << std::get<index_t>(inst.arg);
             break;
         case quantum_code::op_code_t::free_dirty:
-            stream << "FREE DIRTY" << "\tq" << std::get<index_t>(inst.arg);
+            stream << "FREE DIRTY  q" << std::get<index_t>(inst.arg);
             break;
         case quantum_code::op_code_t::gate_pauli_x:
-            stream << "X" << "\tq" << std::get<index_t>(inst.arg);
+            stream << "X           q" << std::get<index_t>(inst.arg);
             break;
         case quantum_code::op_code_t::gate_pauli_y:
-            stream << "Y" << "\tq" << std::get<index_t>(inst.arg);
+            stream << "Y           q" << std::get<index_t>(inst.arg);
             break;
         case quantum_code::op_code_t::gate_pauli_z:
-            stream << "Z" << "\tq" << std::get<index_t>(inst.arg);
+            stream << "Z           q" << std::get<index_t>(inst.arg);
             break;
         case quantum_code::op_code_t::gate_hadamard:
-            stream << "H" << "\tq" << std::get<index_t>(inst.arg);
+            stream << "H           q" << std::get<index_t>(inst.arg);
             break;
         case quantum_code::op_code_t::gate_phase:
-            stream << "S" << "\tq" << std::get<index_t>(inst.arg);
+            stream << "S           q" << std::get<index_t>(inst.arg);
             break;
         case quantum_code::op_code_t::gate_rotation_x:
-            stream << "RX" << "\tq" << std::get<index_t>(inst.arg);
+            stream << "RX          q" << std::get<index_t>(inst.arg);
             break;
         case quantum_code::op_code_t::gate_rotation_y:
-            stream << "RY" << "\tq" << std::get<index_t>(inst.arg);
+            stream << "RY          q" << std::get<index_t>(inst.arg);
             break;
         case quantum_code::op_code_t::gate_rotation_z:
-            stream << "RZ" << "\tq" << std::get<index_t>(inst.arg);
+            stream << "RZ          q" << std::get<index_t>(inst.arg);
             break;
         case quantum_code::op_code_t::set_param:
-            stream << "PARAM" << "\t" << std::get<double>(inst.arg);
+            stream << "PARAM        " << std::get<double>(inst.arg);
             break;
         case quantum_code::op_code_t::push_ctrl:
-            stream << "CTRL PUSH" << "\tq" << std::get<index_t>(inst.arg);
+            stream << "CTRL PUSH   q" << std::get<index_t>(inst.arg);
             break;
         case quantum_code::op_code_t::pop_ctrl:
-            stream << "CTRL POP" << "\t" << std::get<index_t>(inst.arg);
+            stream << "CTRL POP     " << std::get<index_t>(inst.arg);
             break;
         case quantum_code::op_code_t::push_qubit:
-            stream << "PUSH" << "\tq" << std::get<index_t>(inst.arg);
+            stream << "PUSH        q" << std::get<index_t>(inst.arg);
             break;
         case quantum_code::op_code_t::measure:
-            stream << "MEASURE" << "\ti" << std::get<index_t>(inst.arg);
+            stream << "MEASURE     i" << std::get<index_t>(inst.arg);
             break;
         case quantum_code::op_code_t::get_plugin_args:
-            stream << "PLUGIN ARGS" << "\t" << args.c_str()[(size_t)std::get<char*>(inst.arg)];
+            stream << "PLUGIN ARGS  " << args.c_str()[(size_t)std::get<char*>(inst.arg)];
             break;
         case quantum_code::op_code_t::plugin:
-            stream << "PLUGIN" << "\t" << args.c_str()[(size_t)std::get<char*>(inst.arg)];
+            stream << "PLUGIN       " << args.c_str()[(size_t)std::get<char*>(inst.arg)];
             break;
         case quantum_code::op_code_t::set_then:
-            stream << "THEN" << "\tl" << std::get<index_t>(inst.arg);
+            stream << "THEN        l" << std::get<index_t>(inst.arg);
             break;
         case quantum_code::op_code_t::set_else:
-            stream << "ELSE" << "\tl" << std::get<index_t>(inst.arg);
+            stream << "ELSE        l" << std::get<index_t>(inst.arg);
             break;
         case quantum_code::op_code_t::breach:
-            stream << "BR" << "\ti" << std::get<index_t>(inst.arg);
+            stream << "BR          i" << std::get<index_t>(inst.arg);
             break;
         case quantum_code::op_code_t::jump:
-            stream << "JUMP" << "\tl" << std::get<index_t>(inst.arg);
+            stream << "JUMP        l" << std::get<index_t>(inst.arg);
             break;
         case quantum_code::op_code_t::push_int:
-            stream << "PUSH" << "\ti" << std::get<index_t>(inst.arg);
+            stream << "PUSH        i" << std::get<index_t>(inst.arg);
             break;
         case quantum_code::op_code_t::int_eq:
-            stream << "EQ" << "\ti" << std::get<index_t>(inst.arg);
+            stream << "EQ          i" << std::get<index_t>(inst.arg);
             break;
         case quantum_code::op_code_t::int_neq:
-            stream << "NEQ" << "\ti" << std::get<index_t>(inst.arg);
+            stream << "NEQ         i" << std::get<index_t>(inst.arg);
             break;
         case quantum_code::op_code_t::int_gt:
-            stream << "GT" << "\ti" << std::get<index_t>(inst.arg);
+            stream << "GT          i" << std::get<index_t>(inst.arg);
             break;
         case quantum_code::op_code_t::int_geq:
-            stream << "GEQ" << "\ti" << std::get<index_t>(inst.arg);
+            stream << "GEQ         i" << std::get<index_t>(inst.arg);
             break;
         case quantum_code::op_code_t::int_lt:
-            stream << "LT" << "\ti" << std::get<index_t>(inst.arg);
+            stream << "LT          i" << std::get<index_t>(inst.arg);
             break;
         case quantum_code::op_code_t::int_leq:
-            stream << "LEQ" << "\ti" << std::get<index_t>(inst.arg);
+            stream << "LEQ         i" << std::get<index_t>(inst.arg);
             break;
         case quantum_code::op_code_t::int_add:
-            stream << "ADD" << "\ti" << std::get<index_t>(inst.arg);
+            stream << "ADD         i" << std::get<index_t>(inst.arg);
             break;
         case quantum_code::op_code_t::int_sub:
-            stream << "SUB" << "\ti" << std::get<index_t>(inst.arg);
+            stream << "SUB         i" << std::get<index_t>(inst.arg);
             break;
         case quantum_code::op_code_t::int_mul:
-            stream << "MUL" << "\ti" << std::get<index_t>(inst.arg);
+            stream << "MUL         i" << std::get<index_t>(inst.arg);
             break;
         case quantum_code::op_code_t::int_div:
-            stream << "DIV" << "\ti" << std::get<index_t>(inst.arg);
+            stream << "DIV         i" << std::get<index_t>(inst.arg);
             break;
         case quantum_code::op_code_t::int_sll:
-            stream << "SLL" << "\ti" << std::get<index_t>(inst.arg);
+            stream << "SLL         i" << std::get<index_t>(inst.arg);
             break;
         case quantum_code::op_code_t::int_srl:
-            stream << "SRL" << "\ti" << std::get<index_t>(inst.arg);
+            stream << "SRL         i" << std::get<index_t>(inst.arg);
             break;
         case quantum_code::op_code_t::int_and:
-            stream << "AND" << "\ti" << std::get<index_t>(inst.arg);
+            stream << "AND         i" << std::get<index_t>(inst.arg);
             break;
         case quantum_code::op_code_t::int_or:
-            stream << "OR" << "\ti" << std::get<index_t>(inst.arg);
+            stream << "OR          i" << std::get<index_t>(inst.arg);
             break;
         case quantum_code::op_code_t::int_xor:
-            stream << "XOR" << "\ti" << std::get<index_t>(inst.arg);
+            stream << "XOR         i" << std::get<index_t>(inst.arg);
             break;
         case quantum_code::op_code_t::int_set:
-            stream << "SET" << "\ti" << std::get<index_t>(inst.arg);
+            stream << "SET         i" << std::get<index_t>(inst.arg);
             break;
         case quantum_code::op_code_t::int_const:
-            stream << "SET" << "\t" << std::get<int_t>(inst.arg);
+            stream << "SET          " << std::get<int_t>(inst.arg);
             break;
         case quantum_code::op_code_t::dump:
-            stream << "DUMP" << "\td" << std::get<index_t>(inst.arg);
+            stream << "DUMP        d" << std::get<index_t>(inst.arg);
             break;
         case quantum_code::op_code_t::halt:
             stream << "HALT";

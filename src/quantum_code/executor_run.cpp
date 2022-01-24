@@ -25,7 +25,7 @@ void executor_t::run() {
     bool not_halt = true;
 
     auto int_op = [&](auto index, auto op) {
-        int_map[index] = op(int_stack[0], int_stack[1]);
+        int_map[index] = op(int_map[int_stack[0]], int_map[int_stack[1]]);
         int_stack.clear();
     };
 
