@@ -15,7 +15,7 @@ include(${CMAKE_BINARY_DIR}/conan.cmake)
 
 conan_cmake_run(
   REQUIRES 
-  boost/1.77.0
+  boost/1.76.0
   BASIC_SETUP 
   CMAKE_TARGETS
   BUILD missing
@@ -28,7 +28,7 @@ set(Boost_INSTALL_DIR ${CONAN_BOOST_ROOT})
 set(Boost_USE_STATIC_LIBS ON)
 
 find_package(Boost
-  1.77.0 EXACT
+  1.76.0 EXACT
   REQUIRED
   COMPONENTS
   serialization
