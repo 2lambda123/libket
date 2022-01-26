@@ -566,6 +566,9 @@ void process_t::int_set(future_t dest, future_t src) {
     add_feature(features_t::int_set);
 }
 
+void process_t::set_timeout(std::uint64_t timeout_) {
+    timeout = timeout_;
+}
 
 double process_t::exec_time() const {
     return exec_time_;

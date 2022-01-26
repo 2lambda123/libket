@@ -72,6 +72,7 @@ int ket_process_dump(ket_process_t, ket_dump_t, int, ...);
 int ket_process_run(ket_process_t);
 int ket_process_exec_time(ket_process_t, double*);
 int ket_process_id(ket_process_t, unsigned*);
+int ket_process_timeout(ket_process_t, unsigned long);
 
 int ket_qubit_new(ket_qubit_t*);
 int ket_qubit_delete(ket_qubit_t);

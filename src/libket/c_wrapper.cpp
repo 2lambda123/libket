@@ -194,6 +194,12 @@ int ket_process_id(ket_process_t process, unsigned* pid) {
     }); 
 }
 
+int ket_process_timeout(ket_process_t process, unsigned long timeout) {
+    return ket_error_wrapper([&](){
+        ((process_t*)process)->set_timeout(timeout);
+    });
+}
+
 int ket_process_dump(ket_process_t process, ket_dump_t dump, int num, ...) {
     unpack_args(ket_qubit_t, qubits); 
     return ket_error_wrapper([&](){

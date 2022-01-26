@@ -45,6 +45,7 @@ void process_t::run() {
     header->num_blocks = block_num;
     header->features = features;
     header->num_qubits = max_num_qubit;
+    header->timeout = timeout;
 
     auto blocks = reinterpret_cast<quantum_code::block_t*>(header+1);   
     char* next_block = reinterpret_cast<char*>(header_code_size);

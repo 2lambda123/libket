@@ -52,6 +52,8 @@ namespace ket::libket {
         void     branch(future_t, label_t then, label_t otherwise);
         dump_t   dump(qubit_list_t);
 
+        void     set_timeout(std::uint64_t);
+
         double exec_time() const;
         
         void run();
@@ -92,6 +94,7 @@ namespace ket::libket {
         future_map_t future_map;
         dump_map_t dump_map;
 
+        std::uint64_t timeout = 0;
         double exec_time_ = 0;
 
         bool_ptr alive;
