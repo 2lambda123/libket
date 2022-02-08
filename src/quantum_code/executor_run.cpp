@@ -31,7 +31,7 @@ void executor_t::run() {
 
     std::atomic_bool keep_running{true};
 
-    quantum_code_t code{quantum_code};
+    quantum_code_t<decltype(quantum_code)> code{quantum_code};
 
     auto get_addr = [&](auto offset) {
         return reinterpret_cast<decltype(offset)>(
@@ -59,134 +59,134 @@ void executor_t::run() {
             for (; pc < end; pc++) if (keep_running) {
                 switch (pc->op_code) {
                 case op_code_t::alloc:
-                    alloc(std::get<index_t>(pc->arg), false);
+                    alloc(boost::get<index_t>(pc->arg), false);
                     break;
                 case op_code_t::alloc_dirty:
-                    alloc(std::get<index_t>(pc->arg), true);
+                    alloc(boost::get<index_t>(pc->arg), true);
                     break;
                 case op_code_t::free:
-                    free(std::get<index_t>(pc->arg), false);
+                    free(boost::get<index_t>(pc->arg), false);
                     break;
                 case op_code_t::free_dirty:
-                    free(std::get<index_t>(pc->arg), true);
+                    free(boost::get<index_t>(pc->arg), true);
                     break;
                 case op_code_t::gate_pauli_x:
-                    pauli_x(std::get<index_t>(pc->arg), ctrl_list);
+                    pauli_x(boost::get<index_t>(pc->arg), ctrl_list);
                     break;
                 case op_code_t::gate_pauli_y:
-                    pauli_y(std::get<index_t>(pc->arg), ctrl_list);
+                    pauli_y(boost::get<index_t>(pc->arg), ctrl_list);
                     break;
                 case op_code_t::gate_pauli_z:
-                    pauli_z(std::get<index_t>(pc->arg), ctrl_list);
+                    pauli_z(boost::get<index_t>(pc->arg), ctrl_list);
                     break;
                 case op_code_t::gate_hadamard:
-                    hadamard(std::get<index_t>(pc->arg), ctrl_list);
+                    hadamard(boost::get<index_t>(pc->arg), ctrl_list);
                     break;
                 case op_code_t::gate_phase:
-                    phase(param, std::get<index_t>(pc->arg), ctrl_list);
+                    phase(param, boost::get<index_t>(pc->arg), ctrl_list);
                     break;
                 case op_code_t::gate_rotation_x:
-                    rotation_x(param, std::get<index_t>(pc->arg), ctrl_list);
+                    rotation_x(param, boost::get<index_t>(pc->arg), ctrl_list);
                     break;
                 case op_code_t::gate_rotation_y:
-                    rotation_y(param, std::get<index_t>(pc->arg), ctrl_list);
+                    rotation_y(param, boost::get<index_t>(pc->arg), ctrl_list);
                     break;
                 case op_code_t::gate_rotation_z:
-                    rotation_z(param, std::get<index_t>(pc->arg), ctrl_list);
+                    rotation_z(param, boost::get<index_t>(pc->arg), ctrl_list);
                     break;
                 case op_code_t::set_param:
-                    param = std::get<double>(pc->arg);
+                    param = boost::get<double>(pc->arg);
                     break;
                 case op_code_t::push_ctrl:
-                    ctrl_list.push_back(std::get<index_t>(pc->arg));
+                    ctrl_list.push_back(boost::get<index_t>(pc->arg));
                     break;
                 case op_code_t::pop_ctrl:
-                    ctrl_list.resize(ctrl_list.size()-std::get<index_t>(pc->arg));
+                    ctrl_list.resize(ctrl_list.size()-boost::get<index_t>(pc->arg));
                     break;
                 case op_code_t::push_qubit:
-                    qubit_list.push_back(std::get<index_t>(pc->arg));
+                    qubit_list.push_back(boost::get<index_t>(pc->arg));
                     break;
                 case op_code_t::measure:
-                    int_map[std::get<index_t>(pc->arg)] = measure(qubit_list);
+                    int_map[boost::get<index_t>(pc->arg)] = measure(qubit_list);
                     qubit_list.clear();
                     break;
                 case op_code_t::get_plugin_args:
-                    plugin_args = get_str(std::get<char*>(pc->arg));
+                    plugin_args = get_str(boost::get<char*>(pc->arg));
                     break;
                 case op_code_t::plugin:
-                    plugin(get_str(std::get<char*>(pc->arg)), qubit_list, plugin_args, ctrl_list);
+                    plugin(get_str(boost::get<char*>(pc->arg)), qubit_list, plugin_args, ctrl_list);
                     qubit_list.clear();
                     break;
                 case op_code_t::set_then:
-                    then = std::get<index_t>(pc->arg);
+                    then = boost::get<index_t>(pc->arg);
                     break;
                 case op_code_t::set_else:
-                    otherwise = std::get<index_t>(pc->arg);
+                    otherwise = boost::get<index_t>(pc->arg);
                     break;
                 case op_code_t::breach:
-                    next_block = int_map[std::get<index_t>(pc->arg)]? then : otherwise;
+                    next_block = int_map[boost::get<index_t>(pc->arg)]? then : otherwise;
                     break;
                 case op_code_t::jump:
-                    next_block = std::get<index_t>(pc->arg);
+                    next_block = boost::get<index_t>(pc->arg);
                     break; 
                 case op_code_t::push_int:
-                    int_stack.push_back(std::get<index_t>(pc->arg));
+                    int_stack.push_back(boost::get<index_t>(pc->arg));
                     break;
                 case op_code_t::int_eq:
-                    int_op(std::get<index_t>(pc->arg), [](auto a, auto b) {return a == b; });
+                    int_op(boost::get<index_t>(pc->arg), [](auto a, auto b) {return a == b; });
                     break;
                 case op_code_t::int_neq:
-                    int_op(std::get<index_t>(pc->arg), [](auto a, auto b) {return a != b; });
+                    int_op(boost::get<index_t>(pc->arg), [](auto a, auto b) {return a != b; });
                     break;
                 case op_code_t::int_gt:
-                    int_op(std::get<index_t>(pc->arg), [](auto a, auto b) {return a > b; });
+                    int_op(boost::get<index_t>(pc->arg), [](auto a, auto b) {return a > b; });
                     break;
                 case op_code_t::int_geq:
-                    int_op(std::get<index_t>(pc->arg), [](auto a, auto b) {return a >= b; });
+                    int_op(boost::get<index_t>(pc->arg), [](auto a, auto b) {return a >= b; });
                     break;
                 case op_code_t::int_lt:
-                    int_op(std::get<index_t>(pc->arg), [](auto a, auto b) {return a < b; });
+                    int_op(boost::get<index_t>(pc->arg), [](auto a, auto b) {return a < b; });
                     break;
                 case op_code_t::int_leq:
-                    int_op(std::get<index_t>(pc->arg), [](auto a, auto b) {return a >= b; });
+                    int_op(boost::get<index_t>(pc->arg), [](auto a, auto b) {return a >= b; });
                     break;
                 case op_code_t::int_add:
-                    int_op(std::get<index_t>(pc->arg), [](auto a, auto b) {return a + b; });
+                    int_op(boost::get<index_t>(pc->arg), [](auto a, auto b) {return a + b; });
                     break;
                 case op_code_t::int_sub:
-                    int_op(std::get<index_t>(pc->arg), [](auto a, auto b) {return a - b; });
+                    int_op(boost::get<index_t>(pc->arg), [](auto a, auto b) {return a - b; });
                     break;
                 case op_code_t::int_mul:
-                    int_op(std::get<index_t>(pc->arg), [](auto a, auto b) {return a * b; });
+                    int_op(boost::get<index_t>(pc->arg), [](auto a, auto b) {return a * b; });
                     break;
                 case op_code_t::int_div:
-                    int_op(std::get<index_t>(pc->arg), [](auto a, auto b) {return a / b; });
+                    int_op(boost::get<index_t>(pc->arg), [](auto a, auto b) {return a / b; });
                     break;
                 case op_code_t::int_sll:
-                    int_op(std::get<index_t>(pc->arg), [](auto a, auto b) {return a << b; });
+                    int_op(boost::get<index_t>(pc->arg), [](auto a, auto b) {return a << b; });
                     break;
                 case op_code_t::int_srl:
-                    int_op(std::get<index_t>(pc->arg), [](auto a, auto b) {return a >> b; });
+                    int_op(boost::get<index_t>(pc->arg), [](auto a, auto b) {return a >> b; });
                     break;
                 case op_code_t::int_and:
-                    int_op(std::get<index_t>(pc->arg), [](auto a, auto b) {return a & b; });
+                    int_op(boost::get<index_t>(pc->arg), [](auto a, auto b) {return a & b; });
                     break;
                 case op_code_t::int_or:
-                    int_op(std::get<index_t>(pc->arg), [](auto a, auto b) {return a | b; });
+                    int_op(boost::get<index_t>(pc->arg), [](auto a, auto b) {return a | b; });
                     break;
                 case op_code_t::int_xor:
-                    int_op(std::get<index_t>(pc->arg), [](auto a, auto b) {return a ^ b; });
+                    int_op(boost::get<index_t>(pc->arg), [](auto a, auto b) {return a ^ b; });
                     break;
                 case op_code_t::int_set:
-                    int_map[std::get<index_t>(pc->arg)] = int_stack[0];
+                    int_map[boost::get<index_t>(pc->arg)] = int_stack[0];
                     int_stack.clear();
                     break;
                 case op_code_t::int_const:
-                    int_map[int_stack[0]] = std::get<int_t>(pc->arg);
+                    int_map[int_stack[0]] = boost::get<int_t>(pc->arg);
                     int_stack.clear();
                     break;
                 case op_code_t::dump:
-                    dump_map[std::get<index_t>(pc->arg)] = dump(qubit_list);
+                    dump_map[boost::get<index_t>(pc->arg)] = dump(qubit_list);
                     qubit_list.clear();
                     break;
                 case op_code_t::halt:

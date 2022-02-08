@@ -9,7 +9,9 @@
 #include <vector>
 #include <exception>
 
-namespace ket::libket {
+namespace ket {
+namespace libket {
+    
     using quantum_code::intruction_t;
 
     class block_t {
@@ -54,4 +56,4 @@ namespace ket::libket {
         virtual const char* what() const noexcept;
     };
 
-} // ket::libket
+}} // ket::libket

@@ -12,6 +12,7 @@
 #include <string>
 
 namespace ket {
+    
     namespace dump {
         using complex_t    = std::complex<double>;
         using state_base_t = std::uint64_t;

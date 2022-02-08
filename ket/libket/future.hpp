@@ -6,7 +6,8 @@
 #include <cstdint>
 #include <ket/util/types.hpp>
 
-namespace ket::libket {
+namespace ket {
+namespace libket {
 
     class process_t;
     
@@ -46,4 +47,5 @@ namespace ket::libket {
 
         friend class process_t;
     };
-} // ket::libket
+    
+}} // ket::libket

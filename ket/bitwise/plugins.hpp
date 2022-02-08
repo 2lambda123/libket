@@ -5,6 +5,7 @@
 #pragma once
 #include <ket/bitwise/kbw.hpp>
 
-namespace ket::bitwise {
+namespace ket {
+namespace bitwise {
     extern "C" void pown(quantum_space_t*, qubit_list_t, char*, ctrl_list_t, bool);
-} // ket::bitwise
+}} // ket::bitwise

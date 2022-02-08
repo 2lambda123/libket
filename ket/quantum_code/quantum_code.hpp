@@ -6,8 +6,10 @@
 #include <cstdint>
 #include <variant>
 #include <ket/util/types.hpp>
+#include <boost/variant.hpp>
 
-namespace ket::quantum_code {
+namespace ket {
+namespace quantum_code {
 
     enum features_t : std::uint32_t {
         none_feature               = 0,
@@ -135,7 +137,7 @@ namespace ket::quantum_code {
 
     struct alignas(32) intruction_t {
         op_code_t op_code; 
-        std::variant<double, index_t, char*, int_t> arg;
+        boost::variant<double, index_t, char*, int_t> arg;
     };
 
     struct alignas(32) block_t {
@@ -155,4 +157,4 @@ namespace ket::quantum_code {
         block_t* block;
     };   
 
-} // namespace ket::quantum_code
+}} // namespace ket::quantum_code

@@ -5,7 +5,8 @@
 #pragma once
 #include <exception>
 
-namespace ket::libket {
+namespace ket {
+namespace libket {
 
     class not_allowed_in_ctrl_adj : public std::exception {
     public:
@@ -48,4 +49,4 @@ namespace ket::libket {
         virtual const char* what() const noexcept;
     };
 
-} // ket::libket
+}} // ket::libket

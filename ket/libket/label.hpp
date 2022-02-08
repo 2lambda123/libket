@@ -5,7 +5,8 @@
 #pragma once
 #include <ket/util/types.hpp>
 
-namespace ket::libket {
+namespace ket {
+namespace libket {
 
     class label_t {
     public:
@@ -25,4 +26,4 @@ namespace ket::libket {
         friend class process_t;
     };
 
-} // ket::libket
+}} // ket::libket

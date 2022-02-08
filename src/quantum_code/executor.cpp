@@ -21,7 +21,7 @@ executor_t::executor_t(quantum_code_ptr quantum_code, features_t features) :
 {}
 
 void executor_t::init() {
-    quantum_code_t code{quantum_code};
+    quantum_code_t<decltype(quantum_code)> code{quantum_code};
     auto& needed_features = code.header->features;
     if (((features^features_t::all) ^ needed_features) != needed_features) {
         throw feature_not_available_error();

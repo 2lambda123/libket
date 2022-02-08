@@ -5,7 +5,9 @@
 #pragma once
 #include <ket/libket/future.hpp>
 
-namespace ket::libket { 
+namespace ket {
+namespace libket { 
+    
     future_t operator==(future_t a, future_t b);
     future_t operator!=(future_t a, future_t b);
     future_t operator> (future_t a, future_t b);
@@ -51,4 +53,5 @@ namespace ket::libket {
     future_t operator& (long a, future_t b);
     future_t operator| (long a, future_t b);
     future_t operator^ (long a, future_t b);
-} // ket::libket
+
+}} // ket::libket

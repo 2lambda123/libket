@@ -6,7 +6,9 @@
 #include <ket/quantum_code/executor.hpp>
 #include <boost/unordered_map.hpp>
 
-namespace ket::bitwise {
+namespace ket {
+namespace bitwise {
+
     using namespace quantum_code;
 
     using quantum_space_t = boost::unordered_map<dump::state_t,dump::complex_t>;
@@ -39,4 +41,4 @@ namespace ket::bitwise {
     };
 
     extern "C" quantum_result_ptr ket_quantum_executor(quantum_code_ptr);
-} // ket::bitwise
+}} // ket::bitwise

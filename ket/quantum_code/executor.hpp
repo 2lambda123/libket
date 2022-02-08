@@ -12,7 +12,9 @@
 #include <ket/util/types.hpp>
 #include <stack>
 
-namespace ket::quantum_code {
+namespace ket {
+namespace quantum_code {
+
     using dump::dump_t;
     using ctrl_list_t = std::vector<index_t>;
     using qubit_list_t = ctrl_list_t;
@@ -79,4 +81,4 @@ namespace ket::quantum_code {
         double exec_time;
     };
 
-} // ket::quantum_code
+}} // ket::quantum_code

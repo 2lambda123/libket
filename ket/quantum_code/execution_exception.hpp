@@ -5,7 +5,8 @@
 #pragma once
 #include <exception>
 
-namespace ket::quantum_code {
+namespace ket {
+namespace quantum_code {
 
     class feature_not_available_error : public std::exception {
     public:
@@ -23,4 +24,4 @@ namespace ket::quantum_code {
     };
 
 
-} // ket::quantum_code
+}} // ket::quantum_code

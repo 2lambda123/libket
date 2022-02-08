@@ -14,7 +14,8 @@
 #include <stack>
 #include <string>
 
-namespace ket::libket {
+namespace ket {
+namespace libket {
 
     enum class gate_t {
         pauli_x,    pauli_y,    pauli_z,
@@ -102,4 +103,4 @@ namespace ket::libket {
         friend class future_t;
     };
 
-} // ket::libket
+}} // ket::libket

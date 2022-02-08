@@ -7,7 +7,8 @@
 #include <ket/util/types.hpp>
 #include <boost/shared_ptr.hpp>
 
-namespace ket::quantum_result {
+namespace ket {
+namespace quantum_result {
 
     struct alignas(32) header_t {
         char magic_number[4] = {'K', 'Q', 'u', 'R'};
@@ -48,4 +49,4 @@ namespace ket::quantum_result {
 
     };
    
-} // ket::quantum_code
+}} // ket::quantum_code

@@ -57,7 +57,7 @@ void process_t::run() {
     auto quantum_executor = boost::dll::import_symbol<quantum_result_ptr(quantum_code_ptr)>(load_var<std::string>("KET_QUANTUM_EXECUTOR"), "ket_quantum_executor");
     auto result_ptr = quantum_executor(quantum_code);
 
-    quantum_result::quantum_result_t result{result_ptr};
+    quantum_result::quantum_result_t<decltype(result_ptr)> result{result_ptr};
 
     for (auto i = 0u; i < result.header->num_int; i++) {
         auto &future = future_map[result.int_result[i].index];
