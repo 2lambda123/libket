@@ -178,7 +178,7 @@ void executor_t::run() {
                     int_op(boost::get<index_t>(pc->arg), [](auto a, auto b) {return a ^ b; });
                     break;
                 case op_code_t::int_set:
-                    int_map[boost::get<index_t>(pc->arg)] = int_stack[0];
+                    int_map[boost::get<index_t>(pc->arg)] = int_map[int_stack[0]];
                     int_stack.clear();
                     break;
                 case op_code_t::int_const:
