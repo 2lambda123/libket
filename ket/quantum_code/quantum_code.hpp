@@ -4,7 +4,6 @@
  */
 #pragma once
 #include <cstdint>
-#include <variant>
 #include <ket/util/types.hpp>
 #include <boost/variant.hpp>
 
