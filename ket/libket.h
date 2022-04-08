@@ -4,6 +4,7 @@
  */
 #pragma once
 #include <stdbool.h>
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -38,17 +39,17 @@ extern "C" {
 #define KET_INT_FI     26
 #define KET_INT_IF     27
 
-typedef void*          ket_process_t;
-typedef void*          ket_qubit_t;
-typedef void*          ket_future_t;
-typedef void*          ket_label_t;
-typedef void*          ket_dump_t;
-typedef void*          ket_dump_states_t;
-typedef void*          ket_dump_amplitudes_t;
-typedef unsigned long* ket_dump_state_t;
-typedef int            ket_gate_t;
-typedef int            ket_int_op_t;
-typedef int            ket_int_op_tt_t;
+typedef void*     ket_process_t;
+typedef void*     ket_qubit_t;
+typedef void*     ket_future_t;
+typedef void*     ket_label_t;
+typedef void*     ket_dump_t;
+typedef void*     ket_dump_states_t;
+typedef void*     ket_dump_amplitudes_t;
+typedef uint64_t* ket_dump_state_t;
+typedef int       ket_gate_t;
+typedef int       ket_int_op_t;
+typedef int       ket_int_op_tt_t;
 
 const char* ket_error_message();
 
@@ -58,7 +59,7 @@ int ket_process_alloc(ket_process_t, ket_qubit_t, _Bool);
 int ket_process_free(ket_process_t, ket_qubit_t, _Bool);
 int ket_process_gate(ket_process_t, ket_gate_t, ket_qubit_t, double);
 int ket_process_measure(ket_process_t, ket_future_t, int, ...);
-int ket_process_new_int(ket_process_t, ket_future_t, long);
+int ket_process_new_int(ket_process_t, ket_future_t, int64_t);
 int ket_process_plugin(ket_process_t, char*, char*, int, ...);
 int ket_process_ctrl_push(ket_process_t, int, ...);
 int ket_process_ctrl_pop(ket_process_t);
@@ -72,7 +73,7 @@ int ket_process_dump(ket_process_t, ket_dump_t, int, ...);
 int ket_process_run(ket_process_t);
 int ket_process_exec_time(ket_process_t, double*);
 int ket_process_id(ket_process_t, unsigned*);
-int ket_process_timeout(ket_process_t, unsigned long);
+int ket_process_timeout(ket_process_t, uint64_t);
 
 int ket_qubit_new(ket_qubit_t*);
 int ket_qubit_delete(ket_qubit_t);
@@ -83,7 +84,7 @@ int ket_qubit_process_id(ket_qubit_t, unsigned*);
 
 int ket_future_new(ket_future_t*);
 int ket_future_delete(ket_future_t);
-int ket_future_value(ket_future_t, long*);
+int ket_future_value(ket_future_t, int64_t*);
 int ket_future_set(ket_future_t, ket_future_t);
 int ket_future_available(ket_future_t, _Bool*);
 int ket_future_index(ket_future_t, unsigned*);
@@ -104,9 +105,9 @@ int ket_dump_available(ket_dump_t, _Bool*);
 int ket_dump_index(ket_dump_t, unsigned*);
 int ket_dump_process_id(ket_dump_t, unsigned*);
 
-int ket_dump_state_at(ket_dump_states_t, ket_dump_state_t*, size_t*, unsigned long);
+int ket_dump_state_at(ket_dump_states_t, ket_dump_state_t*, size_t*, uint64_t);
 
-int ket_dump_amp_at(ket_dump_amplitudes_t, double*, double*, unsigned long);
+int ket_dump_amp_at(ket_dump_amplitudes_t, double*, double*, uint64_t);
 
 #ifdef __cplusplus
 }

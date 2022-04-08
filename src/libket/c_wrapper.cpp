@@ -106,7 +106,7 @@ int ket_process_measure(ket_process_t process, ket_future_t future, int num, ...
     });
 }
 
-int ket_process_new_int(ket_process_t process, ket_future_t future, long value) {
+int ket_process_new_int(ket_process_t process, ket_future_t future, int64_t value) {
     return ket_error_wrapper([&](){
         *((future_t*)future) = ((process_t*)process)->new_int(value);
     });
@@ -194,7 +194,7 @@ int ket_process_id(ket_process_t process, unsigned* pid) {
     }); 
 }
 
-int ket_process_timeout(ket_process_t process, unsigned long timeout) {
+int ket_process_timeout(ket_process_t process, uint64_t timeout) {
     return ket_error_wrapper([&](){
         ((process_t*)process)->set_timeout(timeout);
     });
@@ -259,7 +259,7 @@ int ket_future_delete(ket_future_t future) {
     }); 
 }
 
-int ket_future_value(ket_future_t future, long* value) {
+int ket_future_value(ket_future_t future, int64_t* value) {
     return ket_error_wrapper([&](){
         *value = ((future_t*)future)->value();
     }); 
@@ -346,7 +346,7 @@ int ket_future_op(ket_future_t result, ket_int_op_t int_op, c_L left, c_R right)
 
 int ket_future_op(ket_future_t result, ket_int_op_t int_op, ket_int_op_tt_t tt, ...) {
     ket_future_t fl, fr;
-    long il, ir;
+    int64_t il, ir;
     va_list valist;
     va_start(valist, tt);
 
@@ -358,12 +358,12 @@ int ket_future_op(ket_future_t result, ket_int_op_t int_op, ket_int_op_tt_t tt, 
         break;
     case KET_INT_FI:
         fl =  va_arg(valist, ket_future_t);
-        ir =  va_arg(valist, long);
-        return ket_future_op<future_t, long>(result, int_op, fl, &ir);
+        ir =  va_arg(valist, int64_t);
+        return ket_future_op<future_t, int64_t>(result, int_op, fl, &ir);
     case KET_INT_IF:
-        il =  va_arg(valist, long);
+        il =  va_arg(valist, int64_t);
         fr =  va_arg(valist, ket_future_t);
-        return ket_future_op<long, future_t>(result, int_op, &il, fr);
+        return ket_future_op<int64_t, future_t>(result, int_op, &il, fr);
     default:
         ket_error_str = "ket_future_op (libketc) invalid arguments";
         return KET_ERROR;
@@ -441,14 +441,14 @@ int ket_dump_process_id(ket_dump_t dump, unsigned* pid) {
 
 }
 
-int ket_dump_state_at(ket_dump_states_t states, ket_dump_state_t* state, size_t* size, unsigned long index) {
+int ket_dump_state_at(ket_dump_states_t states, ket_dump_state_t* state, size_t* size, uint64_t index) {
     return ket_error_wrapper([&](){
         *state = ((ket::dump::states_t*)states)->at(index).data();
         *size = ((ket::dump::states_t*)states)->at(index).size();
     });
 }
 
-int ket_dump_amp_at(ket_dump_amplitudes_t amplitudes, double* real, double* imag, unsigned long index) {
+int ket_dump_amp_at(ket_dump_amplitudes_t amplitudes, double* real, double* imag, uint64_t index) {
     return ket_error_wrapper([&](){
         *real = ((ket::dump::amplitudes_t*)amplitudes)->at(index).real();
         *imag = ((ket::dump::amplitudes_t*)amplitudes)->at(index).imag();

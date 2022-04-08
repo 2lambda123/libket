@@ -82,7 +82,7 @@ ket::int_t executor_t::measure(qubit_list_t qubit_list) {
     int_t result = 0;
     auto size = qubit_list.size();
     for (auto i = 0u; i < size; i++) {
-        result |= _measure(qubit_list[i]) << (size-i-1);
+        result |= ((int_t) _measure(qubit_list[i])) << (size-i-1);
     }
 
     return result;
