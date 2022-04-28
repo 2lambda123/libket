@@ -16,45 +16,55 @@ endif()
 
 include(${CMAKE_BINARY_DIR}/conan.cmake)
 
-conan_cmake_run(
-  REQUIRES 
-  boost/1.76.0
-  BASIC_SETUP 
-  CMAKE_TARGETS
-  BUILD missing
-  OPTIONS
-  boost:without_atomic=True
-  boost:without_chrono=True
-  boost:without_container=True
-  boost:without_context=True
-  boost:without_contract=True
-  boost:without_coroutine=True
-  boost:without_date_time=True
-  boost:without_exception=True
-  boost:without_fiber=True
-  boost:without_filesystem=False
-  boost:without_graph=True
-  boost:without_graph_parallel=True
-  boost:without_iostreams=True
-  boost:without_json=True
-  boost:without_locale=True
-  boost:without_log=True
-  boost:without_math=True
-  boost:without_mpi=True
-  boost:without_nowide=True
-  boost:without_program_options=True
-  boost:without_python=True
-  boost:without_random=True
-  boost:without_regex=True
-  boost:without_serialization=False
-  boost:without_stacktrace=True
-  boost:without_system=False
-  boost:without_test=True
-  boost:without_thread=True
-  boost:without_timer=True
-  boost:without_type_erasure=True
-  boost:without_wave=True
-)
+if(DEFINED CONAN_BOOST_ALL)
+  conan_cmake_run(
+    REQUIRES 
+    boost/1.76.0
+    BASIC_SETUP 
+    CMAKE_TARGETS
+    BUILD missing
+  )
+else()
+  conan_cmake_run(
+    REQUIRES 
+    boost/1.76.0
+    BASIC_SETUP 
+    CMAKE_TARGETS
+    BUILD missing
+    OPTIONS
+    boost:without_atomic=True
+    boost:without_chrono=True
+    boost:without_container=True
+    boost:without_context=True
+    boost:without_contract=True
+    boost:without_coroutine=True
+    boost:without_date_time=True
+    boost:without_exception=True
+    boost:without_fiber=True
+    boost:without_filesystem=False
+    boost:without_graph=True
+    boost:without_graph_parallel=True
+    boost:without_iostreams=True
+    boost:without_json=True
+    boost:without_locale=True
+    boost:without_log=True
+    boost:without_math=True
+    boost:without_mpi=True
+    boost:without_nowide=True
+    boost:without_program_options=True
+    boost:without_python=True
+    boost:without_random=True
+    boost:without_regex=True
+    boost:without_serialization=False
+    boost:without_stacktrace=True
+    boost:without_system=False
+    boost:without_test=True
+    boost:without_thread=True
+    boost:without_timer=True
+    boost:without_type_erasure=True
+    boost:without_wave=True
+  )
+endif()
 
 include(${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo.cmake)
 conan_basic_setup()
