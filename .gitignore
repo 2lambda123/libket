@@ -1,2 +1,2 @@
-build/.ninja_deps
-build
+/target
+/Cargo.lock
