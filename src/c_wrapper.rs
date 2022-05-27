@@ -1,3 +1,5 @@
+use std::future;
+
 use crate::*;
 
 const KET_SUCCESS: i32 = 0;
@@ -241,12 +243,40 @@ pub extern "C" fn ket_process_add_int_op(
 }
 
 #[no_mangle]
-pub extern "C" fn ket_process_int_set(process: &mut Process, result: &Future, value: i64) -> i32 {
+pub extern "C" fn ket_process_int_set(
+    process: &mut Process,
+    result: &Future,
+    value: &Future,
+) -> i32 {
     match process.int_set(result, value) {
         Ok(_) => KET_SUCCESS,
         Err(msg) => {
             unsafe { ERROR_MESSAGE = String::from(msg) };
             KET_ERROR
+        }
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn ket_process_int_new(process: &mut Process, value: i64) -> *mut Future {
+    match process.int_new(value) {
+        Ok(future) => Box::into_raw(Box::new(future)),
+        Err(msg) => {
+            unsafe { ERROR_MESSAGE = String::from(msg) };
+            0 as *mut Future
+        }
+    }
+}
+#[no_mangle]
+pub extern "C" fn ket_process_exec_time(process: &Process, available: &mut bool) -> f64 {
+    match process.exec_time() {
+        Some(time) => {
+            *available = true;
+            time
+        }
+        None => {
+            *available = false;
+            0.0
         }
     }
 }
@@ -285,4 +315,136 @@ pub extern "C" fn ket_process_get_quantum_code_as_bin(
             0 as *const u8
         }
     }
+}
+
+#[no_mangle]
+pub extern "C" fn ket_qubit_delete(qubit: *mut Qubit) {
+    unsafe { Box::from_raw(qubit) };
+}
+
+#[no_mangle]
+pub extern "C" fn ket_qubit_index(qubit: &Qubit) -> u32 {
+    qubit.index()
+}
+
+#[no_mangle]
+pub extern "C" fn ket_qubit_pid(qubit: &Qubit) -> u32 {
+    qubit.pid()
+}
+
+#[no_mangle]
+pub extern "C" fn ket_qubit_allocated(qubit: &Qubit) -> bool {
+    qubit.allocated()
+}
+
+#[no_mangle]
+pub extern "C" fn ket_qubit_measured(qubit: &Qubit) -> bool {
+    qubit.measured()
+}
+
+#[no_mangle]
+pub extern "C" fn ket_dump_delete(dump: *mut Dump) {
+    unsafe { Box::from_raw(dump) };
+}
+
+#[no_mangle]
+pub extern "C" fn ket_dump_states(dump: &Dump, size: &mut usize) -> *const Vec<u64> {
+    match dump.value().as_ref() {
+        Some(value) => {
+            *size = value.basis_states().len();
+            value.basis_states().as_ptr()
+        }
+        None => {
+            *size = 0;
+            0 as *const Vec<u64>
+        }
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ket_dump_get_state(
+    states: *const Vec<u64>,
+    index: usize,
+    size: &mut usize,
+) -> *const u64 {
+    let state = states.add(index);
+    *size = (*state).len();
+    (*state).as_ptr()
+}
+
+#[no_mangle]
+pub extern "C" fn ket_dump_amplitudes_real(dump: &Dump, size: &mut usize) -> *const f64 {
+    match dump.value().as_ref() {
+        Some(value) => {
+            *size = value.amplitudes_real().len();
+            value.amplitudes_real().as_ptr()
+        }
+        None => {
+            *size = 0;
+            0 as *const f64
+        }
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn ket_dump_amplitudes_img(dump: &Dump, size: &mut usize) -> *const f64 {
+    match dump.value().as_ref() {
+        Some(value) => {
+            *size = value.amplitudes_img().len();
+            value.amplitudes_img().as_ptr()
+        }
+        None => {
+            *size = 0;
+            0 as *const f64
+        }
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn ket_dump_available(dump: &Dump) -> bool {
+    dump.value().is_some()
+}
+
+#[no_mangle]
+pub extern "C" fn ket_future_delete(future: *mut Future) {
+    unsafe { Box::from_raw(future) };
+}
+
+#[no_mangle]
+pub extern "C" fn ket_future_value(future: &Future, available: &mut bool) -> i64 {
+    match future.value().as_ref() {
+        Some(value) => {
+            *available = true;
+            *value
+        }
+        None => {
+            *available = false;
+            -1
+        }
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn ket_future_index(future: &Future) -> u32 {
+    future.index()
+}
+
+#[no_mangle]
+pub extern "C" fn ket_future_pid(future: &Future) -> u32 {
+    future.pid()
+}
+
+#[no_mangle]
+pub extern "C" fn ket_label_delete(label: *mut Label) {
+    unsafe { Box::from_raw(label) };
+}
+
+#[no_mangle]
+pub extern "C" fn ket_label_index(label: &Label) -> u32 {
+    label.index()
+}
+
+#[no_mangle]
+pub extern "C" fn ket_label_pid(label: &Label) -> u32 {
+    label.pid()
 }

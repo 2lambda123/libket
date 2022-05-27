@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use std::cell::RefCell;
+use std::cell::{Ref, RefCell};
 use std::rc::Rc;
 
 use crate::code_block::{ClassicalOp, CodeBlock, Instruction, QuantumGate};
@@ -8,11 +8,30 @@ trait Pid {
     fn pid(&self) -> u32;
 }
 
+#[derive(Debug)]
 pub struct Qubit {
     index: u32,
     pid: u32,
     allocated: bool,
     measured: bool,
+}
+
+impl Qubit {
+    pub fn index(&self) -> u32 {
+        self.index
+    }
+
+    pub fn pid(&self) -> u32 {
+        self.pid
+    }
+
+    pub fn allocated(&self) -> bool {
+        self.allocated
+    }
+
+    pub fn measured(&self) -> bool {
+        self.measured
+    }
 }
 
 impl Pid for &Qubit {
@@ -28,6 +47,20 @@ pub struct Future {
     value: Rc<RefCell<Option<i64>>>,
 }
 
+impl Future {
+    pub fn value(&self) -> Ref<Option<i64>> {
+        self.value.borrow()
+    }
+
+    pub fn index(&self) -> u32 {
+        self.index
+    }
+
+    pub fn pid(&self) -> u32 {
+        self.pid
+    }
+}
+
 impl Pid for &Future {
     fn pid(&self) -> u32 {
         self.pid
@@ -36,29 +69,56 @@ impl Pid for &Future {
 
 #[derive(Debug)]
 pub struct Dump {
-    index: u32,
-    pid: u32,
     value: Rc<RefCell<Option<DumpData>>>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
-pub struct Complex(f64, f64);
+impl Dump {
+    pub fn value(&self) -> Ref<Option<DumpData>> {
+        self.value.borrow()
+    }
+}
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct DumpData {
-    basis_states: Vec<Vec<u64>>,
-    amplitudes: Vec<Complex>,
+    pub basis_states: Vec<Vec<u64>>,
+    pub amplitudes_real: Vec<f64>,
+    pub amplitudes_img: Vec<f64>,
+}
+
+impl DumpData {
+    pub fn basis_states(&self) -> &[Vec<u64>] {
+        &self.basis_states
+    }
+
+    pub fn amplitudes_real(&self) -> &[f64] {
+        &self.amplitudes_real
+    }
+
+    pub fn amplitudes_img(&self) -> &[f64] {
+        &self.amplitudes_real
+    }
 }
 
 #[derive(Serialize, Deserialize)]
 pub struct QuantumResult {
-    future: Vec<i64>,
-    dump: Vec<DumpData>,
+    pub future: Vec<i64>,
+    pub dump: Vec<DumpData>,
+    pub exec_time: f64,
 }
 
 pub struct Label {
     index: u32,
     pid: u32,
+}
+
+impl Label {
+    pub fn index(&self) -> u32 {
+        self.index
+    }
+
+    pub fn pid(&self) -> u32 {
+        self.pid
+    }
 }
 
 impl Pid for &Label {
@@ -76,6 +136,17 @@ impl Qubit {
         }
     }
 }
+
+#[derive(Serialize, Deserialize)]
+pub struct Metrics {
+    pub max_num_qubit: u32,
+    pub qubit_count: u32,
+    pub future_count: u32,
+    pub dump_count: u32,
+    pub label_count: u32,
+    pub timeout: Option<u32>,
+}
+
 pub struct Process {
     pid: u32,
 
@@ -364,11 +435,7 @@ impl Process {
             output: dump_index,
         })?;
 
-        Ok(Dump {
-            index: dump_index,
-            pid: self.pid,
-            value: dump_value,
-        })
+        Ok(Dump { value: dump_value })
     }
 
     pub fn add_int_op(
@@ -403,17 +470,45 @@ impl Process {
         })
     }
 
-    pub fn int_set(&mut self, result: &Future, value: i64) -> Result<(), String> {
+    pub fn int_set(&mut self, result: &Future, value: &Future) -> Result<(), String> {
         self.check_not_ctrl_adj_err()?;
         self.match_pid(&result)?;
 
         let block = self.get_current_block();
-        block.add_instruction(Instruction::IntSet {
+        block.add_instruction(Instruction::IntOp {
+            op: ClassicalOp::Add,
             result: result.index,
-            value,
+            lhs: 0,
+            rhs: value.index,
         })?;
 
         Ok(())
+    }
+
+    pub fn int_new(&mut self, value: i64) -> Result<Future, String> {
+        self.check_not_ctrl_adj_err()?;
+
+        let index = self.future_count;
+        self.future_count += 1;
+
+        let block = self.get_current_block();
+        block.add_instruction(Instruction::IntSet {
+            result: index,
+            value,
+        })?;
+
+        let value = Rc::new(RefCell::new(None));
+        self.futures.push(Rc::clone(&value));
+
+        Ok(Future {
+            index,
+            pid: self.pid,
+            value,
+        })
+    }
+
+    pub fn exec_time(&self) -> Option<f64> {
+        self.exec_time
     }
 
     pub fn get_quantum_code(&mut self) -> Result<Vec<&[Instruction]>, String> {
@@ -453,6 +548,9 @@ impl Process {
             for dump in self.dumps.iter_mut().rev() {
                 *dump.borrow_mut() = result.dump.pop();
             }
+
+            self.exec_time = Some(result.exec_time);
+
             Ok(())
         }
     }
@@ -478,6 +576,17 @@ impl Process {
 
         Ok(())
     }
+
+    pub fn get_metrics(&self) -> Metrics {
+        Metrics {
+            max_num_qubit: self.max_num_qubit,
+            qubit_count: self.qubit_count,
+            future_count: self.future_count,
+            dump_count: self.dump_count,
+            label_count: self.label_count,
+            timeout: self.timeout,
+        }
+    }
 }
 
 #[cfg(test)]
@@ -497,7 +606,7 @@ mod tests {
 
         let m = p.measure(&mut [&mut a, &mut b]).unwrap();
 
-        println!("{}", p.get_quantum_code_as_json().unwrap());    
-        println!("{:#?}", m);    
+        println!("{}", p.get_quantum_code_as_json().unwrap());
+        println!("{:#?}", m);
     }
 }
