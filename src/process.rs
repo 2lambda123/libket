@@ -95,7 +95,7 @@ impl DumpData {
     }
 
     pub fn amplitudes_img(&self) -> &[f64] {
-        &self.amplitudes_real
+        &self.amplitudes_img
     }
 }
 
