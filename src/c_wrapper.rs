@@ -74,6 +74,51 @@ pub extern "C" fn ket_process_apply_gate(
 }
 
 #[no_mangle]
+pub extern "C" fn ket_process_apply_plugin(
+    process: &mut Process,
+    name: *const u8,
+    name_size: usize,
+    target: *const &Qubit,
+    target_size: usize,
+    args: *const u8,
+    args_size: usize,
+) -> i32 {
+    let name = unsafe { std::slice::from_raw_parts(name, name_size) };
+    let name = match std::str::from_utf8(name) {
+        Ok(name) => name,
+        Err(msg) => {
+            unsafe {
+                ERROR_MESSAGE = format!("{}", msg);
+            }
+            return KET_ERROR;
+        }
+    };
+
+    let target = unsafe { std::slice::from_raw_parts(target, target_size) };
+
+    let args = unsafe { std::slice::from_raw_parts(args, args_size) };
+    let args = match std::str::from_utf8(args) {
+        Ok(args) => args,
+        Err(msg) => {
+            unsafe {
+                ERROR_MESSAGE = format!("{}", msg);
+            }
+            return KET_ERROR;
+        }
+    };
+
+    match process.apply_plugin(name, target, args) {
+        Ok(_) => KET_SUCCESS,
+        Err(msg) => {
+            unsafe {
+                ERROR_MESSAGE = msg;
+            }
+            KET_ERROR
+        }
+    }
+}
+
+#[no_mangle]
 pub extern "C" fn ket_process_measure(
     process: &mut Process,
     qubits: *mut &mut Qubit,
@@ -265,6 +310,7 @@ pub extern "C" fn ket_process_int_new(process: &mut Process, value: i64) -> *mut
         }
     }
 }
+
 #[no_mangle]
 pub extern "C" fn ket_process_exec_time(process: &Process, available: &mut bool) -> f64 {
     match process.exec_time() {
@@ -277,6 +323,11 @@ pub extern "C" fn ket_process_exec_time(process: &Process, available: &mut bool)
             0.0
         }
     }
+}
+
+#[no_mangle]
+pub extern "C" fn ket_process_set_timeout(process: &mut Process, timeout: u32) {
+    process.set_timeout(timeout);
 }
 
 #[no_mangle]
@@ -311,6 +362,73 @@ pub extern "C" fn ket_process_get_quantum_code_as_bin(
             *size = 0;
             unsafe { ERROR_MESSAGE = String::from(msg) };
             0 as *const u8
+        }
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn ket_process_get_metrics_as_json(
+    process: &mut Process,
+    size: &mut usize,
+) -> *const u8 {
+    let metrics = process.get_metrics_as_json();
+    *size = metrics.len();
+    metrics.as_bytes().as_ptr()
+}
+
+#[no_mangle]
+pub extern "C" fn ket_process_get_metrics_as_bin(
+    process: &mut Process,
+    size: &mut usize,
+) -> *const u8 {
+    let metrics = process.get_metrics_as_bin();
+    *size = metrics.len();
+    metrics.as_ptr()
+}
+
+#[no_mangle]
+pub extern "C" fn ket_process_set_quantum_result_from_json(
+    process: &mut Process,
+    result: *const u8,
+    size: usize,
+) -> i32 {
+    let result = unsafe { std::slice::from_raw_parts(result, size) };
+    let result = match std::str::from_utf8(result) {
+        Ok(result) => result,
+        Err(msg) => {
+            unsafe {
+                ERROR_MESSAGE = format!("Fail to read result from json: {}", msg);
+            }
+            return KET_ERROR;
+        }
+    };
+
+    match process.set_quantum_result_from_json(result) {
+        Ok(_) => KET_SUCCESS,
+        Err(msg) => {
+            unsafe {
+                ERROR_MESSAGE = msg;
+            }
+            KET_ERROR
+        }
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn ket_process_set_quantum_result_from_bin(
+    process: &mut Process,
+    result: *const u8,
+    size: usize,
+) -> i32 {
+    let result = unsafe { std::slice::from_raw_parts(result, size) };
+
+    match process.set_quantum_result_from_bin(result) {
+        Ok(_) => KET_SUCCESS,
+        Err(msg) => {
+            unsafe {
+                ERROR_MESSAGE = msg;
+            }
+            KET_ERROR
         }
     }
 }

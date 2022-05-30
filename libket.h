@@ -44,6 +44,7 @@ void ket_process_delete(ket_process_t process);
 ket_qubit_t ket_process_alloc(ket_process_t process, bool dirty);
 int32_t ket_process_free(ket_process_t process, ket_qubit_t qubit, bool dirty);
 int32_t ket_process_apply_gate(ket_process_t process, uint32_t gate, double param, ket_qubit_t target);
+int32_t ket_process_apply_plugin(ket_process_t process, const uint8_t *name, size_t name_size, ket_qubit_t target, size_t target_size, const uint8_t *args, size_t args_size);
 ket_future_t ket_process_measure(ket_process_t process, ket_qubit_t qubits, size_t num_qubits);
 int32_t ket_process_ctrl_push(ket_process_t process, ket_qubit_t qubits, size_t num_qubits);
 int32_t ket_process_ctrl_pop(ket_process_t process);
@@ -59,6 +60,10 @@ int32_t ket_process_int_set(ket_process_t process, ket_future_t result, ket_futu
 ket_future_t ket_process_int_new(ket_process_t process, int64_t value);
 const uint8_t *ket_process_get_quantum_code_as_json(ket_process_t process, size_t *size);
 const uint8_t *ket_process_get_quantum_code_as_bin(ket_process_t process, size_t *size);
+const uint8_t *ket_process_get_metrics_as_json(ket_process_t process, size_t *size);
+const uint8_t *ket_process_get_metrics_as_bin(ket_process_t process, size_t *size);
+double ket_process_exec_time(ket_process_t process, bool* available);
+void ket_process_set_timeout(ket_process_t process, uint32_t timeout);
 
 void ket_qubit_delete(ket_qubit_t qubit);
 uint32_t ket_qubit_index(ket_qubit_t qubit);

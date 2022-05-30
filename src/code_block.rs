@@ -51,6 +51,7 @@ pub enum Instruction {
         output: u32,
     },
     Plugin {
+        name: String,
         target: Vec<u32>,
         control: Vec<u32>,
         adj: bool,

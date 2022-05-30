@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::cell::{Ref, RefCell};
+use std::collections::HashSet;
 use std::rc::Rc;
 
 use crate::code_block::{ClassicalOp, CodeBlock, Instruction, QuantumGate};
@@ -145,6 +146,7 @@ pub struct Metrics {
     pub dump_count: u32,
     pub label_count: u32,
     pub timeout: Option<u32>,
+    pub plugins: Vec<String>,
 }
 
 pub struct Process {
@@ -173,6 +175,11 @@ pub struct Process {
 
     quantum_code_json: Option<String>,
     quantum_code_bin: Option<Vec<u8>>,
+
+    metrics_json: Option<String>,
+    metrics_bin: Option<Vec<u8>>,
+
+    plugins: HashSet<String>,
 }
 
 impl Process {
@@ -184,7 +191,7 @@ impl Process {
             qubit_count: 0,
             future_count: 1,
             dump_count: 0,
-            label_count: 0,
+            label_count: 1,
             blocks: vec![CodeBlock::new()],
             current_block: 0,
             ctrl_stack: Vec::new(),
@@ -195,6 +202,9 @@ impl Process {
             waiting_result: false,
             quantum_code_json: None,
             quantum_code_bin: None,
+            metrics_bin: None,
+            metrics_json: None,
+            plugins: HashSet::new(),
         }
     }
 
@@ -292,6 +302,33 @@ impl Process {
             gate,
             target: target.index,
             control,
+        })?;
+
+        Ok(())
+    }
+
+    pub fn apply_plugin(
+        &mut self,
+        name: &str,
+        target: &[&Qubit],
+        args: &str,
+    ) -> Result<(), String> {
+        let control = self.get_ctrl_as_vec();
+        for qubit in target {
+            qubit.not_allocated_err()?;
+            self.match_pid(qubit)?;
+            Process::target_in_ctrl_err(qubit, &control)?;
+        }
+
+        self.plugins.insert(String::from(name));
+
+        let block = self.get_current_block();
+        block.add_instruction(Instruction::Plugin {
+            name: String::from(name),
+            target: target.iter().map(|q| q.index).collect(),
+            control,
+            adj: block.in_adj(),
+            args: String::from(args),
         })?;
 
         Ok(())
@@ -566,7 +603,7 @@ impl Process {
         Ok(())
     }
 
-    pub fn set_quantum_result_from_bin(&mut self, result: Vec<u8>) -> Result<(), String> {
+    pub fn set_quantum_result_from_bin(&mut self, result: &[u8]) -> Result<(), String> {
         let result: QuantumResult = match bincode::deserialize(&result) {
             Ok(result) => result,
             Err(msg) => return Err(format!("Fail to parse quantum result BIN: {}", msg)),
@@ -585,7 +622,28 @@ impl Process {
             dump_count: self.dump_count,
             label_count: self.label_count,
             timeout: self.timeout,
+            plugins: self.plugins.iter().map(String::clone).collect(),
         }
+    }
+
+    pub fn get_metrics_as_json(&mut self) -> &str {
+        if let None = self.metrics_json {
+            self.metrics_json = Some(serde_json::to_string(&self.get_metrics()).unwrap());
+        }
+
+        self.metrics_json.as_ref().unwrap()
+    }
+
+    pub fn get_metrics_as_bin(&mut self) -> &[u8] {
+        if let None = self.metrics_bin {
+            self.metrics_bin = Some(bincode::serialize(&self.get_metrics()).unwrap());
+        }
+
+        self.metrics_bin.as_ref().unwrap()
+    }
+
+    pub fn set_timeout(&mut self, timeout: u32) {
+        self.timeout = Some(timeout);
     }
 }
 
