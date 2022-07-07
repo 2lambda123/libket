@@ -1,270 +1,60 @@
-use serde::{Deserialize, Serialize};
-use std::cell::{Ref, RefCell};
-use std::collections::HashSet;
-use std::rc::Rc;
+use std::{cell::RefCell, rc::Rc};
 
-use crate::code_block::{ClassicalOp, CodeBlock, Instruction, QuantumGate};
-
-trait Pid {
-    fn pid(&self) -> u32;
-}
-
-#[derive(Debug)]
-pub struct Qubit {
-    index: u32,
-    pid: u32,
-    allocated: bool,
-    measured: bool,
-}
-
-impl Qubit {
-    pub fn index(&self) -> u32 {
-        self.index
-    }
-
-    pub fn pid(&self) -> u32 {
-        self.pid
-    }
-
-    pub fn allocated(&self) -> bool {
-        self.allocated
-    }
-
-    pub fn measured(&self) -> bool {
-        self.measured
-    }
-}
-
-impl Pid for &Qubit {
-    fn pid(&self) -> u32 {
-        self.pid
-    }
-}
-
-#[derive(Debug)]
-pub struct Future {
-    index: u32,
-    pid: u32,
-    value: Rc<RefCell<Option<i64>>>,
-}
-
-impl Future {
-    pub fn value(&self) -> Ref<Option<i64>> {
-        self.value.borrow()
-    }
-
-    pub fn index(&self) -> u32 {
-        self.index
-    }
-
-    pub fn pid(&self) -> u32 {
-        self.pid
-    }
-}
-
-impl Pid for &Future {
-    fn pid(&self) -> u32 {
-        self.pid
-    }
-}
-
-#[derive(Debug)]
-pub struct Dump {
-    value: Rc<RefCell<Option<DumpData>>>,
-}
-
-impl Dump {
-    pub fn value(&self) -> Ref<Option<DumpData>> {
-        self.value.borrow()
-    }
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct DumpData {
-    pub basis_states: Vec<Vec<u64>>,
-    pub amplitudes_real: Vec<f64>,
-    pub amplitudes_img: Vec<f64>,
-}
-
-impl DumpData {
-    pub fn basis_states(&self) -> &[Vec<u64>] {
-        &self.basis_states
-    }
-
-    pub fn amplitudes_real(&self) -> &[f64] {
-        &self.amplitudes_real
-    }
-
-    pub fn amplitudes_img(&self) -> &[f64] {
-        &self.amplitudes_img
-    }
-}
-
-#[derive(Serialize, Deserialize)]
-pub struct QuantumResult {
-    pub future: Vec<i64>,
-    pub dump: Vec<DumpData>,
-    pub exec_time: f64,
-}
-
-pub struct Label {
-    index: u32,
-    pid: u32,
-}
-
-impl Label {
-    pub fn index(&self) -> u32 {
-        self.index
-    }
-
-    pub fn pid(&self) -> u32 {
-        self.pid
-    }
-}
-
-impl Pid for &Label {
-    fn pid(&self) -> u32 {
-        self.pid
-    }
-}
-
-impl Qubit {
-    pub fn not_allocated_err(&self) -> Result<(), &str> {
-        if self.allocated {
-            Ok(())
-        } else {
-            Err("Cannot operate with a deallocated qubit.")
-        }
-    }
-}
-
-#[derive(Serialize, Deserialize)]
-pub struct Metrics {
-    pub max_num_qubit: u32,
-    pub qubit_count: u32,
-    pub future_count: u32,
-    pub dump_count: u32,
-    pub label_count: u32,
-    pub timeout: Option<u32>,
-    pub plugins: Vec<String>,
-}
+use crate::{
+    code_block::{CodeBlock, CodeBlockHandler},
+    error::{KetError, Result},
+    instruction::{ClassicalOp, EndInstruction, Instruction, QuantumGate},
+    ir::{Metrics, ResultData},
+    object::{Dump, DumpData, Future, Label, Pid, Qubit},
+    serialize::{DataType, SerializedData},
+};
 
 pub struct Process {
-    pid: u32,
+    pid: usize,
 
-    num_qubit: u32,
-    max_num_qubit: u32,
+    metrics: Metrics,
 
-    qubit_count: u32,
-    future_count: u32,
-    dump_count: u32,
-    label_count: u32,
+    num_qubit: usize,
+    blocks: Vec<CodeBlockHandler>,
+    current_block: usize,
 
-    blocks: Vec<CodeBlock>,
-    current_block: u32,
-
-    ctrl_stack: Vec<Vec<u32>>,
+    ctrl_stack: Vec<Vec<usize>>,
 
     futures: Vec<Rc<RefCell<Option<i64>>>>,
     dumps: Vec<Rc<RefCell<Option<DumpData>>>>,
 
-    timeout: Option<u32>,
+    quantum_code_serialized: Option<SerializedData>,
+    metrics_serialized: Option<SerializedData>,
+
     exec_time: Option<f64>,
-
-    waiting_result: bool,
-
-    quantum_code_json: Option<String>,
-    quantum_code_bin: Option<Vec<u8>>,
-
-    metrics_json: Option<String>,
-    metrics_bin: Option<Vec<u8>>,
-
-    plugins: HashSet<String>,
 }
 
 impl Process {
-    pub fn new(pid: u32) -> Process {
-        Process {
+    pub fn new(pid: usize) -> Self {
+        Self {
             pid,
-            num_qubit: 0,
-            max_num_qubit: 0,
-            qubit_count: 0,
-            future_count: 1,
-            dump_count: 0,
-            label_count: 1,
-            blocks: vec![CodeBlock::new()],
-            current_block: 0,
-            ctrl_stack: Vec::new(),
+            metrics: Default::default(),
+            num_qubit: Default::default(),
+            blocks: Default::default(),
+            current_block: Default::default(),
+            ctrl_stack: Default::default(),
             futures: vec![Rc::new(RefCell::new(Some(0)))],
-            dumps: Vec::new(),
-            timeout: None,
-            exec_time: None,
-            waiting_result: false,
-            quantum_code_json: None,
-            quantum_code_bin: None,
-            metrics_bin: None,
-            metrics_json: None,
-            plugins: HashSet::new(),
+            dumps: Default::default(),
+            quantum_code_serialized: Default::default(),
+            metrics_serialized: Default::default(),
+            exec_time: Default::default(),
         }
     }
 
-    fn get_current_block(&mut self) -> &mut CodeBlock {
-        self.blocks.get_mut(self.current_block as usize).unwrap()
-    }
-
-    pub fn alloc(&mut self, dirty: bool) -> Result<Qubit, String> {
-        self.check_not_ctrl_adj_err()?;
-
-        let index = self.qubit_count;
-        self.qubit_count += 1;
-        self.num_qubit += 1;
-        self.max_num_qubit = if self.num_qubit > self.max_num_qubit {
-            self.num_qubit
-        } else {
-            self.max_num_qubit
-        };
-
-        let pid = self.pid;
-        let block = self.get_current_block();
-
-        block.add_instruction(Instruction::Alloc {
-            dirty,
-            target: index,
-        })?;
-
-        Ok(Qubit {
-            index,
-            pid,
-            allocated: true,
-            measured: false,
-        })
-    }
-
-    fn match_pid(&self, obj: &impl Pid) -> Result<(), String> {
+    fn match_pid(&self, obj: &impl Pid) -> Result<()> {
         if obj.pid() != self.pid {
-            Err(format!("Unmatched PID. Maybe you are using an Object from another Process. (PROCESS PID = {}, OBJ PID = {})", self.pid, obj.pid()))
+            Err(KetError::UnmatchedPid)
         } else {
             Ok(())
         }
     }
 
-    pub fn free(&mut self, qubit: &mut Qubit, dirty: bool) -> Result<(), String> {
-        self.match_pid(&(qubit as &Qubit))?;
-        qubit.not_allocated_err()?;
-
-        let block = self.get_current_block();
-
-        block.add_instruction(Instruction::Free {
-            dirty,
-            target: qubit.index,
-        })?;
-
-        qubit.allocated = false;
-
-        Ok(())
-    }
-
-    fn get_ctrl_as_vec(&self) -> Vec<u32> {
+    fn get_control_qubits(&self) -> Vec<usize> {
         let mut tmp_vec = Vec::new();
         for inner_ctrl in self.ctrl_stack.iter() {
             tmp_vec.extend(inner_ctrl.iter());
@@ -272,21 +62,63 @@ impl Process {
         tmp_vec
     }
 
-    fn target_in_ctrl_err(target: &Qubit, control: &Vec<u32>) -> Result<(), &'static str> {
-        if control.contains(&target.index) {
-            Err("A qubit cannot be targeted and controlled at the same time.")
+    fn assert_target_not_in_control(&self, target: &Qubit) -> Result<()> {
+        if self
+            .ctrl_stack
+            .iter()
+            .all(|inner| !inner.contains(&target.index()))
+        {
+            Err(KetError::TargetOnControl)
         } else {
             Ok(())
         }
     }
 
-    pub fn apply_gate(&mut self, gate: QuantumGate, target: &Qubit) -> Result<(), String> {
-        target.not_allocated_err()?;
-        self.match_pid(&target)?;
-        let control = self.get_ctrl_as_vec();
-        Process::target_in_ctrl_err(target, &control)?;
+    pub fn allocate_qubit(&mut self, dirty: bool) -> Result<Qubit> {
+        let index = self.metrics.qubit_count;
+        self.metrics.qubit_count += 1;
+        self.num_qubit += 1;
+        self.metrics.qubit_simultaneous = if self.num_qubit > self.metrics.qubit_simultaneous {
+            self.num_qubit
+        } else {
+            self.metrics.qubit_simultaneous
+        };
 
-        let block = self.get_current_block();
+        self.blocks
+            .get_mut(self.current_block)
+            .unwrap()
+            .add_instruction(Instruction::Alloc {
+                dirty,
+                target: index,
+            })?;
+
+        Ok(Qubit::new(index, self.pid))
+    }
+
+    pub fn free_qubit(&mut self, qubit: &mut Qubit, dirty: bool) -> Result<()> {
+        self.match_pid(qubit)?;
+        qubit.assert_allocated()?;
+
+        self.blocks
+            .get_mut(self.current_block)
+            .unwrap()
+            .add_instruction(Instruction::Free {
+                dirty,
+                target: qubit.index(),
+            })?;
+
+        qubit.set_deallocated();
+
+        Ok(())
+    }
+
+    pub fn apply_gate(&mut self, gate: QuantumGate, target: &Qubit) -> Result<()> {
+        target.assert_allocated()?;
+        self.match_pid(target)?;
+        let control = self.get_control_qubits();
+        self.assert_target_not_in_control(target)?;
+
+        let block = self.blocks.get_mut(self.current_block).unwrap();
 
         let gate = match gate {
             QuantumGate::Phase(lambda) => {
@@ -300,283 +132,276 @@ impl Process {
 
         block.add_instruction(Instruction::Gate {
             gate,
-            target: target.index,
+            target: target.index(),
             control,
         })?;
 
         Ok(())
     }
 
-    pub fn apply_plugin(
-        &mut self,
-        name: &str,
-        target: &[&Qubit],
-        args: &str,
-    ) -> Result<(), String> {
-        let control = self.get_ctrl_as_vec();
-        for qubit in target {
-            qubit.not_allocated_err()?;
-            self.match_pid(qubit)?;
-            Process::target_in_ctrl_err(qubit, &control)?;
-        }
-
-        self.plugins.insert(String::from(name));
-
-        let block = self.get_current_block();
-        block.add_instruction(Instruction::Plugin {
-            name: String::from(name),
-            target: target.iter().map(|q| q.index).collect(),
-            control,
-            adj: block.in_adj(),
-            args: String::from(args),
-        })?;
-
-        Ok(())
-    }
-
-    fn check_not_ctrl_adj_err(&self) -> Result<(), &str> {
+    pub fn apply_plugin(&mut self, name: &str, target: &[&Qubit], args: &str) -> Result<()> {
         if !self.ctrl_stack.is_empty() {
-            return Err("Cannot apply this operation inside a Inverse block.");
+            return Err(KetError::PluginOnCtrl);
         }
 
-        match self.blocks.get(self.current_block as usize) {
-            Some(block) if block.in_adj() => {
-                Err("Cannot apply this operation inside a Control block.")
-            }
-            _ => Ok(()),
+        for target in target {
+            self.match_pid(*target)?;
         }
+
+        self.metrics.plugins.insert(String::from(name));
+
+        self.blocks
+            .get_mut(self.current_block)
+            .unwrap()
+            .add_instruction(Instruction::Plugin {
+                name: String::from(name),
+                target: target.iter().map(|q| q.index()).collect(),
+                args: String::from(args),
+            })?;
+
+        Ok(())
     }
 
-    pub fn measure(&mut self, qubits: &mut [&mut Qubit]) -> Result<Future, String> {
-        self.check_not_ctrl_adj_err()?;
-        let qubits_index: Vec<u32> = qubits.iter().map(|qubit| qubit.index).collect();
-
-        for qubit in qubits {
-            self.match_pid(&(qubit as &Qubit))?;
-            qubit.not_allocated_err()?;
-            qubit.measured = true;
+    pub fn measure(&mut self, qubits: &mut [&mut Qubit]) -> Result<Future> {
+        for qubit in qubits.iter_mut() {
+            self.match_pid(*qubit)?;
+            qubit.assert_allocated()?;
+            qubit.set_measured();
         }
 
-        let future_index = self.future_count;
-        self.future_count += 1;
+        let future_index = self.metrics.future_count;
+        self.metrics.future_count += 1;
 
         let future_value = Rc::new(RefCell::new(None));
 
         self.futures.push(Rc::clone(&future_value));
 
-        let block = self.get_current_block();
+        self.blocks
+            .get_mut(self.current_block)
+            .unwrap()
+            .add_instruction(Instruction::Measure {
+                qubits: qubits.iter().map(|qubit| qubit.index()).collect(),
+                output: future_index,
+            })?;
 
-        block.add_instruction(Instruction::Measure {
-            qubits: qubits_index,
-            output: future_index,
-        })?;
-
-        Ok(Future {
-            index: future_index,
-            pid: self.pid,
-            value: future_value,
-        })
+        Ok(Future::new(future_index, self.pid, future_value))
     }
 
-    pub fn ctrl_push(&mut self, qubits: &[&Qubit]) -> Result<(), String> {
+    pub fn ctrl_push(&mut self, qubits: &[&Qubit]) -> Result<()> {
         for ctrl_list in self.ctrl_stack.iter() {
             for qubit in qubits.iter() {
-                qubit.not_allocated_err()?;
-                self.match_pid(qubit)?;
-                if ctrl_list.contains(&qubit.index) {
-                    return Err(String::from("Cannot set a qubit as a control twice."));
+                qubit.assert_allocated()?;
+                self.match_pid(*qubit)?;
+                if ctrl_list.contains(&qubit.index()) {
+                    return Err(KetError::ControlTwice);
                 }
             }
         }
 
         self.ctrl_stack
-            .push(qubits.iter().map(|qubit| qubit.index).collect());
+            .push(qubits.iter().map(|qubit| qubit.index()).collect());
 
         Ok(())
     }
 
-    pub fn ctrl_pop(&mut self) -> Result<(), &str> {
+    pub fn ctrl_pop(&mut self) -> Result<()> {
         match self.ctrl_stack.pop() {
             Some(_) => Ok(()),
-            None => Err("No control block to end."),
+            None => Err(KetError::NoCtrl),
         }
     }
 
-    pub fn adj_begin(&mut self) -> Result<(), &str> {
-        self.get_current_block().adj_begin()
+    pub fn adj_begin(&mut self) -> Result<()> {
+        self.blocks.get_mut(self.current_block).unwrap().adj_begin()
     }
 
-    pub fn adj_end(&mut self) -> Result<(), &str> {
-        self.get_current_block().adj_end()
+    pub fn adj_end(&mut self) -> Result<()> {
+        self.blocks.get_mut(self.current_block).unwrap().adj_end()
     }
 
-    pub fn get_label(&mut self) -> Result<Label, &str> {
-        if self.waiting_result {
-            Err("Cannot create another block while waiting the quantum result.")
-        } else {
-            let index = self.label_count;
-            self.label_count += 1;
-            self.blocks.push(CodeBlock::new());
-            Ok(Label {
-                index,
-                pid: self.pid,
-            })
-        }
+    pub fn get_label(&mut self) -> Label {
+        let index = self.metrics.block_count;
+        self.metrics.block_count += 1;
+        self.blocks.push(Default::default());
+        Label::new(index, self.pid)
     }
 
-    pub fn open_block(&mut self, label: &Label) -> Result<(), String> {
-        self.match_pid(&label)?;
-        self.current_block = label.index;
+    pub fn open_block(&mut self, label: &Label) -> Result<()> {
+        self.match_pid(label)?;
+        self.current_block = label.index();
         Ok(())
     }
 
-    pub fn jump(&mut self, label: &Label) -> Result<(), String> {
-        self.match_pid(&label)?;
-        let block = self.get_current_block();
-        block.add_instruction(Instruction::Jump { addr: label.index })?;
+    pub fn jump(&mut self, label: &Label) -> Result<()> {
+        self.match_pid(label)?;
+        self.blocks
+            .get_mut(self.current_block)
+            .unwrap()
+            .add_instruction(Instruction::End(EndInstruction::Jump {
+                addr: label.index(),
+            }))?;
         Ok(())
     }
 
-    pub fn branch(&mut self, test: &Future, then: &Label, otherwise: &Label) -> Result<(), String> {
-        self.match_pid(&test)?;
-        self.match_pid(&then)?;
-        self.match_pid(&otherwise)?;
+    pub fn branch(&mut self, test: &Future, then: &Label, otherwise: &Label) -> Result<()> {
+        self.match_pid(test)?;
+        self.match_pid(then)?;
+        self.match_pid(otherwise)?;
 
-        let block = self.get_current_block();
-        block.add_instruction(Instruction::Branch {
-            test: test.index,
-            then: then.index,
-            otherwise: otherwise.index,
-        })?;
+        self.blocks
+            .get_mut(self.current_block)
+            .unwrap()
+            .add_instruction(Instruction::End(EndInstruction::Branch {
+                test: test.index(),
+                then: then.index(),
+                otherwise: otherwise.index(),
+            }))?;
 
         Ok(())
     }
 
-    pub fn dump(&mut self, qubits: &[&Qubit]) -> Result<Dump, String> {
-        self.check_not_ctrl_adj_err()?;
-        let qubits_index: Vec<u32> = qubits.iter().map(|qubit| qubit.index).collect();
-        for qubit in qubits {
-            self.match_pid(qubit)?;
-            qubit.not_allocated_err()?;
+    pub fn dump(&mut self, qubits: &[&Qubit]) -> Result<Dump> {
+        for qubit in qubits.iter() {
+            self.match_pid(*qubit)?;
+            qubit.assert_allocated()?;
         }
 
-        let dump_index = self.dump_count;
-        self.dump_count += 1;
+        let dump_index = self.metrics.dump_count;
+        self.metrics.dump_count += 1;
 
         let dump_value = Rc::new(RefCell::new(None));
         self.dumps.push(Rc::clone(&dump_value));
 
-        let block = self.get_current_block();
-        block.add_instruction(Instruction::Dump {
-            qubits: qubits_index,
-            output: dump_index,
-        })?;
+        self.blocks
+            .get_mut(self.current_block)
+            .unwrap()
+            .add_instruction(Instruction::Dump {
+                qubits: qubits.iter().map(|qubit| qubit.index()).collect(),
+                output: dump_index,
+            })?;
 
-        Ok(Dump { value: dump_value })
+        Ok(Dump::new(dump_value))
     }
 
-    pub fn add_int_op(
-        &mut self,
-        op: ClassicalOp,
-        lhs: &Future,
-        rhs: &Future,
-    ) -> Result<Future, String> {
-        self.check_not_ctrl_adj_err()?;
-        self.match_pid(&lhs)?;
-        self.match_pid(&rhs)?;
+    pub fn add_int_op(&mut self, op: ClassicalOp, lhs: &Future, rhs: &Future) -> Result<Future> {
+        self.match_pid(lhs)?;
+        self.match_pid(rhs)?;
 
-        let result_index = self.future_count;
-        self.future_count += 1;
+        let result_index = self.metrics.future_count;
+        self.metrics.future_count += 1;
 
         let result_value = Rc::new(RefCell::new(None));
 
         self.futures.push(Rc::clone(&result_value));
 
-        let block = self.get_current_block();
-        block.add_instruction(Instruction::IntOp {
-            op,
-            result: result_index,
-            lhs: lhs.index,
-            rhs: rhs.index,
-        })?;
+        self.blocks
+            .get_mut(self.current_block)
+            .unwrap()
+            .add_instruction(Instruction::IntOp {
+                op,
+                result: result_index,
+                lhs: lhs.index(),
+                rhs: rhs.index(),
+            })?;
 
-        Ok(Future {
-            index: result_index,
-            pid: self.pid,
-            value: result_value,
-        })
+        Ok(Future::new(result_index, self.pid, result_value))
     }
 
-    pub fn int_set(&mut self, result: &Future, value: &Future) -> Result<(), String> {
-        self.check_not_ctrl_adj_err()?;
-        self.match_pid(&result)?;
+    pub fn int_set(&mut self, result: &Future, value: &Future) -> Result<()> {
+        self.match_pid(result)?;
+        self.match_pid(value)?;
 
-        let block = self.get_current_block();
-        block.add_instruction(Instruction::IntOp {
-            op: ClassicalOp::Add,
-            result: result.index,
-            lhs: 0,
-            rhs: value.index,
-        })?;
+        self.blocks
+            .get_mut(self.current_block)
+            .unwrap()
+            .add_instruction(Instruction::IntOp {
+                op: ClassicalOp::Add,
+                result: result.index(),
+                lhs: 0,
+                rhs: value.index(),
+            })?;
 
         Ok(())
     }
 
-    pub fn int_new(&mut self, value: i64) -> Result<Future, String> {
-        self.check_not_ctrl_adj_err()?;
+    pub fn int_new(&mut self, value: i64) -> Result<Future> {
+        let index = self.metrics.future_count;
+        self.metrics.future_count += 1;
 
-        let index = self.future_count;
-        self.future_count += 1;
-
-        let block = self.get_current_block();
-        block.add_instruction(Instruction::IntSet {
-            result: index,
-            value,
-        })?;
+        self.blocks
+            .get_mut(self.current_block)
+            .unwrap()
+            .add_instruction(Instruction::IntSet {
+                result: index,
+                value,
+            })?;
 
         let value = Rc::new(RefCell::new(None));
         self.futures.push(Rc::clone(&value));
 
-        Ok(Future {
-            index,
-            pid: self.pid,
-            value,
-        })
+        Ok(Future::new(index, self.pid, value))
+    }
+
+    pub fn prepare_for_execution(&mut self) -> Result<()> {
+        self.metrics.ready = true;
+
+        self.blocks
+            .get_mut(self.current_block)
+            .unwrap()
+            .add_instruction(Instruction::End(EndInstruction::Halt))?;
+
+        Ok(())
     }
 
     pub fn exec_time(&self) -> Option<f64> {
         self.exec_time
     }
 
-    pub fn get_quantum_code(&mut self) -> Result<Vec<&[Instruction]>, String> {
-        self.get_current_block()
-            .add_instruction(Instruction::Halt)?;
-        self.waiting_result = true;
-        let blocks = self
-            .blocks
-            .iter()
-            .map(|block| block.instructions())
-            .collect();
-        Ok(blocks)
+    pub fn set_timeout(&mut self, timeout: u64) {
+        self.metrics.timeout = Some(timeout);
     }
 
-    pub fn get_quantum_code_as_json(&mut self) -> Result<&str, String> {
-        if let None = self.quantum_code_json {
-            self.quantum_code_json = serde_json::to_string(&self.get_quantum_code()?).ok()
+    pub fn metrics(&self) -> &Metrics {
+        &self.metrics
+    }
+
+    pub fn blocks(&self) -> Vec<&CodeBlock> {
+        self.blocks.iter().map(|handler| handler.block()).collect()
+    }
+
+    pub fn serialize_metrics(&mut self, data_type: DataType) {
+        match data_type {
+            DataType::JSON => {
+                self.metrics_serialized = Some(SerializedData::JSON(
+                    serde_json::to_string(&self.metrics).unwrap(),
+                ))
+            }
+            DataType::BIN => {
+                self.metrics_serialized = Some(SerializedData::BIN(
+                    bincode::serialize(&self.metrics).unwrap(),
+                ))
+            }
         }
-        Ok(self.quantum_code_json.as_ref().unwrap())
     }
 
-    pub fn get_quantum_code_as_bin(&mut self) -> Result<&[u8], String> {
-        if let None = self.quantum_code_json {
-            self.quantum_code_bin = bincode::serialize(&self.get_quantum_code()?).ok()
+    pub fn serialize_quantum_code(&mut self, data_type: DataType) {
+        match data_type {
+            DataType::JSON => {
+                self.quantum_code_serialized = Some(SerializedData::JSON(
+                    serde_json::to_string(&self.blocks()).unwrap(),
+                ));
+            }
+            DataType::BIN => {
+                self.quantum_code_serialized = Some(SerializedData::BIN(
+                    bincode::serialize(&self.blocks()).unwrap(),
+                ));
+            }
         }
-        Ok(self.quantum_code_bin.as_ref().unwrap())
     }
 
-    pub fn set_quantum_result(&mut self, mut result: QuantumResult) -> Result<(), &str> {
+    pub fn set_result(&mut self, mut result: ResultData) -> Result<()> {
         if (self.futures.len() != result.future.len()) | (self.dumps.len() != result.dump.len()) {
-            Err("The result do not have the expected number of values.")
+            Err(KetError::UnexpectedResultData)
         } else {
             for (index, value) in result.future.iter().enumerate() {
                 *(self.futures.get(index).unwrap().borrow_mut()) = Some(*value);
@@ -592,79 +417,16 @@ impl Process {
         }
     }
 
-    pub fn set_quantum_result_from_json(&mut self, result: &str) -> Result<(), String> {
-        let result: QuantumResult = match serde_json::from_str(result) {
-            Ok(result) => result,
-            Err(msg) => return Err(format!("Fail to parse quantum result JSON: {}", msg)),
-        };
-
-        self.set_quantum_result(result)?;
-
-        Ok(())
-    }
-
-    pub fn set_quantum_result_from_bin(&mut self, result: &[u8]) -> Result<(), String> {
-        let result: QuantumResult = match bincode::deserialize(&result) {
-            Ok(result) => result,
-            Err(msg) => return Err(format!("Fail to parse quantum result BIN: {}", msg)),
-        };
-
-        self.set_quantum_result(result)?;
-
-        Ok(())
-    }
-
-    pub fn get_metrics(&self) -> Metrics {
-        Metrics {
-            max_num_qubit: self.max_num_qubit,
-            qubit_count: self.qubit_count,
-            future_count: self.future_count,
-            dump_count: self.dump_count,
-            label_count: self.label_count,
-            timeout: self.timeout,
-            plugins: self.plugins.iter().map(String::clone).collect(),
+    pub fn set_serialized_result(&mut self, result: &SerializedData) -> Result<()> {
+        match result {
+            SerializedData::JSON(result) => self.set_result(match serde_json::from_str(result) {
+                Ok(result) => result,
+                Err(_) => return Err(KetError::FailToParseResult),
+            }),
+            SerializedData::BIN(result) => self.set_result(match bincode::deserialize(result) {
+                Ok(result) => result,
+                Err(_) => return Err(KetError::FailToParseResult),
+            }),
         }
-    }
-
-    pub fn get_metrics_as_json(&mut self) -> &str {
-        if let None = self.metrics_json {
-            self.metrics_json = Some(serde_json::to_string(&self.get_metrics()).unwrap());
-        }
-
-        self.metrics_json.as_ref().unwrap()
-    }
-
-    pub fn get_metrics_as_bin(&mut self) -> &[u8] {
-        if let None = self.metrics_bin {
-            self.metrics_bin = Some(bincode::serialize(&self.get_metrics()).unwrap());
-        }
-
-        self.metrics_bin.as_ref().unwrap()
-    }
-
-    pub fn set_timeout(&mut self, timeout: u32) {
-        self.timeout = Some(timeout);
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use crate::process::*;
-
-    #[test]
-    fn bell_print() {
-        let mut p = Process::new(0);
-        let mut a = p.alloc(false).unwrap();
-        let mut b = p.alloc(false).unwrap();
-
-        p.apply_gate(QuantumGate::Hadamard, &a).unwrap();
-        p.ctrl_push(&[&a]).unwrap();
-        p.apply_gate(QuantumGate::PauliX, &b).unwrap();
-        p.ctrl_pop().unwrap();
-
-        let m = p.measure(&mut [&mut a, &mut b]).unwrap();
-
-        println!("{}", p.get_quantum_code_as_json().unwrap());
-        println!("{:#?}", m);
     }
 }

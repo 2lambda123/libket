@@ -1,7 +1,11 @@
-mod code_block;
-mod process;
-mod c_wrapper;
+pub mod c_wrapper;
+pub mod code_block;
+pub mod error;
+pub mod instruction;
+pub mod ir;
+pub mod object;
+pub mod process;
+pub mod serialize;
 
-pub use crate::process::*;
-pub use crate::code_block::{QuantumGate, ClassicalOp, Instruction};
-
+pub use object::*;
+pub use process::*;
