@@ -142,6 +142,12 @@ pub extern "C" fn ket_future_pid(future: &Future, pid: &mut usize) -> i32 {
 }
 
 #[no_mangle]
+pub extern "C" fn ket_future_available(future: &Future, available: &mut bool) -> i32 {
+    *available = future.value().is_some();
+    KetError::Success.error_code()
+}
+
+#[no_mangle]
 pub extern "C" fn ket_label_delete(label: *mut Label) -> i32 {
     unsafe { Box::from_raw(label) };
     KetError::Success.error_code()

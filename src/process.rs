@@ -35,7 +35,7 @@ impl Process {
             pid,
             metrics: Default::default(),
             num_qubit: Default::default(),
-            blocks: Default::default(),
+            blocks: vec![CodeBlockHandler::default()],
             current_block: Default::default(),
             ctrl_stack: Default::default(),
             futures: vec![Rc::new(RefCell::new(Some(0)))],
@@ -66,7 +66,7 @@ impl Process {
         if self
             .ctrl_stack
             .iter()
-            .all(|inner| !inner.contains(&target.index()))
+            .any(|inner| inner.contains(&target.index()))
         {
             Err(KetError::TargetOnControl)
         } else {
@@ -397,6 +397,14 @@ impl Process {
                 ));
             }
         }
+    }
+
+    pub fn get_serialized_metrics(&self) -> Option<&SerializedData> {
+        self.metrics_serialized.as_ref()
+    }
+
+    pub fn get_serialized_quantum_code(&self) -> Option<&SerializedData> {
+        self.quantum_code_serialized.as_ref()
     }
 
     pub fn set_result(&mut self, mut result: ResultData) -> Result<()> {

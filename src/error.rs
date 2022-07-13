@@ -90,7 +90,7 @@ mod tests {
         let mut error_code = 0;
         loop {
             let error = KetError::from_error_code(error_code);
-            println!("{:#?} = {};", error, error_code);
+            println!("#define KET_{:#?} {}", error, error_code);
 
             if let KetError::UndefinedError = error {
                 break;

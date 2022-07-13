@@ -56,6 +56,9 @@ typedef void* ket_dump_states_t;
 #define KET_UNMATCHED_PID 18
 #define KET_UNDEFINED_ERROR 19
 
+#define KET_JSON 0
+#define KET_BIN 1
+
 const uint8_t ket_error_message(int32_t error_code, size_t* size);
 
 int32_t ket_process_new(size_t pid, ket_process_t* process);
@@ -120,6 +123,14 @@ int32_t ket_process_serialize_metrics(ket_process_t process, int32_t data_type);
 int32_t ket_process_serialize_quantum_code(ket_process_t process,
                                            int32_t data_type);
 
+int32_t ket_process_get_serialized_metrics(ket_process_t process,
+                                           uint8_t** data, size_t* size,
+                                           int32_t* data_type);
+
+int32_t ket_process_get_serialized_quantum_code(ket_process_t process,
+                                                uint8_t** data, size_t* size,
+                                                int32_t* data_type);
+
 int32_t ket_process_set_serialized_result(ket_process_t process,
                                           uint8_t* result, size_t result_size,
                                           int32_t data_type);
@@ -136,7 +147,7 @@ int32_t ket_qubit_measured(ket_qubit_t qubit, bool* measured);
 
 int32_t ket_dump_delete(ket_dump_t dump);
 
-int32_t ket_dump_states(ket_dump_t dump, void* states, size_t* size);
+int32_t ket_dump_states(ket_dump_t dump, void** states, size_t* size);
 
 int32_t ket_dump_get_state(void* states, size_t index, uint64_t** state,
                            size_t* size);
@@ -154,6 +165,8 @@ int32_t ket_future_value(ket_future_t future, int64_t* value);
 int32_t ket_future_index(ket_future_t future, size_t* index);
 
 int32_t ket_future_pid(ket_future_t future, size_t* pid);
+
+int32_t ket_future_available(ket_dump_t dump, bool* available);
 
 int32_t ket_label_delete(ket_label_t label);
 

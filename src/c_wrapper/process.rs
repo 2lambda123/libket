@@ -8,7 +8,7 @@ use crate::{
     serialize::{DataType, SerializedData},
 };
 
-use num::FromPrimitive;
+use num::{FromPrimitive, ToPrimitive};
 
 use super::error::wrapper;
 
@@ -265,6 +265,60 @@ pub extern "C" fn ket_process_serialize_quantum_code(process: &mut Process, data
     process.serialize_quantum_code(data_type);
 
     KetError::Success.error_code()
+}
+
+#[no_mangle]
+pub extern "C" fn ket_process_get_serialized_metrics(
+    process: &Process,
+    data: &mut *const u8,
+    size: &mut usize,
+    data_type: &mut i32,
+) -> i32 {
+    match process.get_serialized_metrics() {
+        Some(metrics) => {
+            match metrics {
+                SerializedData::JSON(json) => {
+                    *data = json.as_ptr();
+                    *size = json.len();
+                    *data_type = DataType::JSON.to_i32().unwrap();
+                }
+                SerializedData::BIN(bin) => {
+                    *data = bin.as_ptr();
+                    *size = bin.len();
+                    *data_type = DataType::BIN.to_i32().unwrap();
+                }
+            }
+            KetError::Success.error_code()
+        }
+        None => KetError::DataNotAvailable.error_code(),
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn ket_process_get_serialized_quantum_code(
+    process: &Process,
+    data: &mut *const u8,
+    size: &mut usize,
+    data_type: &mut i32,
+) -> i32 {
+    match process.get_serialized_quantum_code() {
+        Some(code) => {
+            match code {
+                SerializedData::JSON(json) => {
+                    *data = json.as_ptr();
+                    *size = json.len();
+                    *data_type = DataType::JSON.to_i32().unwrap();
+                }
+                SerializedData::BIN(bin) => {
+                    *data = bin.as_ptr();
+                    *size = bin.len();
+                    *data_type = DataType::BIN.to_i32().unwrap();
+                }
+            }
+            KetError::Success.error_code()
+        }
+        None => KetError::DataNotAvailable.error_code(),
+    }
 }
 
 #[no_mangle]

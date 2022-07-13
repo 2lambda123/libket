@@ -159,7 +159,7 @@ mod tests {
     fn print_classical_op() {
         let mut op_code = 0;
         while let Some(op) = ClassicalOp::from_i32(op_code) {
-            println!("{:#?} = {};", op, op_code);
+            println!("#define KET_{:#?} {}", op, op_code);
             op_code += 1;
         }
     }
