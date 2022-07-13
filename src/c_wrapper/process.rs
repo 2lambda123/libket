@@ -65,7 +65,7 @@ pub extern "C" fn ket_process_apply_gate(
         6 => QuantumGate::RY(param),
         7 => QuantumGate::RZ(param),
         _ => {
-            return KetError::UndefinedError.error_code();
+            return KetError::UndefinedGate.error_code();
         }
     };
 
@@ -76,9 +76,9 @@ pub extern "C" fn ket_process_apply_gate(
 pub extern "C" fn ket_process_apply_plugin(
     process: &mut Process,
     name: *const c_char,
+    args: *const c_char,
     target: *const &Qubit,
     target_size: usize,
-    args: *const c_char,
 ) -> i32 {
     let name = unsafe { CStr::from_ptr(name) }.to_str().unwrap();
     let args = unsafe { CStr::from_ptr(args) }.to_str().unwrap();

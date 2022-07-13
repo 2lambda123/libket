@@ -40,17 +40,10 @@ pub extern "C" fn ket_dump_delete(dump: *mut Dump) -> i32 {
 }
 
 #[no_mangle]
-pub extern "C" fn ket_dump_states(
-    dump: &Dump,
-    states: *mut *const Vec<u64>,
-    size: &mut usize,
-) -> i32 {
+pub extern "C" fn ket_dump_states_size(dump: &Dump, size: &mut usize) -> i32 {
     match dump.value().as_ref() {
         Some(value) => {
             *size = value.basis_states().len();
-            unsafe {
-                *states = value.basis_states().as_ptr();
-            }
             KetError::Success.error_code()
         }
         None => KetError::DataNotAvailable.error_code(),
@@ -58,16 +51,20 @@ pub extern "C" fn ket_dump_states(
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn ket_dump_get_state(
-    states: *const Vec<u64>,
+pub unsafe extern "C" fn ket_dump_state(
+    dump: &Dump,
     index: usize,
     state: *mut *const u64,
     size: &mut usize,
 ) -> i32 {
-    let states = states.add(index);
-    *size = (*states).len();
-    *state = (*states).as_ptr();
-    KetError::Success.error_code()
+    match dump.value().as_ref() {
+        Some(value) => {
+            *state = value.basis_states()[index].as_ptr();
+            *size = value.basis_states()[index].len();
+            KetError::Success.error_code()
+        }
+        None => KetError::DataNotAvailable.error_code(),
+    }
 }
 
 #[no_mangle]
@@ -89,7 +86,7 @@ pub extern "C" fn ket_dump_amplitudes_real(
 }
 
 #[no_mangle]
-pub extern "C" fn ket_dump_amplitudes_img(
+pub extern "C" fn ket_dump_amplitudes_imag(
     dump: &Dump,
     amp: *mut *const f64,
     size: &mut usize,
