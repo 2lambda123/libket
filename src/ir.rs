@@ -3,7 +3,7 @@ use std::collections::HashSet;
 use crate::object::DumpData;
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct ResultData {
     pub future: Vec<i64>,
     pub dump: Vec<DumpData>,

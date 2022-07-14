@@ -13,8 +13,8 @@ use num::{FromPrimitive, ToPrimitive};
 use super::error::wrapper;
 
 #[no_mangle]
-pub extern "C" fn ket_process_new(pid: usize, process: *mut *mut Process) -> i32 {
-    unsafe { *process = Box::into_raw(Box::new(Process::new(pid))) };
+pub extern "C" fn ket_process_new(pid: usize, process: &mut *mut Process) -> i32 {
+    *process = Box::into_raw(Box::new(Process::new(pid)));
     KetError::Success.error_code()
 }
 
@@ -28,11 +28,11 @@ pub extern "C" fn ket_process_delete(process: *mut Process) -> i32 {
 pub extern "C" fn ket_process_allocate_qubit(
     process: &mut Process,
     dirty: bool,
-    qubit: *mut *mut Qubit,
+    qubit: &mut *mut Qubit,
 ) -> i32 {
     match process.allocate_qubit(dirty) {
         Ok(result) => {
-            unsafe { *qubit = Box::into_raw(Box::new(result)) }
+            *qubit = Box::into_raw(Box::new(result));
             KetError::Success.error_code()
         }
         Err(error) => error.error_code(),
@@ -92,13 +92,13 @@ pub extern "C" fn ket_process_measure(
     process: &mut Process,
     qubits: *mut &mut Qubit,
     qubits_size: usize,
-    future: *mut *mut Future,
+    future: &mut *mut Future,
 ) -> i32 {
     let qubits = unsafe { std::slice::from_raw_parts_mut(qubits, qubits_size) };
 
     match process.measure(qubits) {
         Ok(result) => {
-            unsafe { *future = Box::into_raw(Box::new(result)) }
+            *future = Box::into_raw(Box::new(result));
             KetError::Success.error_code()
         }
         Err(error) => error.error_code(),
@@ -132,8 +132,8 @@ pub extern "C" fn ket_process_adj_end(process: &mut Process) -> i32 {
 }
 
 #[no_mangle]
-pub extern "C" fn ket_process_get_label(process: &mut Process, label: *mut *mut Label) -> i32 {
-    unsafe { *label = Box::into_raw(Box::new(process.get_label())) }
+pub extern "C" fn ket_process_get_label(process: &mut Process, label: &mut *mut Label) -> i32 {
+    *label = Box::into_raw(Box::new(process.get_label()));
     KetError::Success.error_code()
 }
 
@@ -162,13 +162,13 @@ pub extern "C" fn ket_process_dump(
     process: &mut Process,
     qubits: *const &Qubit,
     qubits_size: usize,
-    dump: *mut *mut Dump,
+    dump: &mut *mut Dump,
 ) -> i32 {
     let qubits = unsafe { std::slice::from_raw_parts(qubits, qubits_size) };
 
     match process.dump(qubits) {
         Ok(result) => {
-            unsafe { *dump = Box::into_raw(Box::new(result)) }
+            *dump = Box::into_raw(Box::new(result));
             KetError::Success.error_code()
         }
         Err(error) => error.error_code(),
@@ -181,16 +181,16 @@ pub extern "C" fn ket_process_add_int_op(
     op: i32,
     lhs: &Future,
     rhs: &Future,
-    result: *mut *mut Future,
+    result: &mut *mut Future,
 ) -> i32 {
     let op = match ClassicalOp::from_i32(op) {
         Some(op) => op,
-        None => return 1,
+        None => return KetError::UndefinedClassicalOp.error_code(),
     };
 
     match process.add_int_op(op, lhs, rhs) {
         Ok(future) => {
-            unsafe { *result = Box::into_raw(Box::new(future)) }
+            *result = Box::into_raw(Box::new(future));
             KetError::Success.error_code()
         }
         Err(error) => error.error_code(),
@@ -201,11 +201,11 @@ pub extern "C" fn ket_process_add_int_op(
 pub extern "C" fn ket_process_int_new(
     process: &mut Process,
     value: i64,
-    future: *mut *mut Future,
+    future: &mut *mut Future,
 ) -> i32 {
     match process.int_new(value) {
         Ok(result) => {
-            unsafe { *future = Box::into_raw(Box::new(result)) }
+            *future = Box::into_raw(Box::new(result));
             KetError::Success.error_code()
         }
         Err(error) => error.error_code(),

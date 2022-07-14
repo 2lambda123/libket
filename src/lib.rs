@@ -7,5 +7,6 @@ pub mod object;
 pub mod process;
 pub mod serialize;
 
+pub use instruction::*;
 pub use object::*;
 pub use process::*;

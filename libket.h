@@ -8,7 +8,7 @@ typedef void *ket_future_t;
 typedef void *ket_dump_t;
 typedef void *ket_label_t;
 typedef void *ket_dump_states_t;
-typedef ket_error_code_t ket_error_code_t;
+typedef int32_t ket_error_code_t;
 
 #define KET_PAULI_X 0
 #define KET_PAULI_Y 1
