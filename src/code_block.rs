@@ -73,7 +73,7 @@ impl CodeBlockHandler {
     }
 
     pub fn in_adj(&self) -> bool {
-        !self.adj_instructions.is_empty()
+        self.adj_instructions.len() % 2 == 1
     }
 
     pub fn adj_begin(&mut self) -> Result<()> {
@@ -86,7 +86,7 @@ impl CodeBlockHandler {
     }
 
     pub fn adj_end(&mut self) -> Result<()> {
-        if !self.in_adj() {
+        if self.adj_instructions.is_empty(){
             return Err(KetError::NoAdj);
         }
 

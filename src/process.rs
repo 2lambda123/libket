@@ -120,15 +120,7 @@ impl Process {
 
         let block = self.blocks.get_mut(self.current_block).unwrap();
 
-        let gate = match gate {
-            QuantumGate::Phase(lambda) => {
-                QuantumGate::Phase(if block.in_adj() { -lambda } else { lambda })
-            }
-            QuantumGate::RX(theta) => QuantumGate::RX(if block.in_adj() { -theta } else { theta }),
-            QuantumGate::RY(theta) => QuantumGate::RY(if block.in_adj() { -theta } else { theta }),
-            QuantumGate::RZ(theta) => QuantumGate::RZ(if block.in_adj() { -theta } else { theta }),
-            gate => gate,
-        };
+        let gate = if block.in_adj() { gate.inverse() } else { gate };
 
         block.add_instruction(Instruction::Gate {
             gate,

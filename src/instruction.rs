@@ -43,6 +43,23 @@ impl QuantumGate {
             Ok(QuantumGate::Unitary(u))
         }
     }
+
+    pub fn inverse(&self) -> QuantumGate {
+        match self {
+            QuantumGate::PauliX => QuantumGate::PauliX,
+            QuantumGate::PauliY => QuantumGate::PauliY,
+            QuantumGate::PauliZ => QuantumGate::PauliZ,
+            QuantumGate::Hadamard => QuantumGate::Hadamard,
+            QuantumGate::Phase(lambda) => QuantumGate::Phase(-lambda),
+            QuantumGate::RX(theta) => QuantumGate::RX(-theta),
+            QuantumGate::RY(theta) => QuantumGate::RY(-theta),
+            QuantumGate::RZ(theta) => QuantumGate::RZ(-theta),
+            QuantumGate::Unitary(u) => QuantumGate::Unitary([
+                [(u[0][0].0, -u[0][0].1), (u[1][0].0, -u[1][0].1)],
+                [(u[0][1].0, -u[0][1].1), (u[1][1].0, -u[1][1].1)],
+            ]),
+        }
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize, FromPrimitive, ToPrimitive)]
