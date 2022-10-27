@@ -6,6 +6,7 @@ use crate::{
     object::{Dump, Future, Label, Qubit},
     process::Process,
     serialize::{DataType, SerializedData},
+    Features,
 };
 
 use num::{FromPrimitive, ToPrimitive};
@@ -21,6 +22,12 @@ pub extern "C" fn ket_process_new(pid: usize, process: &mut *mut Process) -> i32
 #[no_mangle]
 pub extern "C" fn ket_process_delete(process: *mut Process) -> i32 {
     unsafe { Box::from_raw(process) };
+    KetError::Success.error_code()
+}
+
+#[no_mangle]
+pub extern "C" fn ket_process_set_features(process: &mut Process, features: &Features) -> i32 {
+    process.set_features(features.clone());
     KetError::Success.error_code()
 }
 
@@ -133,7 +140,10 @@ pub extern "C" fn ket_process_adj_end(process: &mut Process) -> i32 {
 
 #[no_mangle]
 pub extern "C" fn ket_process_get_label(process: &mut Process, label: &mut *mut Label) -> i32 {
-    *label = Box::into_raw(Box::new(process.get_label()));
+    *label = Box::into_raw(Box::new(match process.get_label() {
+        Ok(label) => label,
+        Err(err) => return err.error_code(),
+    }));
     KetError::Success.error_code()
 }
 
@@ -341,4 +351,47 @@ pub extern "C" fn ket_process_set_serialized_result(
     };
 
     wrapper(process.set_serialized_result(&result))
+}
+
+#[no_mangle]
+pub extern "C" fn ket_features_new(
+    allow_dirty_qubits: bool,
+    allow_free_qubits: bool,
+    valid_after_measure: bool,
+    classical_control_flow: bool,
+    allow_dump: bool,
+    continue_after_dump: bool,
+    features: &mut *mut Features,
+) -> i32 {
+    *features = Box::into_raw(Box::new(Features::new(
+        allow_dirty_qubits,
+        allow_free_qubits,
+        valid_after_measure,
+        classical_control_flow,
+        allow_dump,
+        continue_after_dump,
+    )));
+    KetError::Success.error_code()
+}
+
+#[no_mangle]
+pub extern "C" fn ket_features_all(features: &mut *mut Features) -> i32 {
+    *features = Box::into_raw(Box::new(Features::all()));
+    KetError::Success.error_code()
+}
+
+#[no_mangle]
+pub extern "C" fn ket_features_none(features: &mut *mut Features) -> i32 {
+    *features = Box::into_raw(Box::new(Features::none()));
+    KetError::Success.error_code()
+}
+
+#[no_mangle]
+pub extern "C" fn ket_features_register_plugin(
+    features: &mut Features,
+    name: *const c_char,
+) -> i32 {
+    let name = unsafe { CStr::from_ptr(name) }.to_str().unwrap();
+    features.register_plugin(String::from(name));
+    KetError::Success.error_code()
 }

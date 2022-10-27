@@ -92,23 +92,49 @@ impl Pid for Future {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct DumpData {
-    pub basis_states: Vec<Vec<u64>>,
-    pub amplitudes_real: Vec<f64>,
-    pub amplitudes_img: Vec<f64>,
+pub enum DumpData {
+    Vector {
+        basis_states: Vec<Vec<u64>>,
+        amplitudes_real: Vec<f64>,
+        amplitudes_imag: Vec<f64>,
+    },
+    Shots {
+        basis_states: Vec<Vec<u64>>,
+        count: Vec<u32>,
+    },
 }
 
 impl DumpData {
     pub fn basis_states(&self) -> &[Vec<u64>] {
-        &self.basis_states
+        match self {
+            DumpData::Vector { basis_states, .. } => basis_states,
+            DumpData::Shots { basis_states, .. } => basis_states,
+        }
     }
 
-    pub fn amplitudes_real(&self) -> &[f64] {
-        &self.amplitudes_real
+    pub fn amplitudes_real(&self) -> Option<&[f64]> {
+        match self {
+            DumpData::Vector {
+                amplitudes_real, ..
+            } => Some(amplitudes_real),
+            DumpData::Shots { .. } => None,
+        }
     }
 
-    pub fn amplitudes_img(&self) -> &[f64] {
-        &self.amplitudes_img
+    pub fn amplitudes_imag(&self) -> Option<&[f64]> {
+        match self {
+            DumpData::Vector {
+                amplitudes_imag, ..
+            } => Some(amplitudes_imag),
+            DumpData::Shots { .. } => None,
+        }
+    }
+
+    pub fn count(&self) -> Option<&[u32]> {
+        match self {
+            DumpData::Vector { .. } => None,
+            DumpData::Shots { count, .. } => Some(count),
+        }
     }
 }
 

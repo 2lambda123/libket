@@ -1,4 +1,4 @@
-use std::{cell::RefCell, rc::Rc};
+use std::{cell::RefCell, collections::BTreeSet, rc::Rc};
 
 use crate::{
     code_block::{CodeBlock, CodeBlockHandler},
@@ -8,6 +8,66 @@ use crate::{
     object::{Dump, DumpData, Future, Label, Pid, Qubit},
     serialize::{DataType, SerializedData},
 };
+
+#[derive(Clone)]
+pub struct Features {
+    allow_dirty_qubits: bool,
+    allow_free_qubits: bool,
+    valid_after_measure: bool,
+    plugins: BTreeSet<String>,
+    classical_control_flow: bool,
+    allow_dump: bool,
+    continue_after_dump: bool,
+}
+
+impl Features {
+    pub fn new(
+        allow_dirty_qubits: bool,
+        allow_free_qubits: bool,
+        valid_after_measure: bool,
+        classical_control_flow: bool,
+        allow_dump: bool,
+        continue_after_dump: bool,
+    ) -> Features {
+        Features {
+            allow_dirty_qubits,
+            allow_free_qubits,
+            valid_after_measure,
+            plugins: BTreeSet::new(),
+            classical_control_flow,
+            allow_dump,
+            continue_after_dump,
+        }
+    }
+
+    pub fn all() -> Features {
+        Features {
+            allow_dirty_qubits: true,
+            allow_free_qubits: true,
+            valid_after_measure: true,
+            plugins: BTreeSet::new(),
+            classical_control_flow: true,
+            allow_dump: true,
+            continue_after_dump: true,
+        }
+    }
+
+    pub fn none() -> Features {
+        Features {
+            allow_dirty_qubits: false,
+            allow_free_qubits: false,
+            valid_after_measure: false,
+            plugins: BTreeSet::new(),
+            classical_control_flow: false,
+            allow_dump: false,
+            continue_after_dump: false,
+        }
+    }
+
+    pub fn register_plugin(&mut self, plugin: String) {
+        self.plugins.insert(plugin);
+    }
+}
 
 pub struct Process {
     pid: usize,
@@ -27,6 +87,8 @@ pub struct Process {
     metrics_serialized: Option<SerializedData>,
 
     exec_time: Option<f64>,
+
+    features: Features,
 }
 
 impl Process {
@@ -43,6 +105,7 @@ impl Process {
             quantum_code_serialized: Default::default(),
             metrics_serialized: Default::default(),
             exec_time: Default::default(),
+            features: Features::all(),
         }
     }
 
@@ -74,7 +137,15 @@ impl Process {
         }
     }
 
+    pub fn set_features(&mut self, features: Features) {
+        self.features = features;
+    }
+
     pub fn allocate_qubit(&mut self, dirty: bool) -> Result<Qubit> {
+        if !self.features.allow_dirty_qubits & dirty {
+            return Err(KetError::DirtyNotAllowed);
+        }
+
         let index = self.metrics.qubit_count;
         self.metrics.qubit_count += 1;
         self.num_qubit += 1;
@@ -96,6 +167,14 @@ impl Process {
     }
 
     pub fn free_qubit(&mut self, qubit: &mut Qubit, dirty: bool) -> Result<()> {
+        if !self.features.allow_dirty_qubits & dirty {
+            return Err(KetError::DirtyNotAllowed);
+        }
+
+        if !self.features.allow_free_qubits {
+            return Err(KetError::FreeNotAllowed);
+        }
+
         self.match_pid(qubit)?;
         qubit.assert_allocated()?;
 
@@ -132,6 +211,10 @@ impl Process {
     }
 
     pub fn apply_plugin(&mut self, name: &str, target: &[&Qubit], args: &str) -> Result<()> {
+        if !self.features.plugins.contains(name) {
+            return Err(KetError::PluginNotRegistered);
+        }
+
         if !self.ctrl_stack.is_empty() {
             return Err(KetError::PluginOnCtrl);
         }
@@ -159,6 +242,12 @@ impl Process {
             self.match_pid(*qubit)?;
             qubit.assert_allocated()?;
             qubit.set_measured();
+        }
+
+        if !self.features.valid_after_measure {
+            for qubit in qubits.iter_mut() {
+                qubit.set_deallocated();
+            }
         }
 
         let future_index = self.metrics.future_count;
@@ -211,11 +300,15 @@ impl Process {
         self.blocks.get_mut(self.current_block).unwrap().adj_end()
     }
 
-    pub fn get_label(&mut self) -> Label {
+    pub fn get_label(&mut self) -> Result<Label> {
+        if !self.features.classical_control_flow {
+            return Err(KetError::ControlFlowNotAllowed);
+        }
+
         let index = self.metrics.block_count;
         self.metrics.block_count += 1;
         self.blocks.push(Default::default());
-        Label::new(index, self.pid)
+        Ok(Label::new(index, self.pid))
     }
 
     pub fn open_block(&mut self, label: &Label) -> Result<()> {
@@ -253,6 +346,10 @@ impl Process {
     }
 
     pub fn dump(&mut self, qubits: &[&Qubit]) -> Result<Dump> {
+        if !self.features.allow_dump {
+            return Err(KetError::DumpNotAllowed);
+        }
+
         for qubit in qubits.iter() {
             self.match_pid(*qubit)?;
             qubit.assert_allocated()?;
@@ -272,10 +369,18 @@ impl Process {
                 output: dump_index,
             })?;
 
+        if !self.features.continue_after_dump {
+            self.prepare_for_execution()?
+        }
+
         Ok(Dump::new(dump_value))
     }
 
     pub fn add_int_op(&mut self, op: ClassicalOp, lhs: &Future, rhs: &Future) -> Result<Future> {
+        if !self.features.classical_control_flow {
+            return Err(KetError::ControlFlowNotAllowed);
+        }
+
         self.match_pid(lhs)?;
         self.match_pid(rhs)?;
 
@@ -300,6 +405,10 @@ impl Process {
     }
 
     pub fn int_set(&mut self, result: &Future, value: &Future) -> Result<()> {
+        if !self.features.classical_control_flow {
+            return Err(KetError::ControlFlowNotAllowed);
+        }
+
         self.match_pid(result)?;
         self.match_pid(value)?;
 
@@ -317,6 +426,10 @@ impl Process {
     }
 
     pub fn int_new(&mut self, value: i64) -> Result<Future> {
+        if !self.features.classical_control_flow {
+            return Err(KetError::ControlFlowNotAllowed);
+        }
+
         let index = self.metrics.future_count;
         self.metrics.future_count += 1;
 
@@ -335,13 +448,14 @@ impl Process {
     }
 
     pub fn prepare_for_execution(&mut self) -> Result<()> {
-        self.metrics.ready = true;
+        if !self.metrics.ready {
+            self.metrics.ready = true;
 
-        self.blocks
-            .get_mut(self.current_block)
-            .unwrap()
-            .add_instruction(Instruction::End(EndInstruction::Halt))?;
-
+            self.blocks
+                .get_mut(self.current_block)
+                .unwrap()
+                .add_instruction(Instruction::End(EndInstruction::Halt))?;
+        }
         Ok(())
     }
 

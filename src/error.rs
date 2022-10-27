@@ -24,6 +24,11 @@ pub enum KetError {
     UndefinedGate,
     UnexpectedResultData,
     UnmatchedPid,
+    DirtyNotAllowed,
+    DumpNotAllowed,
+    FreeNotAllowed,
+    PluginNotRegistered,
+    ControlFlowNotAllowed,
     UndefinedError,
 }
 
@@ -34,7 +39,7 @@ impl KetError {
         match self {
             KetError::Success => "the call returned successfully",
             KetError::ControlTwice => "cannot set a qubit as a control twice",
-            KetError::DeallocatedQubit => "cannot operate with a deallocated qubit",
+            KetError::DeallocatedQubit => "cannot operate with a deallocated or invalid qubit",
             KetError::FailToParseResult => "fail to parse serialized result data",
             KetError::NoAdj => "no inverse scope to end",
             KetError::NoCtrl => "no control scope to end",
@@ -56,6 +61,11 @@ impl KetError {
             KetError::UnmatchedPid => "unmatched pid",
             KetError::UndefinedError => "undefined error",
             KetError::DataNotAvailable => "data not available",
+            KetError::DirtyNotAllowed => "cannot allocate or free dirty qubits (feature disabled)",
+            KetError::FreeNotAllowed => "cannot free qubit (feature disabled)",
+            KetError::PluginNotRegistered => "plugin not registered",
+            KetError::ControlFlowNotAllowed => "classical control flow not allowed (feature disabled)",
+            KetError::DumpNotAllowed => "cannot dump qubits (feature disabled)",
         }
     }
 

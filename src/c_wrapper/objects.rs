@@ -75,9 +75,13 @@ pub extern "C" fn ket_dump_amplitudes_real(
 ) -> i32 {
     match dump.value().as_ref() {
         Some(value) => {
-            *size = value.amplitudes_real().len();
+            let amplitudes_real = match value.amplitudes_real() {
+                Some(amplitudes_real) => amplitudes_real,
+                None => return KetError::DataNotAvailable.error_code(),
+            };
+            *size = amplitudes_real.len();
             unsafe {
-                *amp = value.amplitudes_real().as_ptr();
+                *amp = amplitudes_real.as_ptr();
             }
             KetError::Success.error_code()
         }
@@ -93,9 +97,31 @@ pub extern "C" fn ket_dump_amplitudes_imag(
 ) -> i32 {
     match dump.value().as_ref() {
         Some(value) => {
-            *size = value.amplitudes_img().len();
+            let amplitudes_imag = match value.amplitudes_imag() {
+                Some(amplitudes_imag) => amplitudes_imag,
+                None => return KetError::DataNotAvailable.error_code(),
+            };
+            *size = amplitudes_imag.len();
             unsafe {
-                *amp = value.amplitudes_img().as_ptr();
+                *amp = amplitudes_imag.as_ptr();
+            }
+            KetError::Success.error_code()
+        }
+        None => KetError::DataNotAvailable.error_code(),
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn ket_dump_count(dump: &Dump, cnt: *mut *const u32, size: &mut usize) -> i32 {
+    match dump.value().as_ref() {
+        Some(value) => {
+            let count = match value.count() {
+                Some(count) => count,
+                None => return KetError::DataNotAvailable.error_code(),
+            };
+            *size = count.len();
+            unsafe {
+                *cnt = count.as_ptr();
             }
             KetError::Success.error_code()
         }
