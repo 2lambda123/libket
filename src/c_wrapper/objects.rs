@@ -1,6 +1,7 @@
 use crate::{
     error::KetError,
     object::{Dump, Future, Label, Pid, Qubit},
+    DumpData,
 };
 
 #[no_mangle]
@@ -122,6 +123,69 @@ pub extern "C" fn ket_dump_count(dump: &Dump, cnt: *mut *const u32, size: &mut u
             *size = count.len();
             unsafe {
                 *cnt = count.as_ptr();
+            }
+            KetError::Success.error_code()
+        }
+        None => KetError::DataNotAvailable.error_code(),
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn ket_dump_probabilities(dump: &Dump, p: *mut *const f64, size: &mut usize) -> i32 {
+    match dump.value().as_ref() {
+        Some(value) => {
+            let probabilities = match value.probabilities() {
+                Some(count) => count,
+                None => return KetError::DataNotAvailable.error_code(),
+            };
+            *size = probabilities.len();
+            unsafe {
+                *p = probabilities.as_ptr();
+            }
+            KetError::Success.error_code()
+        }
+        None => KetError::DataNotAvailable.error_code(),
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn ket_dump_is_vector(dump: &Dump, is_vector: &mut bool) -> i32 {
+    match dump.value().as_ref() {
+        Some(value) => {
+            match value {
+                DumpData::Vector { .. } => *is_vector = true,
+                DumpData::Probability { .. } => *is_vector = false,
+                DumpData::Shots { .. } => *is_vector = false,
+            }
+            KetError::Success.error_code()
+        }
+        None => KetError::DataNotAvailable.error_code(),
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn ket_dump_is_probability(dump: &Dump, is_probability: &mut bool) -> i32 {
+    match dump.value().as_ref() {
+        Some(value) => {
+            match value {
+                DumpData::Vector { .. } => *is_probability = false,
+                DumpData::Probability { .. } => *is_probability = true,
+                DumpData::Shots { .. } => *is_probability = false,
+            }
+            KetError::Success.error_code()
+        }
+        None => KetError::DataNotAvailable.error_code(),
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn ket_dump_is_shots(dump: &Dump, is_shots: &mut bool) -> i32 {
+    match dump.value().as_ref() {
+        Some(value) => {
+            match value {
+                DumpData::Vector { .. } => *is_shots = false,
+                DumpData::Probability { .. } => *is_shots = false,
+                DumpData::Shots { .. } => *is_shots = true,
             }
             KetError::Success.error_code()
         }

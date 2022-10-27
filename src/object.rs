@@ -98,6 +98,10 @@ pub enum DumpData {
         amplitudes_real: Vec<f64>,
         amplitudes_imag: Vec<f64>,
     },
+    Probability {
+        basis_states: Vec<Vec<u64>>,
+        probabilities: Vec<f64>,
+    },
     Shots {
         basis_states: Vec<Vec<u64>>,
         count: Vec<u32>,
@@ -109,6 +113,7 @@ impl DumpData {
         match self {
             DumpData::Vector { basis_states, .. } => basis_states,
             DumpData::Shots { basis_states, .. } => basis_states,
+            DumpData::Probability { basis_states, .. } => basis_states,
         }
     }
 
@@ -118,6 +123,7 @@ impl DumpData {
                 amplitudes_real, ..
             } => Some(amplitudes_real),
             DumpData::Shots { .. } => None,
+            DumpData::Probability { .. } => None,
         }
     }
 
@@ -127,6 +133,7 @@ impl DumpData {
                 amplitudes_imag, ..
             } => Some(amplitudes_imag),
             DumpData::Shots { .. } => None,
+            DumpData::Probability { .. } => None,
         }
     }
 
@@ -134,6 +141,15 @@ impl DumpData {
         match self {
             DumpData::Vector { .. } => None,
             DumpData::Shots { count, .. } => Some(count),
+            DumpData::Probability { .. } => None,
+        }
+    }
+
+    pub fn probabilities(&self) -> Option<&[f64]> {
+        match self {
+            DumpData::Vector { .. } => None,
+            DumpData::Shots { .. } => None,
+            DumpData::Probability { probabilities, .. } => Some(probabilities),
         }
     }
 }
