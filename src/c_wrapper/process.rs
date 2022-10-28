@@ -375,6 +375,12 @@ pub extern "C" fn ket_features_new(
 }
 
 #[no_mangle]
+pub extern "C" fn ket_features_delete(features: *mut Features) -> i32 {
+    unsafe { Box::from_raw(features) };
+    KetError::Success.error_code()
+}
+
+#[no_mangle]
 pub extern "C" fn ket_features_all(features: &mut *mut Features) -> i32 {
     *features = Box::into_raw(Box::new(Features::all()));
     KetError::Success.error_code()

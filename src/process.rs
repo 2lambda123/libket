@@ -142,7 +142,7 @@ impl Process {
     }
 
     pub fn allocate_qubit(&mut self, dirty: bool) -> Result<Qubit> {
-        if !self.features.allow_dirty_qubits & dirty {
+        if !self.features.allow_dirty_qubits && dirty {
             return Err(KetError::DirtyNotAllowed);
         }
 
@@ -167,7 +167,7 @@ impl Process {
     }
 
     pub fn free_qubit(&mut self, qubit: &mut Qubit, dirty: bool) -> Result<()> {
-        if !self.features.allow_dirty_qubits & dirty {
+        if !self.features.allow_dirty_qubits && dirty {
             return Err(KetError::DirtyNotAllowed);
         }
 

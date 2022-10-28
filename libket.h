@@ -7,6 +7,7 @@ typedef void *ket_qubit_t;
 typedef void *ket_future_t;
 typedef void *ket_dump_t;
 typedef void *ket_label_t;
+typedef void *ket_features_t;
 typedef void *ket_dump_states_t;
 typedef int32_t ket_error_code_t;
 
@@ -55,16 +56,28 @@ typedef int32_t ket_error_code_t;
 #define KET_UNDEFINED_GATE 16
 #define KET_UNEXPECTED_RESULT_DATA 17
 #define KET_UNMATCHED_PID 18
-#define KET_UNDEFINED_ERROR 19
+#define KET_DIRTY_NOT_ALLOWED 19
+#define KET_DUMP_NOT_ALLOWED 20
+#define KET_FREE_NOT_ALLOWED 21
+#define KET_PLUGIN_NOT_REGISTERED 22
+#define KET_CONTROL_FLOW_NOT_ALLOWED 23
+#define KET_UNDEFINED_ERROR 24
 
 #define KET_JSON 0
 #define KET_BIN 1
+
+#define KET_DUMP_VECTOR 0
+#define KET_DUMP_PROBABILITY 1
+#define KET_DUMP_SHOTS 2
 
 const uint8_t ket_error_message(ket_error_code_t error_code, size_t *size);
 
 ket_error_code_t ket_process_new(size_t pid, ket_process_t *process);
 
 ket_error_code_t ket_process_delete(ket_process_t process);
+
+ket_error_code_t ket_process_set_features(ket_process_t process,
+                                          ket_features_t features);
 
 ket_error_code_t ket_process_allocate_qubit(ket_process_t process, bool dirty,
                                             ket_qubit_t *qubit);
@@ -144,6 +157,22 @@ ket_error_code_t ket_process_set_serialized_result(ket_process_t process,
                                                    size_t result_size,
                                                    int32_t data_type);
 
+ket_error_code_t ket_features_new(bool allow_dirty_qubits,
+                                  bool allow_free_qubits,
+                                  bool valid_after_measure,
+                                  bool classical_control_flow, bool allow_dump,
+                                  bool continue_after_dump,
+                                  ket_features_t *features);
+
+ket_error_code_t ket_features_delete(ket_features_t features);
+
+ket_error_code_t ket_features_all(ket_features_t *features);
+
+ket_error_code_t ket_features_none(ket_features_t *features);
+
+ket_error_code_t ket_features_register_plugin(ket_features_t features,
+                                              const char *name);
+
 ket_error_code_t ket_qubit_delete(ket_qubit_t qubit);
 
 ket_error_code_t ket_qubit_index(ket_qubit_t qubit, size_t *index);
@@ -166,6 +195,15 @@ ket_error_code_t ket_dump_amplitudes_real(ket_dump_t dump, double **amp,
 
 ket_error_code_t ket_dump_amplitudes_imag(ket_dump_t dump, double **amp,
                                           size_t *size);
+
+ket_error_code_t ket_dump_probabilities(ket_dump_t dump, double **amp,
+                                        size_t *size);
+
+ket_error_code_t ket_dump_count(ket_dump_t dump, uint32_t **amp, size_t *size);
+
+ket_error_code_t ket_dump_total(ket_dump_t dump, uint64_t *total);
+
+ket_error_code_t ket_dump_type(ket_dump_t dump, int32_t *dump_type);
 
 ket_error_code_t ket_dump_available(ket_dump_t dump, bool *available);
 

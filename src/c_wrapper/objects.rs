@@ -113,24 +113,6 @@ pub extern "C" fn ket_dump_amplitudes_imag(
 }
 
 #[no_mangle]
-pub extern "C" fn ket_dump_count(dump: &Dump, cnt: *mut *const u32, size: &mut usize) -> i32 {
-    match dump.value().as_ref() {
-        Some(value) => {
-            let count = match value.count() {
-                Some(count) => count,
-                None => return KetError::DataNotAvailable.error_code(),
-            };
-            *size = count.len();
-            unsafe {
-                *cnt = count.as_ptr();
-            }
-            KetError::Success.error_code()
-        }
-        None => KetError::DataNotAvailable.error_code(),
-    }
-}
-
-#[no_mangle]
 pub extern "C" fn ket_dump_probabilities(dump: &Dump, p: *mut *const f64, size: &mut usize) -> i32 {
     match dump.value().as_ref() {
         Some(value) => {
@@ -149,13 +131,16 @@ pub extern "C" fn ket_dump_probabilities(dump: &Dump, p: *mut *const f64, size: 
 }
 
 #[no_mangle]
-pub extern "C" fn ket_dump_is_vector(dump: &Dump, is_vector: &mut bool) -> i32 {
+pub extern "C" fn ket_dump_count(dump: &Dump, cnt: *mut *const u32, size: &mut usize) -> i32 {
     match dump.value().as_ref() {
         Some(value) => {
-            match value {
-                DumpData::Vector { .. } => *is_vector = true,
-                DumpData::Probability { .. } => *is_vector = false,
-                DumpData::Shots { .. } => *is_vector = false,
+            let count = match value.count() {
+                Some(count) => count,
+                None => return KetError::DataNotAvailable.error_code(),
+            };
+            *size = count.len();
+            unsafe {
+                *cnt = count.as_ptr();
             }
             KetError::Success.error_code()
         }
@@ -164,14 +149,13 @@ pub extern "C" fn ket_dump_is_vector(dump: &Dump, is_vector: &mut bool) -> i32 {
 }
 
 #[no_mangle]
-pub extern "C" fn ket_dump_is_probability(dump: &Dump, is_probability: &mut bool) -> i32 {
+pub extern "C" fn ket_dump_total(dump: &Dump, total: &mut u64) -> i32 {
     match dump.value().as_ref() {
         Some(value) => {
-            match value {
-                DumpData::Vector { .. } => *is_probability = false,
-                DumpData::Probability { .. } => *is_probability = true,
-                DumpData::Shots { .. } => *is_probability = false,
-            }
+            *total = match value.total() {
+                Some(total) => total,
+                None => return KetError::DataNotAvailable.error_code(),
+            };
             KetError::Success.error_code()
         }
         None => KetError::DataNotAvailable.error_code(),
@@ -179,13 +163,13 @@ pub extern "C" fn ket_dump_is_probability(dump: &Dump, is_probability: &mut bool
 }
 
 #[no_mangle]
-pub extern "C" fn ket_dump_is_shots(dump: &Dump, is_shots: &mut bool) -> i32 {
+pub extern "C" fn ket_dump_type(dump: &Dump, dump_type: &mut i32) -> i32 {
     match dump.value().as_ref() {
         Some(value) => {
             match value {
-                DumpData::Vector { .. } => *is_shots = false,
-                DumpData::Probability { .. } => *is_shots = false,
-                DumpData::Shots { .. } => *is_shots = true,
+                DumpData::Vector { .. } => *dump_type = 0,
+                DumpData::Probability { .. } => *dump_type = 1,
+                DumpData::Shots { .. } => *dump_type = 2,
             }
             KetError::Success.error_code()
         }

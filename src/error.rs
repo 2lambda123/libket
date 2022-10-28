@@ -64,7 +64,9 @@ impl KetError {
             KetError::DirtyNotAllowed => "cannot allocate or free dirty qubits (feature disabled)",
             KetError::FreeNotAllowed => "cannot free qubit (feature disabled)",
             KetError::PluginNotRegistered => "plugin not registered",
-            KetError::ControlFlowNotAllowed => "classical control flow not allowed (feature disabled)",
+            KetError::ControlFlowNotAllowed => {
+                "classical control flow not allowed (feature disabled)"
+            }
             KetError::DumpNotAllowed => "cannot dump qubits (feature disabled)",
         }
     }
@@ -100,7 +102,22 @@ mod tests {
         let mut error_code = 0;
         loop {
             let error = KetError::from_error_code(error_code);
-            println!("#define KET_{:#?} {}", error, error_code);
+            let error_str = format!("{:#?}", error);
+            let error_str = error_str
+                .split_inclusive(char::is_uppercase)
+                .map(|part| {
+                    let size = part.len();
+                    let lest = part.chars().last().unwrap();
+                    if size > 1 && char::is_uppercase(lest) {
+                        format!("{}_{}", &part[..size - 1], lest)
+                    } else {
+                        String::from(part)
+                    }
+                })
+                .collect::<Vec<String>>()
+                .concat()
+                .to_uppercase();
+            println!("#define KET_{} {}", error_str, error_code);
 
             if let KetError::UndefinedError = error {
                 break;

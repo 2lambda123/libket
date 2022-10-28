@@ -105,6 +105,7 @@ pub enum DumpData {
     Shots {
         basis_states: Vec<Vec<u64>>,
         count: Vec<u32>,
+        total: u64,
     },
 }
 
@@ -137,6 +138,14 @@ impl DumpData {
         }
     }
 
+    pub fn probabilities(&self) -> Option<&[f64]> {
+        match self {
+            DumpData::Vector { .. } => None,
+            DumpData::Shots { .. } => None,
+            DumpData::Probability { probabilities, .. } => Some(probabilities),
+        }
+    }
+
     pub fn count(&self) -> Option<&[u32]> {
         match self {
             DumpData::Vector { .. } => None,
@@ -145,11 +154,11 @@ impl DumpData {
         }
     }
 
-    pub fn probabilities(&self) -> Option<&[f64]> {
+    pub fn total(&self) -> Option<u64> {
         match self {
             DumpData::Vector { .. } => None,
-            DumpData::Shots { .. } => None,
-            DumpData::Probability { probabilities, .. } => Some(probabilities),
+            DumpData::Shots { total, .. } => Some(*total),
+            DumpData::Probability { .. } => None,
         }
     }
 }
