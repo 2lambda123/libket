@@ -1,4 +1,8 @@
 #pragma once
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stddef.h>
 #include <stdint.h>
 
@@ -223,3 +227,7 @@ ket_error_code_t ket_label_delete(ket_label_t label);
 ket_error_code_t ket_label_index(ket_label_t label, size_t *index);
 
 ket_error_code_t ket_label_pid(ket_label_t label, size_t *pid);
+
+#ifdef __cplusplus
+}
+#endif
