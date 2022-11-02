@@ -58,10 +58,11 @@ typedef int32_t ket_error_code_t;
 #define KET_UNMATCHED_PID 18
 #define KET_DIRTY_NOT_ALLOWED 19
 #define KET_DUMP_NOT_ALLOWED 20
-#define KET_FREE_NOT_ALLOWED 21
-#define KET_PLUGIN_NOT_REGISTERED 22
-#define KET_CONTROL_FLOW_NOT_ALLOWED 23
-#define KET_UNDEFINED_ERROR 24
+#define KET_MEASURE_NOT_ALLOWED 21
+#define KET_FREE_NOT_ALLOWED 22
+#define KET_PLUGIN_NOT_REGISTERED 23
+#define KET_CONTROL_FLOW_NOT_ALLOWED 24
+#define KET_UNDEFINED_ERROR 25
 
 #define KET_JSON 0
 #define KET_BIN 1
@@ -126,8 +127,8 @@ ket_error_code_t ket_process_add_int_op(ket_process_t process, int32_t op,
 ket_error_code_t ket_process_int_new(ket_process_t process, int64_t value,
                                      ket_future_t *future);
 
-ket_error_code_t ket_process_int_set(ket_process_t process, ket_future_t result,
-                                     ket_future_t value);
+ket_error_code_t ket_process_int_set(ket_process_t process, ket_future_t dst,
+                                     ket_future_t src);
 
 ket_error_code_t ket_process_prepare_for_execution(ket_process_t process);
 
@@ -161,7 +162,7 @@ ket_error_code_t ket_features_new(bool allow_dirty_qubits,
                                   bool allow_free_qubits,
                                   bool valid_after_measure,
                                   bool classical_control_flow, bool allow_dump,
-                                  bool continue_after_dump,
+                                  bool allow_measure, bool continue_after_dump,
                                   ket_features_t *features);
 
 ket_error_code_t ket_features_delete(ket_features_t features);
@@ -196,7 +197,7 @@ ket_error_code_t ket_dump_amplitudes_real(ket_dump_t dump, double **amp,
 ket_error_code_t ket_dump_amplitudes_imag(ket_dump_t dump, double **amp,
                                           size_t *size);
 
-ket_error_code_t ket_dump_probabilities(ket_dump_t dump, double **amp,
+ket_error_code_t ket_dump_probabilities(ket_dump_t dump, double **prob,
                                         size_t *size);
 
 ket_error_code_t ket_dump_count(ket_dump_t dump, uint32_t **amp, size_t *size);

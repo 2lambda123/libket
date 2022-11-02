@@ -17,6 +17,7 @@ pub struct Features {
     plugins: BTreeSet<String>,
     classical_control_flow: bool,
     allow_dump: bool,
+    allow_measure: bool,
     continue_after_dump: bool,
 }
 
@@ -27,6 +28,7 @@ impl Features {
         valid_after_measure: bool,
         classical_control_flow: bool,
         allow_dump: bool,
+        allow_measure: bool,
         continue_after_dump: bool,
     ) -> Features {
         Features {
@@ -36,6 +38,7 @@ impl Features {
             plugins: BTreeSet::new(),
             classical_control_flow,
             allow_dump,
+            allow_measure,
             continue_after_dump,
         }
     }
@@ -48,6 +51,7 @@ impl Features {
             plugins: BTreeSet::new(),
             classical_control_flow: true,
             allow_dump: true,
+            allow_measure: true,
             continue_after_dump: true,
         }
     }
@@ -60,6 +64,7 @@ impl Features {
             plugins: BTreeSet::new(),
             classical_control_flow: false,
             allow_dump: false,
+            allow_measure: true,
             continue_after_dump: false,
         }
     }
@@ -238,6 +243,10 @@ impl Process {
     }
 
     pub fn measure(&mut self, qubits: &mut [&mut Qubit]) -> Result<Future> {
+        if !self.features.allow_measure {
+            return Err(KetError::MeasureNotAllowed);
+        }
+
         for qubit in qubits.iter_mut() {
             self.match_pid(*qubit)?;
             qubit.assert_allocated()?;
@@ -404,22 +413,22 @@ impl Process {
         Ok(Future::new(result_index, self.pid, result_value))
     }
 
-    pub fn int_set(&mut self, result: &Future, value: &Future) -> Result<()> {
+    pub fn int_set(&mut self, dst: &Future, src: &Future) -> Result<()> {
         if !self.features.classical_control_flow {
             return Err(KetError::ControlFlowNotAllowed);
         }
 
-        self.match_pid(result)?;
-        self.match_pid(value)?;
+        self.match_pid(dst)?;
+        self.match_pid(src)?;
 
         self.blocks
             .get_mut(self.current_block)
             .unwrap()
             .add_instruction(Instruction::IntOp {
                 op: ClassicalOp::Add,
-                result: result.index(),
+                result: dst.index(),
                 lhs: 0,
-                rhs: value.index(),
+                rhs: src.index(),
             })?;
 
         Ok(())

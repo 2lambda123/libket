@@ -223,12 +223,8 @@ pub extern "C" fn ket_process_int_new(
 }
 
 #[no_mangle]
-pub extern "C" fn ket_process_int_set(
-    process: &mut Process,
-    result: &Future,
-    value: &Future,
-) -> i32 {
-    wrapper(process.int_set(result, value))
+pub extern "C" fn ket_process_int_set(process: &mut Process, dst: &Future, src: &Future) -> i32 {
+    wrapper(process.int_set(dst, src))
 }
 
 #[no_mangle]
@@ -360,6 +356,7 @@ pub extern "C" fn ket_features_new(
     valid_after_measure: bool,
     classical_control_flow: bool,
     allow_dump: bool,
+    allow_measure: bool,
     continue_after_dump: bool,
     features: &mut *mut Features,
 ) -> i32 {
@@ -369,6 +366,7 @@ pub extern "C" fn ket_features_new(
         valid_after_measure,
         classical_control_flow,
         allow_dump,
+        allow_measure,
         continue_after_dump,
     )));
     KetError::Success.error_code()

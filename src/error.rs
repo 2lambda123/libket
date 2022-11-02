@@ -26,6 +26,7 @@ pub enum KetError {
     UnmatchedPid,
     DirtyNotAllowed,
     DumpNotAllowed,
+    MeasureNotAllowed,
     FreeNotAllowed,
     PluginNotRegistered,
     ControlFlowNotAllowed,
@@ -68,6 +69,7 @@ impl KetError {
                 "classical control flow not allowed (feature disabled)"
             }
             KetError::DumpNotAllowed => "cannot dump qubits (feature disabled)",
+            KetError::MeasureNotAllowed => "cannot measure qubit (feature disabled)",
         }
     }
 
