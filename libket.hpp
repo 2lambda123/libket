@@ -367,6 +367,8 @@ class Process {
                                                 result.size(), data_type));
   }
 
+  ket_process_t c_process() { return self; }
+
  private:
   static std::vector<ket_qubit_t> to_vec_ptr(const std::vector<Qubit>& qubits) {
     std::vector<ket_qubit_t> qubits_ptr;
