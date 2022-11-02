@@ -13,7 +13,7 @@ class LibketException : public std::exception {
   LibketException(ket_error_code_t code) {
     _code = code;
     size_t size;
-    auto msg = ket_error_message(code, &size);
+    const char* msg = (const char*)ket_error_message(code, &size);
     description.append(msg, size);
   }
 

@@ -5,6 +5,7 @@ extern "C" {
 
 #include <stddef.h>
 #include <stdint.h>
+#include <stdbool.h>
 
 typedef void *ket_process_t;
 typedef void *ket_qubit_t;
@@ -75,7 +76,7 @@ typedef int32_t ket_error_code_t;
 #define KET_DUMP_PROBABILITY 1
 #define KET_DUMP_SHOTS 2
 
-const uint8_t ket_error_message(ket_error_code_t error_code, size_t *size);
+const uint8_t* ket_error_message(ket_error_code_t error_code, size_t *size);
 
 ket_error_code_t ket_process_new(size_t pid, ket_process_t *process);
 
