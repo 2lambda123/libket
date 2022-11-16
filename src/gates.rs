@@ -34,7 +34,7 @@ impl Quant {
         }
     }
 
-    pub fn cat(quants: &[Quant]) -> Result<Quant> {
+    pub fn cat(quants: &[&Quant]) -> Result<Quant> {
         let process = &quants
             .first()
             .expect("\"quants\" must have length >= 1")
@@ -231,6 +231,10 @@ mod tests {
 
         p.borrow_mut().prepare_for_execution().unwrap();
 
-        println!("{:#?}", p.borrow_mut().serialize_quantum_code(crate::serialize::DataType::JSON));
+        println!(
+            "{:#?}",
+            p.borrow_mut()
+                .serialize_quantum_code(crate::serialize::DataType::JSON)
+        );
     }
 }
