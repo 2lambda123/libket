@@ -10,7 +10,7 @@ pub struct ResultData {
     pub exec_time: f64,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct Metrics {
     pub qubit_simultaneous: usize,
     pub qubit_count: usize,

@@ -11,7 +11,7 @@ pub trait Pid {
     fn pid(&self) -> usize;
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Qubit {
     index: usize,
     pid: usize,

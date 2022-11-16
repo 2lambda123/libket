@@ -1,5 +1,7 @@
 use std::{cell::RefCell, collections::BTreeSet, rc::Rc};
 
+use rand::Rng;
+
 use crate::{
     code_block::{CodeBlock, CodeBlockHandler},
     error::{KetError, Result},
@@ -9,7 +11,7 @@ use crate::{
     serialize::{DataType, SerializedData},
 };
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Features {
     allow_dirty_qubits: bool,
     allow_free_qubits: bool,
@@ -74,6 +76,8 @@ impl Features {
     }
 }
 
+#[derive(Debug)]
+
 pub struct Process {
     pid: usize,
 
@@ -112,6 +116,10 @@ impl Process {
             exec_time: Default::default(),
             features: Features::all(),
         }
+    }
+
+    pub fn new_ptr() -> Rc<RefCell<Self>> {
+        Rc::new(RefCell::new(Self::new(rand::thread_rng().gen())))
     }
 
     fn match_pid(&self, obj: &impl Pid) -> Result<()> {
@@ -484,7 +492,7 @@ impl Process {
         self.blocks.iter().map(|handler| handler.block()).collect()
     }
 
-    pub fn serialize_metrics(&mut self, data_type: DataType) {
+    pub fn serialize_metrics(&mut self, data_type: DataType) -> &SerializedData {
         match data_type {
             DataType::JSON => {
                 self.metrics_serialized = Some(SerializedData::JSON(
@@ -497,9 +505,11 @@ impl Process {
                 ))
             }
         }
+
+        self.metrics_serialized.as_ref().unwrap()
     }
 
-    pub fn serialize_quantum_code(&mut self, data_type: DataType) {
+    pub fn serialize_quantum_code(&mut self, data_type: DataType) -> &SerializedData {
         match data_type {
             DataType::JSON => {
                 self.quantum_code_serialized = Some(SerializedData::JSON(
@@ -512,6 +522,7 @@ impl Process {
                 ));
             }
         }
+        self.quantum_code_serialized.as_ref().unwrap()
     }
 
     pub fn get_serialized_metrics(&self) -> Option<&SerializedData> {
@@ -551,5 +562,9 @@ impl Process {
                 Err(_) => return Err(KetError::FailToParseResult),
             }),
         }
+    }
+
+    pub fn pid(&self) -> usize {
+        self.pid
     }
 }

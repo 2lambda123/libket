@@ -6,6 +6,7 @@ pub enum DataType {
     BIN,
 }
 
+#[derive(Debug)]
 pub enum SerializedData {
     JSON(String),
     BIN(Vec<u8>),
