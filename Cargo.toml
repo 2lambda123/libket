@@ -1,6 +1,6 @@
 [package]
 name = "libket"
-version = "0.2.1"
+version = "0.2.2"
 authors = ["Evandro Chagas Ribeiro da Rosa <ev.crr97@gmail.com>"]
 description = "Runtime library for the Ket programming language"
 repository = "https://gitlab.com/quantum-ket/libket"

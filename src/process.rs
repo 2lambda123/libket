@@ -1,4 +1,4 @@
-use std::{cell::RefCell, collections::BTreeSet, rc::Rc};
+use std::{cell::RefCell, collections::BTreeSet, ops::Deref, rc::Rc};
 
 use rand::Rng;
 
@@ -285,6 +285,44 @@ impl Process {
         Ok(Future::new(future_index, self.pid, future_value))
     }
 
+    pub fn measure_ref(&mut self, qubits: &mut [Rc<RefCell<Qubit>>]) -> Result<Future> {
+        if !self.features.allow_measure {
+            return Err(KetError::MeasureNotAllowed);
+        }
+
+        for qubit in qubits.iter() {
+            self.match_pid(qubit.as_ref().borrow().deref())?;
+            qubit.as_ref().borrow().assert_allocated()?;
+            qubit.borrow_mut().set_measured();
+        }
+
+        if !self.features.valid_after_measure {
+            for qubit in qubits.iter() {
+                qubit.borrow_mut().set_deallocated();
+            }
+        }
+
+        let future_index = self.metrics.future_count;
+        self.metrics.future_count += 1;
+
+        let future_value = Rc::new(RefCell::new(None));
+
+        self.futures.push(Rc::clone(&future_value));
+
+        self.blocks
+            .get_mut(self.current_block)
+            .unwrap()
+            .add_instruction(Instruction::Measure {
+                qubits: qubits
+                    .iter()
+                    .map(|qubit| qubit.as_ref().borrow().index())
+                    .collect(),
+                output: future_index,
+            })?;
+
+        Ok(Future::new(future_index, self.pid, future_value))
+    }
+
     pub fn ctrl_push(&mut self, qubits: &[&Qubit]) -> Result<()> {
         for ctrl_list in self.ctrl_stack.iter() {
             for qubit in qubits.iter() {
@@ -298,6 +336,28 @@ impl Process {
 
         self.ctrl_stack
             .push(qubits.iter().map(|qubit| qubit.index()).collect());
+
+        Ok(())
+    }
+
+    pub fn ctrl_push_ref(&mut self, qubits: &[Rc<RefCell<Qubit>>]) -> Result<()> {
+        for ctrl_list in self.ctrl_stack.iter() {
+            for qubit in qubits {
+                let qubit = qubit.as_ref().borrow();
+                qubit.assert_allocated()?;
+                self.match_pid(qubit.deref())?;
+                if ctrl_list.contains(&qubit.index()) {
+                    return Err(KetError::ControlTwice);
+                }
+            }
+        }
+
+        self.ctrl_stack.push(
+            qubits
+                .iter()
+                .map(|qubit| qubit.deref().borrow().index())
+                .collect(),
+        );
 
         Ok(())
     }
@@ -383,6 +443,40 @@ impl Process {
             .unwrap()
             .add_instruction(Instruction::Dump {
                 qubits: qubits.iter().map(|qubit| qubit.index()).collect(),
+                output: dump_index,
+            })?;
+
+        if !self.features.continue_after_dump {
+            self.prepare_for_execution()?
+        }
+
+        Ok(Dump::new(dump_value))
+    }
+
+    pub fn dump_ref(&mut self, qubits: &[Rc<RefCell<Qubit>>]) -> Result<Dump> {
+        if !self.features.allow_dump {
+            return Err(KetError::DumpNotAllowed);
+        }
+
+        for qubit in qubits {
+            self.match_pid(qubit.as_ref().borrow().deref())?;
+            qubit.deref().borrow().assert_allocated()?;
+        }
+
+        let dump_index = self.metrics.dump_count;
+        self.metrics.dump_count += 1;
+
+        let dump_value = Rc::new(RefCell::new(None));
+        self.dumps.push(Rc::clone(&dump_value));
+
+        self.blocks
+            .get_mut(self.current_block)
+            .unwrap()
+            .add_instruction(Instruction::Dump {
+                qubits: qubits
+                    .iter()
+                    .map(|qubit| qubit.deref().borrow().index())
+                    .collect(),
                 output: dump_index,
             })?;
 
