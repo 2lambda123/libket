@@ -20,7 +20,7 @@ pub extern "C" fn ket_process_new(pid: usize, process: &mut *mut Process) -> i32
 }
 
 #[no_mangle]
-pub extern "C" fn ket_process_delete(process: *mut Process) -> i32 {
+pub unsafe extern "C" fn ket_process_delete(process: *mut Process) -> i32 {
     unsafe { Box::from_raw(process) };
     KetError::Success.error_code()
 }
@@ -80,7 +80,7 @@ pub extern "C" fn ket_process_apply_gate(
 }
 
 #[no_mangle]
-pub extern "C" fn ket_process_apply_plugin(
+pub unsafe extern "C" fn ket_process_apply_plugin(
     process: &mut Process,
     name: *const c_char,
     args: *const c_char,
@@ -95,7 +95,7 @@ pub extern "C" fn ket_process_apply_plugin(
 }
 
 #[no_mangle]
-pub extern "C" fn ket_process_measure(
+pub unsafe extern "C" fn ket_process_measure(
     process: &mut Process,
     qubits: *mut &mut Qubit,
     qubits_size: usize,
@@ -113,7 +113,7 @@ pub extern "C" fn ket_process_measure(
 }
 
 #[no_mangle]
-pub extern "C" fn ket_process_ctrl_push(
+pub unsafe extern "C" fn ket_process_ctrl_push(
     process: &mut Process,
     qubits: *const &Qubit,
     qubits_size: usize,
@@ -168,7 +168,7 @@ pub extern "C" fn ket_process_branch(
 }
 
 #[no_mangle]
-pub extern "C" fn ket_process_dump(
+pub unsafe extern "C" fn ket_process_dump(
     process: &mut Process,
     qubits: *const &Qubit,
     qubits_size: usize,
@@ -328,7 +328,7 @@ pub extern "C" fn ket_process_get_serialized_quantum_code(
 }
 
 #[no_mangle]
-pub extern "C" fn ket_process_set_serialized_result(
+pub unsafe extern "C" fn ket_process_set_serialized_result(
     process: &mut Process,
     result: *const u8,
     result_size: usize,
@@ -373,7 +373,7 @@ pub extern "C" fn ket_features_new(
 }
 
 #[no_mangle]
-pub extern "C" fn ket_features_delete(features: *mut Features) -> i32 {
+pub unsafe extern "C" fn ket_features_delete(features: *mut Features) -> i32 {
     unsafe { Box::from_raw(features) };
     KetError::Success.error_code()
 }
@@ -391,7 +391,7 @@ pub extern "C" fn ket_features_none(features: &mut *mut Features) -> i32 {
 }
 
 #[no_mangle]
-pub extern "C" fn ket_features_register_plugin(
+pub unsafe extern "C" fn ket_features_register_plugin(
     features: &mut Features,
     name: *const c_char,
 ) -> i32 {

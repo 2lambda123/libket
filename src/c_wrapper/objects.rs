@@ -5,7 +5,7 @@ use crate::{
 };
 
 #[no_mangle]
-pub extern "C" fn ket_qubit_delete(qubit: *mut Qubit) -> i32 {
+pub unsafe extern "C" fn ket_qubit_delete(qubit: *mut Qubit) -> i32 {
     unsafe { Box::from_raw(qubit) };
     KetError::Success.error_code()
 }
@@ -35,7 +35,7 @@ pub extern "C" fn ket_qubit_measured(qubit: &Qubit, measured: &mut bool) -> i32 
 }
 
 #[no_mangle]
-pub extern "C" fn ket_dump_delete(dump: *mut Dump) -> i32 {
+pub unsafe extern "C" fn ket_dump_delete(dump: *mut Dump) -> i32 {
     unsafe { Box::from_raw(dump) };
     KetError::Success.error_code()
 }
@@ -69,7 +69,7 @@ pub unsafe extern "C" fn ket_dump_state(
 }
 
 #[no_mangle]
-pub extern "C" fn ket_dump_amplitudes_real(
+pub unsafe extern "C" fn ket_dump_amplitudes_real(
     dump: &Dump,
     amp: *mut *const f64,
     size: &mut usize,
@@ -91,7 +91,7 @@ pub extern "C" fn ket_dump_amplitudes_real(
 }
 
 #[no_mangle]
-pub extern "C" fn ket_dump_amplitudes_imag(
+pub unsafe extern "C" fn ket_dump_amplitudes_imag(
     dump: &Dump,
     amp: *mut *const f64,
     size: &mut usize,
@@ -113,7 +113,11 @@ pub extern "C" fn ket_dump_amplitudes_imag(
 }
 
 #[no_mangle]
-pub extern "C" fn ket_dump_probabilities(dump: &Dump, p: *mut *const f64, size: &mut usize) -> i32 {
+pub unsafe extern "C" fn ket_dump_probabilities(
+    dump: &Dump,
+    p: *mut *const f64,
+    size: &mut usize,
+) -> i32 {
     match dump.value().as_ref() {
         Some(value) => {
             let probabilities = match value.probabilities() {
@@ -131,7 +135,11 @@ pub extern "C" fn ket_dump_probabilities(dump: &Dump, p: *mut *const f64, size: 
 }
 
 #[no_mangle]
-pub extern "C" fn ket_dump_count(dump: &Dump, cnt: *mut *const u32, size: &mut usize) -> i32 {
+pub unsafe extern "C" fn ket_dump_count(
+    dump: &Dump,
+    cnt: *mut *const u32,
+    size: &mut usize,
+) -> i32 {
     match dump.value().as_ref() {
         Some(value) => {
             let count = match value.count() {
@@ -184,7 +192,7 @@ pub extern "C" fn ket_dump_available(dump: &Dump, available: &mut bool) -> i32 {
 }
 
 #[no_mangle]
-pub extern "C" fn ket_future_delete(future: *mut Future) -> i32 {
+pub unsafe extern "C" fn ket_future_delete(future: *mut Future) -> i32 {
     unsafe { Box::from_raw(future) };
     KetError::Success.error_code()
 }
@@ -219,7 +227,7 @@ pub extern "C" fn ket_future_available(future: &Future, available: &mut bool) ->
 }
 
 #[no_mangle]
-pub extern "C" fn ket_label_delete(label: *mut Label) -> i32 {
+pub unsafe extern "C" fn ket_label_delete(label: *mut Label) -> i32 {
     unsafe { Box::from_raw(label) };
     KetError::Success.error_code()
 }

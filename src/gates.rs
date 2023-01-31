@@ -41,7 +41,7 @@ impl Quant {
 
         Quant {
             process: Rc::clone(&self.process),
-            qubits: Vec::from_iter(self.qubits[start..end].iter().map(|qubit| Rc::clone(qubit))),
+            qubits: Vec::from_iter(self.qubits[start..end].iter().map(Rc::clone)),
         }
     }
 
@@ -198,7 +198,7 @@ pub fn around<Outer, Inner, T>(
     inner: Inner,
 ) -> Result<T>
 where
-    Outer: Fn() -> (),
+    Outer: Fn(),
     Inner: FnOnce() -> T,
 {
     outer();
