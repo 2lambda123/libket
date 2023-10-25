@@ -1,6 +1,2 @@
-.vscode
-**.old
-**build
-**html
-**latex
-**xml
+/target
+/Cargo.lock
